@@ -1,0 +1,11 @@
+# Node & Angular dependencies
+**/node_modules/
+**/dist/
+**/.angular/
+
+# Environment variables
+.env
+
+# OS files
+.DS_Store
+Thumbs.db
