@@ -9,3 +9,10 @@
 # OS files
 .DS_Store
 Thumbs.db
+
+# AI agents
+**/.gemini/
+**/.claude/
+**/.cursor/
+**/.copilot/
+**/.aider/
