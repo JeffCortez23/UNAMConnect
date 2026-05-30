@@ -1,7 +1,14 @@
 -- ============================================
 -- UNAMConnect - Script de Inicialización de BD
 -- ============================================
--- Ejecutar: psql -U elyefris -d mi_proyecto_web -f init_db.sql
+-- Ejecutar: psql -U postgres -f init_db.sql
+
+-- 1. Crear la base de datos (Ejecutar como superusuario si es necesario)
+SELECT 'CREATE DATABASE "UNAMConnect"'
+WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'UNAMConnect')\gexec
+
+-- 2. Conectarse a la base de datos
+\c "UNAMConnect"
 
 -- Eliminar tablas en orden inverso de dependencia (si existen)
 DROP TABLE IF EXISTS notificaciones CASCADE;
