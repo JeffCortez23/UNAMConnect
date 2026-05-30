@@ -32,7 +32,7 @@ const obtenerRecursosPorCurso = async (req, res) => {
   try {
     const { id } = req.params;
     const { rows } = await db.query(
-      `SELECT r.*, u.nombre AS nombre_tutor, u.apellido AS apellido_tutor, c.nombre_curso
+      `SELECT r.*, u.nombres AS nombre_tutor, u.apellidos AS apellido_tutor, c.nombre_curso
        FROM recursos r
        JOIN usuarios u ON r.id_tutor = u.id_usuario
        JOIN cursos c ON r.id_curso = c.id_curso
