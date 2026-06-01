@@ -1,16 +1,11 @@
 -- ============================================
 -- UNAMConnect - Script de Inicialización de BD
 -- ============================================
--- Ejecutar: psql -U postgres -f init_db.sql
 
--- 1. Crear la base de datos (Ejecutar como superusuario si es necesario)
-SELECT 'CREATE DATABASE "UNAMConnect"'
-WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'UNAMConnect')\gexec
+-- 1. Conectarse a la base de datos (se asume que UNAMConnect ya existe)
+-- \c "UNAMConnect"
 
--- 2. Conectarse a la base de datos
-\c "UNAMConnect"
-
--- Eliminar tablas en orden inverso de dependencia (si existen)
+-- Eliminar tablas en orden inverso de dependencia
 DROP TABLE IF EXISTS notificaciones CASCADE;
 DROP TABLE IF EXISTS recursos CASCADE;
 DROP TABLE IF EXISTS valoraciones CASCADE;
@@ -33,6 +28,11 @@ CREATE TABLE carreras (
     facultad VARCHAR(100) NOT NULL
 );
 
+INSERT INTO carreras (nombre_carrera, facultad) VALUES 
+('Ingeniería de Sistemas e Informática', 'Facultad de Ingeniería'),
+('Ingeniería de Minas', 'Facultad de Ingeniería'),
+('Administración', 'Facultad de Negocios');
+
 -- ============================================
 -- 2. USUARIOS
 -- ============================================
@@ -43,12 +43,32 @@ CREATE TABLE usuarios (
     nombres VARCHAR(100) NOT NULL,
     apellidos VARCHAR(100) NOT NULL,
     correo VARCHAR(150) NOT NULL UNIQUE,
+    password VARCHAR(255) NOT NULL,
     CONSTRAINT fk_usuarios_carrera
         FOREIGN KEY (id_carrera) REFERENCES carreras(id_carrera)
         ON DELETE RESTRICT
 );
 
-CREATE INDEX idx_usuarios_carrera ON usuarios(id_carrera);
+-- Hash para 'unamconnect2026'
+-- $2b$10$E2snKMLIT/1J6afJN2sUxecAMXRwFLdEKJC1uYiaq1zGMAv/EEnW.
+
+-- Administradores
+INSERT INTO usuarios (id_carrera, codigo_univ, nombres, apellidos, correo, password) VALUES
+(1, '2020204046', 'Jimena Rosnelly', 'Collao Guevara', '2020204046@unam.edu.pe', '$2b$10$E2snKMLIT/1J6afJN2sUxecAMXRwFLdEKJC1uYiaq1zGMAv/EEnW.'),
+(1, '2020204050', 'Renzo Jeffrey', 'Cortez Laura', '2020204050@unam.edu.pe', '$2b$10$E2snKMLIT/1J6afJN2sUxecAMXRwFLdEKJC1uYiaq1zGMAv/EEnW.'),
+(1, '2021204115', 'Maricielo Victoria', 'Salas Torres', '2021204115@unam.edu.pe', '$2b$10$E2snKMLIT/1J6afJN2sUxecAMXRwFLdEKJC1uYiaq1zGMAv/EEnW.');
+
+-- Alumnos del curso
+INSERT INTO usuarios (id_carrera, codigo_univ, nombres, apellidos, correo, password) VALUES
+(1, '2023204057', 'JEAN DIEGO', 'ARAPA CONDORI', '2023204057@unam.edu.pe', '$2b$10$E2snKMLIT/1J6afJN2sUxecAMXRwFLdEKJC1uYiaq1zGMAv/EEnW.'),
+(1, '2023204037', 'RICARDO JOSE', 'ARQUE CHUNGA', '2023204037@unam.edu.pe', '$2b$10$E2snKMLIT/1J6afJN2sUxecAMXRwFLdEKJC1uYiaq1zGMAv/EEnW.'),
+(1, '2023204029', 'NATALI', 'ARRAZOLA GALINDO', '2023204029@unam.edu.pe', '$2b$10$E2snKMLIT/1J6afJN2sUxecAMXRwFLdEKJC1uYiaq1zGMAv/EEnW.'),
+(1, '2023204038', 'CRISTIAN', 'CABRERA LAYME', '2023204038@unam.edu.pe', '$2b$10$E2snKMLIT/1J6afJN2sUxecAMXRwFLdEKJC1uYiaq1zGMAv/EEnW.'),
+(1, '2023204063', 'NESTOR JESUS', 'CCAMA MAMANI', '2023204063@unam.edu.pe', '$2b$10$E2snKMLIT/1J6afJN2sUxecAMXRwFLdEKJC1uYiaq1zGMAv/EEnW.'),
+(1, '2023204056', 'ANDREE CRISTIAN', 'COTRADO ZAPANA', '2023204056@unam.edu.pe', '$2b$10$E2snKMLIT/1J6afJN2sUxecAMXRwFLdEKJC1uYiaq1zGMAv/EEnW.'),
+(1, '2023204055', 'MAURICIO ALESSANDRO', 'FERNANDEZ CHIRINOS', '2023204055@unam.edu.pe', '$2b$10$E2snKMLIT/1J6afJN2sUxecAMXRwFLdEKJC1uYiaq1zGMAv/EEnW.'),
+(1, '2023204053', 'MARCELO ANTONY', 'GALVEZ GARAY', '2023204053@unam.edu.pe', '$2b$10$E2snKMLIT/1J6afJN2sUxecAMXRwFLdEKJC1uYiaq1zGMAv/EEnW.'),
+(1, '2023204066', 'SAUL JHOEL', 'HUAHUACHAMPI MAMANI', '2023204066@unam.edu.pe', '$2b$10$E2snKMLIT/1J6afJN2sUxecAMXRwFLdEKJC1uYiaq1zGMAv/EEnW.');
 
 -- ============================================
 -- 3. ROLES
@@ -58,26 +78,25 @@ CREATE TABLE roles (
     nombre_rol VARCHAR(30) NOT NULL UNIQUE
 );
 
--- Roles iniciales del sistema
-INSERT INTO roles (nombre_rol) VALUES
-    ('alumno'),
-    ('tutor'),
-    ('moderador');
+INSERT INTO roles (nombre_rol) VALUES ('alumno'), ('tutor'), ('moderador');
 
 -- ============================================
--- 4. USUARIO_ROLES (M:N)
+-- 4. USUARIO_ROLES
 -- ============================================
 CREATE TABLE usuario_roles (
     id_usuario INT NOT NULL,
     id_rol INT NOT NULL,
     PRIMARY KEY (id_usuario, id_rol),
-    CONSTRAINT fk_ur_usuario
-        FOREIGN KEY (id_usuario) REFERENCES usuarios(id_usuario)
-        ON DELETE CASCADE,
-    CONSTRAINT fk_ur_rol
-        FOREIGN KEY (id_rol) REFERENCES roles(id_rol)
-        ON DELETE CASCADE
+    CONSTRAINT fk_ur_usuario FOREIGN KEY (id_usuario) REFERENCES usuarios(id_usuario) ON DELETE CASCADE,
+    CONSTRAINT fk_ur_rol FOREIGN KEY (id_rol) REFERENCES roles(id_rol) ON DELETE CASCADE
 );
+
+-- Asignar moderador a los 3 admins
+INSERT INTO usuario_roles (id_usuario, id_rol) VALUES (1, 3), (2, 3), (3, 3);
+-- Todos son alumnos también
+INSERT INTO usuario_roles (id_usuario, id_rol) SELECT id_usuario, 1 FROM usuarios;
+-- Algunos son tutores (Jeff, Jean, Ricardo)
+INSERT INTO usuario_roles (id_usuario, id_rol) VALUES (2, 2), (4, 2), (5, 2);
 
 -- ============================================
 -- 5. CURSOS
@@ -87,71 +106,38 @@ CREATE TABLE cursos (
     id_carrera INT NOT NULL,
     nombre_curso VARCHAR(150) NOT NULL,
     ciclo INT NOT NULL,
-    CONSTRAINT fk_cursos_carrera
-        FOREIGN KEY (id_carrera) REFERENCES carreras(id_carrera)
-        ON DELETE CASCADE
+    CONSTRAINT fk_cursos_carrera FOREIGN KEY (id_carrera) REFERENCES carreras(id_carrera) ON DELETE CASCADE
 );
 
-CREATE INDEX idx_cursos_carrera ON cursos(id_carrera);
+INSERT INTO cursos (id_carrera, nombre_curso, ciclo) VALUES
+(1, 'Programación Web I', 5),
+(1, 'Bases de Datos II', 5),
+(1, 'Algoritmos y Estructuras', 3),
+(1, 'Arquitectura de Software', 7),
+(1, 'Inteligencia Artificial', 8),
+(1, 'Redes de Computadoras', 6),
+(1, 'Sistemas Operativos', 5),
+(1, 'Ingeniería de Requisitos', 4),
+(1, 'Análisis y Diseño', 6),
+(1, 'Gestión de Proyectos TI', 9);
 
 -- ============================================
--- 6. SOLICITUDES_TUTOR
--- ============================================
-CREATE TABLE solicitudes_tutor (
-    id_solicitud SERIAL PRIMARY KEY,
-    id_usuario INT NOT NULL,
-    id_curso INT NOT NULL,
-    nota_obtenida NUMERIC(4,2) NOT NULL,
-    url_boleta_notas VARCHAR(255),
-    estado_solicitud VARCHAR(20) NOT NULL DEFAULT 'pendiente',
-    revisado_por INT,
-    fecha_postulacion TIMESTAMP NOT NULL DEFAULT NOW(),
-    CONSTRAINT fk_sol_usuario
-        FOREIGN KEY (id_usuario) REFERENCES usuarios(id_usuario)
-        ON DELETE CASCADE,
-    CONSTRAINT fk_sol_curso
-        FOREIGN KEY (id_curso) REFERENCES cursos(id_curso)
-        ON DELETE CASCADE,
-    CONSTRAINT fk_sol_revisor
-        FOREIGN KEY (revisado_por) REFERENCES usuarios(id_usuario)
-        ON DELETE SET NULL,
-    CONSTRAINT chk_estado_solicitud
-        CHECK (estado_solicitud IN ('pendiente', 'aprobada', 'rechazada'))
-);
-
-CREATE INDEX idx_sol_usuario ON solicitudes_tutor(id_usuario);
-CREATE INDEX idx_sol_curso ON solicitudes_tutor(id_curso);
-CREATE INDEX idx_sol_estado ON solicitudes_tutor(estado_solicitud);
-
--- ============================================
--- 7. TUTORES_CURSOS
+-- 6. TUTORES_CURSOS
 -- ============================================
 CREATE TABLE tutores_cursos (
     id_autorizacion SERIAL PRIMARY KEY,
     id_tutor INT NOT NULL,
     id_curso INT NOT NULL,
-    estado_aprobacion VARCHAR(20) NOT NULL DEFAULT 'pendiente',
-    id_moderador_auditor INT,
-    fecha_aprobacion TIMESTAMP,
-    CONSTRAINT fk_tc_tutor
-        FOREIGN KEY (id_tutor) REFERENCES usuarios(id_usuario)
-        ON DELETE CASCADE,
-    CONSTRAINT fk_tc_curso
-        FOREIGN KEY (id_curso) REFERENCES cursos(id_curso)
-        ON DELETE CASCADE,
-    CONSTRAINT fk_tc_moderador
-        FOREIGN KEY (id_moderador_auditor) REFERENCES usuarios(id_usuario)
-        ON DELETE SET NULL,
-    CONSTRAINT chk_estado_aprobacion
-        CHECK (estado_aprobacion IN ('pendiente', 'aprobado', 'rechazado')),
-    CONSTRAINT uq_tutor_curso UNIQUE (id_tutor, id_curso)
+    estado_aprobacion VARCHAR(20) NOT NULL DEFAULT 'aprobado',
+    CONSTRAINT fk_tc_tutor FOREIGN KEY (id_tutor) REFERENCES usuarios(id_usuario) ON DELETE CASCADE,
+    CONSTRAINT fk_tc_curso FOREIGN KEY (id_curso) REFERENCES cursos(id_curso) ON DELETE CASCADE
 );
 
-CREATE INDEX idx_tc_tutor ON tutores_cursos(id_tutor);
-CREATE INDEX idx_tc_curso ON tutores_cursos(id_curso);
+INSERT INTO tutores_cursos (id_tutor, id_curso) VALUES 
+(2, 1), (2, 2), (4, 3), (5, 1), (4, 2);
 
 -- ============================================
--- 8. HORARIOS_TUTOR
+-- 7. HORARIOS_TUTOR
 -- ============================================
 CREATE TABLE horarios_tutor (
     id_horario SERIAL PRIMARY KEY,
@@ -159,20 +145,17 @@ CREATE TABLE horarios_tutor (
     dia_semana VARCHAR(15) NOT NULL,
     hora_inicio TIME NOT NULL,
     hora_fin TIME NOT NULL,
-    estado BOOLEAN NOT NULL DEFAULT true,
-    CONSTRAINT fk_ht_tutor
-        FOREIGN KEY (id_tutor) REFERENCES usuarios(id_usuario)
-        ON DELETE CASCADE,
-    CONSTRAINT chk_dia_semana
-        CHECK (dia_semana IN ('lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado', 'domingo')),
-    CONSTRAINT chk_horario_valido
-        CHECK (hora_fin > hora_inicio)
+    CONSTRAINT fk_ht_tutor FOREIGN KEY (id_tutor) REFERENCES usuarios(id_usuario) ON DELETE CASCADE
 );
 
-CREATE INDEX idx_ht_tutor ON horarios_tutor(id_tutor);
+INSERT INTO horarios_tutor (id_tutor, dia_semana, hora_inicio, hora_fin) VALUES
+(2, 'lunes', '08:00', '10:00'),
+(2, 'miercoles', '14:00', '16:00'),
+(4, 'martes', '09:00', '11:00'),
+(5, 'jueves', '15:00', '17:00');
 
 -- ============================================
--- 9. ASESORIAS
+-- 8. ASESORIAS
 -- ============================================
 CREATE TABLE asesorias (
     id_asesoria SERIAL PRIMARY KEY,
@@ -182,82 +165,65 @@ CREATE TABLE asesorias (
     fecha_programada TIMESTAMP NOT NULL,
     estado VARCHAR(20) NOT NULL DEFAULT 'pendiente',
     enlace_reunion VARCHAR(255),
-    CONSTRAINT fk_ases_alumno
-        FOREIGN KEY (id_alumno) REFERENCES usuarios(id_usuario)
-        ON DELETE CASCADE,
-    CONSTRAINT fk_ases_tutor
-        FOREIGN KEY (id_tutor) REFERENCES usuarios(id_usuario)
-        ON DELETE CASCADE,
-    CONSTRAINT fk_ases_curso
-        FOREIGN KEY (id_curso) REFERENCES cursos(id_curso)
-        ON DELETE CASCADE,
-    CONSTRAINT chk_estado_asesoria
-        CHECK (estado IN ('pendiente', 'confirmada', 'completada', 'cancelada')),
-    CONSTRAINT chk_alumno_tutor_distintos
-        CHECK (id_alumno <> id_tutor)
+    CONSTRAINT fk_ases_alumno FOREIGN KEY (id_alumno) REFERENCES usuarios(id_usuario) ON DELETE CASCADE,
+    CONSTRAINT fk_ases_tutor FOREIGN KEY (id_tutor) REFERENCES usuarios(id_usuario) ON DELETE CASCADE,
+    CONSTRAINT fk_ases_curso FOREIGN KEY (id_curso) REFERENCES cursos(id_curso) ON DELETE CASCADE
 );
 
-CREATE INDEX idx_ases_alumno ON asesorias(id_alumno);
-CREATE INDEX idx_ases_tutor ON asesorias(id_tutor);
-CREATE INDEX idx_ases_curso ON asesorias(id_curso);
-CREATE INDEX idx_ases_estado ON asesorias(estado);
+INSERT INTO asesorias (id_alumno, id_tutor, id_curso, fecha_programada, estado, enlace_reunion) VALUES
+(6, 2, 1, '2026-06-10 10:00:00', 'confirmada', 'https://meet.google.com/test-1'),
+(7, 2, 2, '2026-06-11 11:00:00', 'pendiente', 'https://meet.google.com/test-2'),
+(8, 4, 3, '2026-06-12 15:00:00', 'completada', 'https://meet.google.com/test-3'),
+(9, 5, 1, '2026-06-13 09:00:00', 'cancelada', NULL);
 
 -- ============================================
--- 10. VALORACIONES (1:1 con ASESORIAS)
+-- 9. OTROS
 -- ============================================
 CREATE TABLE valoraciones (
     id_valoracion SERIAL PRIMARY KEY,
     id_asesoria INT NOT NULL UNIQUE,
     puntuacion INT NOT NULL,
     comentario TEXT,
-    fecha_creacion TIMESTAMP NOT NULL DEFAULT NOW(),
-    CONSTRAINT fk_val_asesoria
-        FOREIGN KEY (id_asesoria) REFERENCES asesorias(id_asesoria)
-        ON DELETE CASCADE,
-    CONSTRAINT chk_puntuacion
-        CHECK (puntuacion >= 1 AND puntuacion <= 5)
+    CONSTRAINT fk_val_asesoria FOREIGN KEY (id_asesoria) REFERENCES asesorias(id_asesoria) ON DELETE CASCADE
 );
 
--- ============================================
--- 11. RECURSOS
--- ============================================
 CREATE TABLE recursos (
     id_recurso SERIAL PRIMARY KEY,
     id_curso INT NOT NULL,
     id_tutor INT NOT NULL,
     titulo VARCHAR(200) NOT NULL,
     url_archivo VARCHAR(255) NOT NULL,
-    CONSTRAINT fk_rec_curso
-        FOREIGN KEY (id_curso) REFERENCES cursos(id_curso)
-        ON DELETE CASCADE,
-    CONSTRAINT fk_rec_tutor
-        FOREIGN KEY (id_tutor) REFERENCES usuarios(id_usuario)
-        ON DELETE CASCADE
+    CONSTRAINT fk_rec_curso FOREIGN KEY (id_curso) REFERENCES cursos(id_curso) ON DELETE CASCADE,
+    CONSTRAINT fk_rec_tutor FOREIGN KEY (id_tutor) REFERENCES usuarios(id_usuario) ON DELETE CASCADE
 );
 
-CREATE INDEX idx_rec_curso ON recursos(id_curso);
-CREATE INDEX idx_rec_tutor ON recursos(id_tutor);
-
--- ============================================
--- 12. NOTIFICACIONES
--- ============================================
 CREATE TABLE notificaciones (
     id_notificacion SERIAL PRIMARY KEY,
     id_usuario INT NOT NULL,
     mensaje VARCHAR(255) NOT NULL,
     leido BOOLEAN NOT NULL DEFAULT false,
     fecha_envio TIMESTAMP NOT NULL DEFAULT NOW(),
-    CONSTRAINT fk_notif_usuario
-        FOREIGN KEY (id_usuario) REFERENCES usuarios(id_usuario)
-        ON DELETE CASCADE
+    CONSTRAINT fk_notif_usuario FOREIGN KEY (id_usuario) REFERENCES usuarios(id_usuario) ON DELETE CASCADE
 );
 
-CREATE INDEX idx_notif_usuario ON notificaciones(id_usuario);
-CREATE INDEX idx_notif_leido ON notificaciones(leido);
+CREATE TABLE solicitudes_tutor (
+    id_solicitud SERIAL PRIMARY KEY,
+    id_usuario INT NOT NULL,
+    id_curso INT NOT NULL,
+    nota_obtenida NUMERIC(4,2) NOT NULL,
+    url_boleta_notas VARCHAR(255),
+    estado_solicitud VARCHAR(20) NOT NULL DEFAULT 'pendiente',
+    fecha_postulacion TIMESTAMP NOT NULL DEFAULT NOW(),
+    CONSTRAINT fk_sol_usuario FOREIGN KEY (id_usuario) REFERENCES usuarios(id_usuario) ON DELETE CASCADE,
+    CONSTRAINT fk_sol_curso FOREIGN KEY (id_curso) REFERENCES cursos(id_curso) ON DELETE CASCADE
+);
 
--- ============================================
--- Verificación
--- ============================================
-SELECT table_name FROM information_schema.tables
-WHERE table_schema = 'public'
-ORDER BY table_name;
+-- Otorgar permisos al usuario actual automáticamente
+DO $$ 
+DECLARE 
+    current_user_name TEXT;
+BEGIN
+    SELECT current_user INTO current_user_name;
+    EXECUTE 'GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO ' || quote_ident(current_user_name);
+    EXECUTE 'GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO ' || quote_ident(current_user_name);
+END $$;
