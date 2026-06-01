@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UNAMConnect - API Tester 🎓</title>
+    <style>
+        :root {
+            --primary: #003366;
+            --secondary: #ffcc00;
+            --bg: #f4f4f9;
+            --text: #333;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 20px;
+        }
+        header {
+            background-color: var(--primary);
+            color: white;
+            padding: 1rem;
+            text-align: center;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        select, input, button {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        button {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        button:hover {
+            background-color: #002244;
+        }
+        .endpoint-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .endpoint-btn {
+            background: #e9ecef;
+            color: var(--primary);
+            border: 1px solid #dee2e6;
+            text-align: left;
+            padding: 8px 12px;
+            font-size: 13px;
+        }
+        .endpoint-btn:hover {
+            background: #dde2e6;
+        }
+        #response-container {
+            margin-top: 20px;
+        }
+        pre {
+            background: #272822;
+            color: #f8f8f2;
+            padding: 15px;
+            border-radius: 4px;
+            overflow-x: auto;
+            font-size: 13px;
+            max-height: 500px;
+        }
+        .status {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .status-ok { background: #d4edda; color: #155724; }
+        .status-error { background: #f8d7da; color: #721c24; }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>UNAMConnect API Tester</h1>
+    <p>Interfaz básica para pruebas locales del Backend</p>
+</header>
+
+<div class="container">
+    <h3>Endpoints Disponibles</h3>
+    <div class="endpoint-list" id="endpoint-buttons">
+        <!-- Botones generados dinámicamente -->
+    </div>
+
+    <div class="controls">
+        <input type="text" id="api-url" value="http://localhost:3000/api" style="flex-grow: 1;">
+        <select id="method">
+            <option value="GET">GET</option>
+            <option value="POST">POST</option>
+            <option value="PUT">PUT</option>
+            <option value="DELETE">DELETE</option>
+        </select>
+        <button onclick="sendRequest()">Enviar Consulta</button>
+    </div>
+
+    <div style="margin-bottom: 20px;">
+        <label>Body (JSON):</label><br>
+        <textarea id="request-body" style="width: 100%; height: 80px; font-family: monospace; padding: 10px; border-radius: 4px; border: 1px solid #ccc;"></textarea>
+    </div>
+
+    <div id="response-container">
+        <div id="status-display"></div>
+        <pre id="output">Los resultados aparecerán aquí...</pre>
+    </div>
+</div>
+
+<script>
+    const endpoints = [
+        'auth/registro', 'auth/login',
+        'carreras', 'usuarios', 'roles', 'cursos', 'solicitudes-tutor',
+        'tutores-cursos', 'horarios-tutor', 'asesorias', 'valoraciones',
+        'recursos', 'notificaciones'
+    ];
+
+    const buttonsContainer = document.getElementById('endpoint-buttons');
+    const urlInput = document.getElementById('api-url');
+    const output = document.getElementById('output');
+    const statusDisplay = document.getElementById('status-display');
+
+    // Generar botones
+    endpoints.forEach(ep => {
+        const btn = document.createElement('button');
+        btn.className = 'endpoint-btn';
+        
+        let displayMethod = 'GET';
+        if (ep.includes('auth/')) displayMethod = 'POST';
+        
+        btn.textContent = `${displayMethod} /${ep}`;
+        
+        btn.onclick = () => {
+            urlInput.value = `http://localhost:3000/api/${ep}`;
+            document.getElementById('method').value = displayMethod;
+            
+            // Pre-rellenar body para ejemplos
+            const templates = {
+                'auth/registro': {
+                    id_carrera: 1,
+                    codigo_univ: "2023204000",
+                    nombres: "Nombre",
+                    apellidos: "Apellido",
+                    correo: "nuevo@unam.edu.pe",
+                    password: "unamconnect2026"
+                },
+                'auth/login': {
+                    correo: "2020204050@unam.edu.pe",
+                    password: "unamconnect2026"
+                },
+                'carreras': { nombre_carrera: "Derecho", facultad: "Ciencias Jurídicas" },
+                'usuarios': { id_carrera: 1, codigo_univ: "20210001", nombres: "Carlos", apellidos: "Ruiz", correo: "carlos@mail.com" },
+                'roles': { nombre_rol: "invitado" },
+                'cursos': { id_carrera: 1, nombre_curso: "Química General", ciclo: 1 },
+                'solicitudes-tutor': { id_usuario: 1, id_curso: 1, nota_obtenida: 18.5, url_boleta_notas: "http://link.com" },
+                'tutores-cursos': { id_tutor: 2, id_curso: 2, estado_aprobacion: "aprobado" },
+                'horarios-tutor': { id_tutor: 2, dia_semana: "viernes", hora_inicio: "10:00", hora_fin: "12:00" },
+                'asesorias': { id_alumno: 1, id_tutor: 2, id_curso: 1, fecha_programada: "2026-07-01 10:00:00", estado: "pendiente" },
+                'valoraciones': { id_asesoria: 1, puntuacion: 5, comentario: "Excelente tutor" },
+                'recursos': { id_curso: 1, id_tutor: 2, titulo: "Guía de Estudio", url_archivo: "http://drive.com/file" },
+                'notificaciones': { id_usuario: 1, mensaje: "Tienes una nueva asesoría" }
+            };
+
+            if (templates[ep]) {
+                document.getElementById('request-body').value = JSON.stringify(templates[ep], null, 2);
+            } else {
+                document.getElementById('request-body').value = '';
+            }
+            
+            if (displayMethod === 'GET') sendRequest();
+        };
+        buttonsContainer.appendChild(btn);
+    });
+
+    async function sendRequest() {
+        const url = urlInput.value;
+        const method = document.getElementById('method').value;
+        const bodyInput = document.getElementById('request-body').value;
+        
+        output.textContent = 'Cargando...';
+        statusDisplay.innerHTML = '';
+
+        const options = {
+            method,
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        };
+
+        if (method !== 'GET' && bodyInput) {
+            try {
+                options.body = JSON.stringify(JSON.parse(bodyInput));
+            } catch (e) {
+                alert('JSON inválido en el cuerpo de la petición');
+                return;
+            }
+        }
+
+        try {
+            const response = await fetch(url, options);
+            const data = await response.json();
+            
+            statusDisplay.innerHTML = `<span class="status ${response.ok ? 'status-ok' : 'status-error'}">
+                Status: ${response.status} ${response.statusText}
+            </span>`;
+            
+            output.textContent = JSON.stringify(data, null, 2);
+        } catch (error) {
+            statusDisplay.innerHTML = `<span class="status status-error">Error: No se pudo conectar al servidor</span>`;
+            output.textContent = error.message + '\n\nAsegúrate de que el backend esté corriendo en http://localhost:3000';
+        }
+    }
+</script>
+
+</body>
+</html>
