@@ -1,23 +1,32 @@
 # UNAMConnect - Backend 🖥️
 
-Este directorio contiene el servidor de la aplicación desarrollado con Node.js y Express.
+Este directorio contiene el servidor de la aplicación, el cual ha sido completamente implementado y fusionado en la rama principal (`main`). Gestiona la lógica de negocio, la conexión con PostgreSQL y expone el API REST necesario para la aplicación.
+
+## 📂 Estructura del Backend
+
+- [**/config**](./config): Configuraciones de base de datos y variables globales.
+- [**/controllers**](./controllers): Lógica que procesa las peticiones y genera las respuestas.
+- [**/routes**](./routes): Definición de rutas (endpoints) del API REST.
+- `index.js`: Punto de entrada de la aplicación.
+- `init_db.sql`: Script para inicializar las tablas en PostgreSQL.
 
 ## 🛠️ Tecnologías
-- **Node.js**: Entorno de ejecución.
-- **Express**: Framework para el API REST.
-- **pg (node-postgres)**: Driver para la conexión con PostgreSQL.
-- **dotenv**: Gestión de variables de entorno.
-- **cors**: Middleware para permitir peticiones desde el frontend.
+- **Node.js**: Entorno de ejecución de JavaScript en el servidor.
+- **Express**: Framework minimalista para la creación del API.
+- **pg (node-postgres)**: Librería para interactuar con la base de datos PostgreSQL.
+- **dotenv**: Manejo de variables de entorno seguras.
+- **cors**: Habilitación de Cross-Origin Resource Sharing para el frontend.
 
 ## 📦 Instalación
 1. Entrar a la carpeta: `cd backend`
 2. Instalar dependencias: `npm install`
-3. Configurar el archivo `.env` (ver `.env.example`).
+3. Crear un archivo `.env` basado en la configuración de tu base de datos local (puerto, usuario, contraseña).
 
 ## 🚀 Ejecución
-- Modo desarrollo: `npm run dev` (usando nodemon)
-- Modo producción: `npm start`
+- **Modo Desarrollo:** `npm run dev` (Inicia con nodemon para reinicio automático).
+- **Modo Producción:** `npm start` (Ejecución estándar con node).
 
-## 📄 Scripts
-- `npm run dev`: Inicia el servidor con recarga automática.
-- `npm test`: Ejecuta los tests del sistema.
+## 📄 Scripts Disponibles
+- `npm run dev`: Ejecuta el servidor en modo desarrollo.
+- `npm start`: Inicia el servidor de producción.
+- `npm test`: (Opcional) Ejecuta las pruebas unitarias o de integración.
