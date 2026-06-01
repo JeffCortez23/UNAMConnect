@@ -21,6 +21,15 @@ Este directorio contiene el servidor de la aplicación, el cual ha sido completa
 1. Entrar a la carpeta: `cd backend`
 2. Instalar dependencias: `npm install`
 3. Crear un archivo `.env` basado en la configuración de tu base de datos local (puerto, usuario, contraseña).
+   - Ejemplo: `DATABASE_URL=postgresql://tu_usuario@localhost:5432/UNAMConnect`
+
+## 🛠️ Notas de Base de Datos (PostgreSQL)
+Si al ejecutar el servidor recibes un error de **"permission denied for table ..."**, asegúrate de que el usuario definido en tu `.env` tenga permisos sobre las tablas creadas por el usuario `postgres`.
+
+**Recomendación:** Ejecuta el script de inicialización con tu propio usuario de base de datos para evitar conflictos de propiedad:
+```bash
+psql -d UNAMConnect -f init_db.sql
+```
 
 ## 🚀 Ejecución
 - **Modo Desarrollo:** `npm run dev` (Inicia con nodemon para reinicio automático).
