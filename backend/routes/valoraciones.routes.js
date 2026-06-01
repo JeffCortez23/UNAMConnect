@@ -1,0 +1,22 @@
+// Rutas para la entidad Valoraciones
+const router = require('express').Router();
+const {
+  obtenerValoraciones,
+  obtenerValoracionPorId,
+  obtenerValoracionPorAsesoria,
+  crearValoracion,
+  actualizarValoracion,
+  eliminarValoracion,
+} = require('../controllers/valoraciones.controller');
+
+// Endpoint especial: valoración de una asesoría específica (debe ir antes de /:id)
+router.get('/asesoria/:id', obtenerValoracionPorAsesoria);
+
+// CRUD estándar
+router.get('/', obtenerValoraciones);
+router.get('/:id', obtenerValoracionPorId);
+router.post('/', crearValoracion);
+router.put('/:id', actualizarValoracion);
+router.delete('/:id', eliminarValoracion);
+
+module.exports = router;
