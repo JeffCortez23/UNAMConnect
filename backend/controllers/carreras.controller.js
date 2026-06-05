@@ -1,11 +1,11 @@
 // Controlador para la entidad Carreras
-const db = require('../config/db');
+const Carreras = require('../models/carreras.model');
 
 // Obtener todas las carreras
 const obtenerCarreras = async (req, res) => {
   try {
-    const { rows } = await db.query('SELECT * FROM carreras ORDER BY id_carrera');
-    res.json(rows);
+    const carreras = await Carreras.getAll();
+    res.json(carreras);
   } catch (error) {
     console.error('Error al obtener carreras:', error);
     res.status(500).json({ error: 'Error al obtener carreras' });
@@ -16,11 +16,11 @@ const obtenerCarreras = async (req, res) => {
 const obtenerCarreraPorId = async (req, res) => {
   try {
     const { id } = req.params;
-    const { rows } = await db.query('SELECT * FROM carreras WHERE id_carrera = $1', [id]);
-    if (rows.length === 0) {
+    const carrera = await Carreras.getById(id);
+    if (!carrera) {
       return res.status(404).json({ error: 'Carrera no encontrada' });
     }
-    res.json(rows[0]);
+    res.json(carrera);
   } catch (error) {
     console.error('Error al obtener carrera:', error);
     res.status(500).json({ error: 'Error al obtener carrera' });
@@ -31,11 +31,8 @@ const obtenerCarreraPorId = async (req, res) => {
 const crearCarrera = async (req, res) => {
   try {
     const { nombre_carrera, facultad } = req.body;
-    const { rows } = await db.query(
-      'INSERT INTO carreras (nombre_carrera, facultad) VALUES ($1, $2) RETURNING *',
-      [nombre_carrera, facultad]
-    );
-    res.status(201).json(rows[0]);
+    const nuevaCarrera = await Carreras.create({ nombre_carrera, facultad });
+    res.status(201).json(nuevaCarrera);
   } catch (error) {
     console.error('Error al crear carrera:', error);
     res.status(500).json({ error: 'Error al crear carrera' });
@@ -47,14 +44,11 @@ const actualizarCarrera = async (req, res) => {
   try {
     const { id } = req.params;
     const { nombre_carrera, facultad } = req.body;
-    const { rows } = await db.query(
-      'UPDATE carreras SET nombre_carrera = $1, facultad = $2 WHERE id_carrera = $3 RETURNING *',
-      [nombre_carrera, facultad, id]
-    );
-    if (rows.length === 0) {
+    const carreraActualizada = await Carreras.update(id, { nombre_carrera, facultad });
+    if (!carreraActualizada) {
       return res.status(404).json({ error: 'Carrera no encontrada' });
     }
-    res.json(rows[0]);
+    res.json(carreraActualizada);
   } catch (error) {
     console.error('Error al actualizar carrera:', error);
     res.status(500).json({ error: 'Error al actualizar carrera' });
@@ -65,14 +59,11 @@ const actualizarCarrera = async (req, res) => {
 const eliminarCarrera = async (req, res) => {
   try {
     const { id } = req.params;
-    const { rows } = await db.query(
-      'DELETE FROM carreras WHERE id_carrera = $1 RETURNING *',
-      [id]
-    );
-    if (rows.length === 0) {
+    const carreraEliminada = await Carreras.delete(id);
+    if (!carreraEliminada) {
       return res.status(404).json({ error: 'Carrera no encontrada' });
     }
-    res.json(rows[0]);
+    res.json(carreraEliminada);
   } catch (error) {
     console.error('Error al eliminar carrera:', error);
     res.status(500).json({ error: 'Error al eliminar carrera' });

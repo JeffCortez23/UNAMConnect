@@ -1,10 +1,9 @@
-// Controlador para la entidad Notificaciones
-const db = require('../config/db');
+const Notificaciones = require('../models/notificaciones.model');
 
 // Obtener todas las notificaciones
 const obtenerNotificaciones = async (req, res) => {
   try {
-    const { rows } = await db.query('SELECT * FROM notificaciones ORDER BY fecha_envio DESC');
+    const rows = await Notificaciones.getAll();
     res.json(rows);
   } catch (error) {
     console.error('Error al obtener notificaciones:', error);
@@ -16,11 +15,11 @@ const obtenerNotificaciones = async (req, res) => {
 const obtenerNotificacionPorId = async (req, res) => {
   try {
     const { id } = req.params;
-    const { rows } = await db.query('SELECT * FROM notificaciones WHERE id_notificacion = $1', [id]);
-    if (rows.length === 0) {
+    const notificacion = await Notificaciones.getById(id);
+    if (!notificacion) {
       return res.status(404).json({ error: 'Notificación no encontrada' });
     }
-    res.json(rows[0]);
+    res.json(notificacion);
   } catch (error) {
     console.error('Error al obtener notificación:', error);
     res.status(500).json({ error: 'Error al obtener notificación' });
@@ -31,10 +30,7 @@ const obtenerNotificacionPorId = async (req, res) => {
 const obtenerNotificacionesPorUsuario = async (req, res) => {
   try {
     const { id } = req.params;
-    const { rows } = await db.query(
-      'SELECT * FROM notificaciones WHERE id_usuario = $1 ORDER BY fecha_envio DESC',
-      [id]
-    );
+    const rows = await Notificaciones.getByUsuario(id);
     res.json(rows);
   } catch (error) {
     console.error('Error al obtener notificaciones del usuario:', error);
@@ -45,12 +41,8 @@ const obtenerNotificacionesPorUsuario = async (req, res) => {
 // Crear una nueva notificación
 const crearNotificacion = async (req, res) => {
   try {
-    const { id_usuario, mensaje } = req.body;
-    const { rows } = await db.query(
-      'INSERT INTO notificaciones (id_usuario, mensaje) VALUES ($1, $2) RETURNING *',
-      [id_usuario, mensaje]
-    );
-    res.status(201).json(rows[0]);
+    const notificacion = await Notificaciones.create(req.body);
+    res.status(201).json(notificacion);
   } catch (error) {
     console.error('Error al crear notificación:', error);
     res.status(500).json({ error: 'Error al crear notificación' });
@@ -61,15 +53,11 @@ const crearNotificacion = async (req, res) => {
 const actualizarNotificacion = async (req, res) => {
   try {
     const { id } = req.params;
-    const { id_usuario, mensaje, leido } = req.body;
-    const { rows } = await db.query(
-      'UPDATE notificaciones SET id_usuario = $1, mensaje = $2, leido = $3 WHERE id_notificacion = $4 RETURNING *',
-      [id_usuario, mensaje, leido, id]
-    );
-    if (rows.length === 0) {
+    const notificacion = await Notificaciones.update(id, req.body);
+    if (!notificacion) {
       return res.status(404).json({ error: 'Notificación no encontrada' });
     }
-    res.json(rows[0]);
+    res.json(notificacion);
   } catch (error) {
     console.error('Error al actualizar notificación:', error);
     res.status(500).json({ error: 'Error al actualizar notificación' });
@@ -80,14 +68,11 @@ const actualizarNotificacion = async (req, res) => {
 const marcarComoLeida = async (req, res) => {
   try {
     const { id } = req.params;
-    const { rows } = await db.query(
-      'UPDATE notificaciones SET leido = true WHERE id_notificacion = $1 RETURNING *',
-      [id]
-    );
-    if (rows.length === 0) {
+    const notificacion = await Notificaciones.marcarLeida(id);
+    if (!notificacion) {
       return res.status(404).json({ error: 'Notificación no encontrada' });
     }
-    res.json(rows[0]);
+    res.json(notificacion);
   } catch (error) {
     console.error('Error al marcar notificación como leída:', error);
     res.status(500).json({ error: 'Error al marcar notificación como leída' });
@@ -98,14 +83,11 @@ const marcarComoLeida = async (req, res) => {
 const eliminarNotificacion = async (req, res) => {
   try {
     const { id } = req.params;
-    const { rows } = await db.query(
-      'DELETE FROM notificaciones WHERE id_notificacion = $1 RETURNING *',
-      [id]
-    );
-    if (rows.length === 0) {
+    const notificacion = await Notificaciones.delete(id);
+    if (!notificacion) {
       return res.status(404).json({ error: 'Notificación no encontrada' });
     }
-    res.json(rows[0]);
+    res.json(notificacion);
   } catch (error) {
     console.error('Error al eliminar notificación:', error);
     res.status(500).json({ error: 'Error al eliminar notificación' });

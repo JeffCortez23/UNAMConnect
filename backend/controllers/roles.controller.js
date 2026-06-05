@@ -1,10 +1,9 @@
-// Controlador para la entidad Roles
-const db = require('../config/db');
+const Roles = require('../models/roles.model');
 
 // Obtener todos los roles
 const obtenerRoles = async (req, res) => {
   try {
-    const { rows } = await db.query('SELECT * FROM roles ORDER BY id_rol');
+    const rows = await Roles.getAll();
     res.json(rows);
   } catch (error) {
     console.error('Error al obtener roles:', error);
@@ -16,11 +15,11 @@ const obtenerRoles = async (req, res) => {
 const obtenerRolPorId = async (req, res) => {
   try {
     const { id } = req.params;
-    const { rows } = await db.query('SELECT * FROM roles WHERE id_rol = $1', [id]);
-    if (rows.length === 0) {
+    const rol = await Roles.getById(id);
+    if (!rol) {
       return res.status(404).json({ error: 'Rol no encontrado' });
     }
-    res.json(rows[0]);
+    res.json(rol);
   } catch (error) {
     console.error('Error al obtener rol:', error);
     res.status(500).json({ error: 'Error al obtener rol' });
@@ -30,12 +29,8 @@ const obtenerRolPorId = async (req, res) => {
 // Crear un nuevo rol
 const crearRol = async (req, res) => {
   try {
-    const { nombre_rol } = req.body;
-    const { rows } = await db.query(
-      'INSERT INTO roles (nombre_rol) VALUES ($1) RETURNING *',
-      [nombre_rol]
-    );
-    res.status(201).json(rows[0]);
+    const rol = await Roles.create(req.body);
+    res.status(201).json(rol);
   } catch (error) {
     console.error('Error al crear rol:', error);
     res.status(500).json({ error: 'Error al crear rol' });
@@ -46,15 +41,11 @@ const crearRol = async (req, res) => {
 const actualizarRol = async (req, res) => {
   try {
     const { id } = req.params;
-    const { nombre_rol } = req.body;
-    const { rows } = await db.query(
-      'UPDATE roles SET nombre_rol = $1 WHERE id_rol = $2 RETURNING *',
-      [nombre_rol, id]
-    );
-    if (rows.length === 0) {
+    const rol = await Roles.update(id, req.body);
+    if (!rol) {
       return res.status(404).json({ error: 'Rol no encontrado' });
     }
-    res.json(rows[0]);
+    res.json(rol);
   } catch (error) {
     console.error('Error al actualizar rol:', error);
     res.status(500).json({ error: 'Error al actualizar rol' });
@@ -65,14 +56,11 @@ const actualizarRol = async (req, res) => {
 const eliminarRol = async (req, res) => {
   try {
     const { id } = req.params;
-    const { rows } = await db.query(
-      'DELETE FROM roles WHERE id_rol = $1 RETURNING *',
-      [id]
-    );
-    if (rows.length === 0) {
+    const rol = await Roles.delete(id);
+    if (!rol) {
       return res.status(404).json({ error: 'Rol no encontrado' });
     }
-    res.json(rows[0]);
+    res.json(rol);
   } catch (error) {
     console.error('Error al eliminar rol:', error);
     res.status(500).json({ error: 'Error al eliminar rol' });

@@ -1,4 +1,4 @@
-const db = require('../config/db');
+const Auth = require('../models/auth.model');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
@@ -7,8 +7,7 @@ const login = async (req, res) => {
 
   try {
     // Buscar usuario por correo
-    const { rows } = await db.query('SELECT * FROM usuarios WHERE correo = $1', [correo]);
-    const usuario = rows[0];
+    const usuario = await Auth.findByCorreo(correo);
 
     if (!usuario) {
       return res.status(404).json({ error: 'Usuario no encontrado' });
@@ -52,14 +51,18 @@ const registro = async (req, res) => {
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    const { rows } = await db.query(
-      'INSERT INTO usuarios (id_carrera, codigo_univ, nombres, apellidos, correo, password) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id_usuario, correo',
-      [id_carrera, codigo_univ, nombres, apellidos, correo, hashedPassword]
-    );
+    const nuevoUsuario = await Auth.register({
+      id_carrera,
+      codigo_univ,
+      nombres,
+      apellidos,
+      correo,
+      password: hashedPassword
+    });
 
     res.status(201).json({
       mensaje: 'Usuario registrado con éxito',
-      usuario: rows[0]
+      usuario: nuevoUsuario
     });
   } catch (error) {
     console.error('Error en registro:', error);
