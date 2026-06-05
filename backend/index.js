@@ -10,6 +10,7 @@ app.use(cors());
 app.use(express.json());
 
 // ── Rutas ────────────────────────────────────────────
+const authRoutes = require('./routes/auth.routes');
 const carrerasRoutes = require('./routes/carreras.routes');
 const usuariosRoutes = require('./routes/usuarios.routes');
 const rolesRoutes = require('./routes/roles.routes');
@@ -22,6 +23,7 @@ const valoracionesRoutes = require('./routes/valoraciones.routes');
 const recursosRoutes = require('./routes/recursos.routes');
 const notificacionesRoutes = require('./routes/notificaciones.routes');
 
+app.use('/api/auth', authRoutes);
 app.use('/api/carreras', carrerasRoutes);
 app.use('/api/usuarios', usuariosRoutes);
 app.use('/api/roles', rolesRoutes);
@@ -40,6 +42,7 @@ app.get('/', (req, res) => {
     mensaje: '🎓 UNAMConnect API REST',
     version: '1.0.0',
     endpoints: [
+      '/api/auth',
       '/api/carreras',
       '/api/usuarios',
       '/api/roles',
