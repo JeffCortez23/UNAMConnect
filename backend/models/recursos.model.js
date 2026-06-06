@@ -34,11 +34,29 @@ const Recursos = {
   },
 
   update: async (id, recursoData) => {
-    const { id_curso, id_tutor, titulo, url_archivo } = recursoData;
-    const { rows } = await db.query(
-      'UPDATE recursos SET id_curso = $1, id_tutor = $2, titulo = $3, url_archivo = $4 WHERE id_recurso = $5 RETURNING *',
-      [id_curso, id_tutor, titulo, url_archivo, id]
-    );
+    const fields = [];
+    const values = [];
+    let i = 1;
+
+    for (const [key, value] of Object.entries(recursoData)) {
+      if (value !== undefined && key !== 'id_recurso') {
+        fields.push(`${key} = $${i}`);
+        values.push(value);
+        i++;
+      }
+    }
+
+    if (fields.length === 0) return await Recursos.getById(id);
+
+    values.push(id);
+    const query = `
+      UPDATE recursos 
+      SET ${fields.join(', ')} 
+      WHERE id_recurso = $${i} 
+      RETURNING *
+    `;
+
+    const { rows } = await db.query(query, values);
     return rows[0];
   },
 

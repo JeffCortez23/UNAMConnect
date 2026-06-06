@@ -34,11 +34,29 @@ const Cursos = {
   },
 
   update: async (id, cursoData) => {
-    const { id_carrera, nombre_curso, ciclo } = cursoData;
-    const { rows } = await db.query(
-      'UPDATE cursos SET id_carrera = $1, nombre_curso = $2, ciclo = $3 WHERE id_curso = $4 RETURNING *',
-      [id_carrera, nombre_curso, ciclo, id]
-    );
+    const fields = [];
+    const values = [];
+    let i = 1;
+
+    for (const [key, value] of Object.entries(cursoData)) {
+      if (value !== undefined && key !== 'id_curso') {
+        fields.push(`${key} = $${i}`);
+        values.push(value);
+        i++;
+      }
+    }
+
+    if (fields.length === 0) return await Cursos.getById(id);
+
+    values.push(id);
+    const query = `
+      UPDATE cursos 
+      SET ${fields.join(', ')} 
+      WHERE id_curso = $${i} 
+      RETURNING *
+    `;
+
+    const { rows } = await db.query(query, values);
     return rows[0];
   },
 

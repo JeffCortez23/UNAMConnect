@@ -29,11 +29,29 @@ const Notificaciones = {
   },
 
   update: async (id, notificacionData) => {
-    const { id_usuario, mensaje, leido } = notificacionData;
-    const { rows } = await db.query(
-      'UPDATE notificaciones SET id_usuario = $1, mensaje = $2, leido = $3 WHERE id_notificacion = $4 RETURNING *',
-      [id_usuario, mensaje, leido, id]
-    );
+    const fields = [];
+    const values = [];
+    let i = 1;
+
+    for (const [key, value] of Object.entries(notificacionData)) {
+      if (value !== undefined && key !== 'id_notificacion') {
+        fields.push(`${key} = $${i}`);
+        values.push(value);
+        i++;
+      }
+    }
+
+    if (fields.length === 0) return await Notificaciones.getById(id);
+
+    values.push(id);
+    const query = `
+      UPDATE notificaciones 
+      SET ${fields.join(', ')} 
+      WHERE id_notificacion = $${i} 
+      RETURNING *
+    `;
+
+    const { rows } = await db.query(query, values);
     return rows[0];
   },
 

@@ -40,27 +40,39 @@ const TutoresCursos = {
   },
 
   create: async (data) => {
-    const { id_tutor, id_curso, estado_aprobacion, id_moderador_auditor, fecha_aprobacion } = data;
+    const { id_tutor, id_curso, estado_aprobacion } = data;
     const { rows } = await db.query(`
-      INSERT INTO tutores_cursos (id_tutor, id_curso, estado_aprobacion, id_moderador_auditor, fecha_aprobacion)
-      VALUES ($1, $2, COALESCE($3, 'pendiente'), $4, $5)
+      INSERT INTO tutores_cursos (id_tutor, id_curso, estado_aprobacion)
+      VALUES ($1, $2, COALESCE($3, 'aprobado'))
       RETURNING *
-    `, [id_tutor, id_curso, estado_aprobacion, id_moderador_auditor, fecha_aprobacion]);
+    `, [id_tutor, id_curso, estado_aprobacion]);
     return rows[0];
   },
 
   update: async (id, data) => {
-    const { id_tutor, id_curso, estado_aprobacion, id_moderador_auditor, fecha_aprobacion } = data;
-    const { rows } = await db.query(`
-      UPDATE tutores_cursos
-         SET id_tutor            = $1,
-             id_curso            = $2,
-             estado_aprobacion   = $3,
-             id_moderador_auditor = $4,
-             fecha_aprobacion    = $5
-       WHERE id_autorizacion = $6
-       RETURNING *
-    `, [id_tutor, id_curso, estado_aprobacion, id_moderador_auditor, fecha_aprobacion, id]);
+    const fields = [];
+    const values = [];
+    let i = 1;
+
+    for (const [key, value] of Object.entries(data)) {
+      if (value !== undefined && key !== 'id_autorizacion') {
+        fields.push(`${key} = $${i}`);
+        values.push(value);
+        i++;
+      }
+    }
+
+    if (fields.length === 0) return await TutoresCursos.getById(id);
+
+    values.push(id);
+    const query = `
+      UPDATE tutores_cursos 
+      SET ${fields.join(', ')} 
+      WHERE id_autorizacion = $${i} 
+      RETURNING *
+    `;
+
+    const { rows } = await db.query(query, values);
     return rows[0];
   },
 

@@ -26,11 +26,29 @@ const Valoraciones = {
   },
 
   update: async (id, data) => {
-    const { puntuacion, comentario } = data;
-    const { rows } = await db.query(
-      'UPDATE valoraciones SET puntuacion = $1, comentario = $2 WHERE id_valoracion = $3 RETURNING *',
-      [puntuacion, comentario, id]
-    );
+    const fields = [];
+    const values = [];
+    let i = 1;
+
+    for (const [key, value] of Object.entries(data)) {
+      if (value !== undefined && key !== 'id_valoracion') {
+        fields.push(`${key} = $${i}`);
+        values.push(value);
+        i++;
+      }
+    }
+
+    if (fields.length === 0) return await Valoraciones.getById(id);
+
+    values.push(id);
+    const query = `
+      UPDATE valoraciones 
+      SET ${fields.join(', ')} 
+      WHERE id_valoracion = $${i} 
+      RETURNING *
+    `;
+
+    const { rows } = await db.query(query, values);
     return rows[0];
   },
 

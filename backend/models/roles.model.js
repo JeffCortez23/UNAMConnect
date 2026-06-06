@@ -21,11 +21,29 @@ const Roles = {
   },
 
   update: async (id, rolData) => {
-    const { nombre_rol } = rolData;
-    const { rows } = await db.query(
-      'UPDATE roles SET nombre_rol = $1 WHERE id_rol = $2 RETURNING *',
-      [nombre_rol, id]
-    );
+    const fields = [];
+    const values = [];
+    let i = 1;
+
+    for (const [key, value] of Object.entries(rolData)) {
+      if (value !== undefined && key !== 'id_rol') {
+        fields.push(`${key} = $${i}`);
+        values.push(value);
+        i++;
+      }
+    }
+
+    if (fields.length === 0) return await Roles.getById(id);
+
+    values.push(id);
+    const query = `
+      UPDATE roles 
+      SET ${fields.join(', ')} 
+      WHERE id_rol = $${i} 
+      RETURNING *
+    `;
+
+    const { rows } = await db.query(query, values);
     return rows[0];
   },
 

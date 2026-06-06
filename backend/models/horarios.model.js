@@ -41,23 +41,39 @@ const Horarios = {
   },
 
   create: async (horarioData) => {
-    const { id_tutor, dia_semana, hora_inicio, hora_fin, estado } = horarioData;
+    const { id_tutor, dia_semana, hora_inicio, hora_fin } = horarioData;
     const { rows } = await db.query(`
-      INSERT INTO horarios_tutor (id_tutor, dia_semana, hora_inicio, hora_fin, estado)
-      VALUES ($1, $2, $3, $4, $5)
+      INSERT INTO horarios_tutor (id_tutor, dia_semana, hora_inicio, hora_fin)
+      VALUES ($1, $2, $3, $4)
       RETURNING *
-    `, [id_tutor, dia_semana, hora_inicio, hora_fin, estado ?? true]);
+    `, [id_tutor, dia_semana, hora_inicio, hora_fin]);
     return rows[0];
   },
 
   update: async (id, horarioData) => {
-    const { id_tutor, dia_semana, hora_inicio, hora_fin, estado } = horarioData;
-    const { rows } = await db.query(`
-      UPDATE horarios_tutor
-      SET id_tutor = $1, dia_semana = $2, hora_inicio = $3, hora_fin = $4, estado = $5
-      WHERE id_horario = $6
+    const fields = [];
+    const values = [];
+    let i = 1;
+
+    for (const [key, value] of Object.entries(horarioData)) {
+      if (value !== undefined && key !== 'id_horario') {
+        fields.push(`${key} = $${i}`);
+        values.push(value);
+        i++;
+      }
+    }
+
+    if (fields.length === 0) return await Horarios.getById(id);
+
+    values.push(id);
+    const query = `
+      UPDATE horarios_tutor 
+      SET ${fields.join(', ')} 
+      WHERE id_horario = $${i} 
       RETURNING *
-    `, [id_tutor, dia_semana, hora_inicio, hora_fin, estado, id]);
+    `;
+
+    const { rows } = await db.query(query, values);
     return rows[0];
   },
 

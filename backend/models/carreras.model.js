@@ -21,11 +21,29 @@ const Carreras = {
   },
 
   update: async (id, carreraData) => {
-    const { nombre_carrera, facultad } = carreraData;
-    const { rows } = await db.query(
-      'UPDATE carreras SET nombre_carrera = $1, facultad = $2 WHERE id_carrera = $3 RETURNING *',
-      [nombre_carrera, facultad, id]
-    );
+    const fields = [];
+    const values = [];
+    let i = 1;
+
+    for (const [key, value] of Object.entries(carreraData)) {
+      if (value !== undefined && key !== 'id_carrera') {
+        fields.push(`${key} = $${i}`);
+        values.push(value);
+        i++;
+      }
+    }
+
+    if (fields.length === 0) return await Carreras.getById(id);
+
+    values.push(id);
+    const query = `
+      UPDATE carreras 
+      SET ${fields.join(', ')} 
+      WHERE id_carrera = $${i} 
+      RETURNING *
+    `;
+
+    const { rows } = await db.query(query, values);
     return rows[0];
   },
 

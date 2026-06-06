@@ -49,14 +49,29 @@ const Asesorias = {
   },
 
   update: async (id, asesoriaData) => {
-    const { id_alumno, id_tutor, id_curso, fecha_programada, estado, enlace_reunion } = asesoriaData;
-    const { rows } = await db.query(`
-      UPDATE asesorias
-      SET id_alumno = $1, id_tutor = $2, id_curso = $3,
-          fecha_programada = $4, estado = $5, enlace_reunion = $6
-      WHERE id_asesoria = $7
+    const fields = [];
+    const values = [];
+    let i = 1;
+
+    for (const [key, value] of Object.entries(asesoriaData)) {
+      if (value !== undefined && key !== 'id_asesoria') {
+        fields.push(`${key} = $${i}`);
+        values.push(value);
+        i++;
+      }
+    }
+
+    if (fields.length === 0) return await Asesorias.getById(id);
+
+    values.push(id);
+    const query = `
+      UPDATE asesorias 
+      SET ${fields.join(', ')} 
+      WHERE id_asesoria = $${i} 
       RETURNING *
-    `, [id_alumno, id_tutor, id_curso, fecha_programada, estado, enlace_reunion, id]);
+    `;
+
+    const { rows } = await db.query(query, values);
     return rows[0];
   },
 

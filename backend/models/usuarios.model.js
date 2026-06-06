@@ -41,18 +41,27 @@ const Usuarios = {
   },
 
   update: async (id, usuarioData) => {
-    const { id_carrera, codigo_univ, nombres, apellidos, correo, password } = usuarioData;
-    
-    let query = `UPDATE usuarios SET id_carrera = $1, codigo_univ = $2, nombres = $3, apellidos = $4, correo = $5`;
-    let values = [id_carrera, codigo_univ, nombres, apellidos, correo];
+    const fields = [];
+    const values = [];
+    let i = 1;
 
-    if (password) {
-      query += `, password = $6 WHERE id_usuario = $7 RETURNING id_usuario, id_carrera, codigo_univ, nombres, apellidos, correo`;
-      values.push(password, id);
-    } else {
-      query += ` WHERE id_usuario = $6 RETURNING id_usuario, id_carrera, codigo_univ, nombres, apellidos, correo`;
-      values.push(id);
+    for (const [key, value] of Object.entries(usuarioData)) {
+      if (value !== undefined && key !== 'id_usuario') {
+        fields.push(`${key} = $${i}`);
+        values.push(value);
+        i++;
+      }
     }
+
+    if (fields.length === 0) return await Usuarios.getById(id);
+
+    values.push(id);
+    const query = `
+      UPDATE usuarios 
+      SET ${fields.join(', ')} 
+      WHERE id_usuario = $${i} 
+      RETURNING id_usuario, id_carrera, codigo_univ, nombres, apellidos, correo
+    `;
 
     const { rows } = await db.query(query, values);
     return rows[0];

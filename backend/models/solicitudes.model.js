@@ -52,18 +52,29 @@ const Solicitudes = {
   },
 
   update: async (id, solicitudData) => {
-    const { id_usuario, id_curso, nota_obtenida, url_boleta_notas, estado_solicitud, revisado_por } = solicitudData;
-    const { rows } = await db.query(`
-      UPDATE solicitudes_tutor
-         SET id_usuario       = $1,
-             id_curso         = $2,
-             nota_obtenida    = $3,
-             url_boleta_notas = $4,
-             estado_solicitud = $5,
-             revisado_por     = $6
-       WHERE id_solicitud = $7
-       RETURNING *
-    `, [id_usuario, id_curso, nota_obtenida, url_boleta_notas, estado_solicitud, revisado_por, id]);
+    const fields = [];
+    const values = [];
+    let i = 1;
+
+    for (const [key, value] of Object.entries(solicitudData)) {
+      if (value !== undefined && key !== 'id_solicitud') {
+        fields.push(`${key} = $${i}`);
+        values.push(value);
+        i++;
+      }
+    }
+
+    if (fields.length === 0) return await Solicitudes.getById(id);
+
+    values.push(id);
+    const query = `
+      UPDATE solicitudes_tutor 
+      SET ${fields.join(', ')} 
+      WHERE id_solicitud = $${i} 
+      RETURNING *
+    `;
+
+    const { rows } = await db.query(query, values);
     return rows[0];
   },
 
