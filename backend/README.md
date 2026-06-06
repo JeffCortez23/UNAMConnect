@@ -23,6 +23,13 @@ Los métodos `UPDATE` en los modelos son dinámicos. Esto significa que:
 2.  Los campos virtuales (como `nombre_carrera`) son filtrados automáticamente para evitar errores de base de datos.
 3.  Evita el error de campos nulos por omisión.
 
+## 🛡️ Validaciones
+Se utiliza `express-validator` para asegurar que los datos de entrada sean correctos:
+- **Auth**: Valida formato de correo y longitud mínima de contraseña.
+- **Usuarios**: Protege contra campos vacíos y formatos inválidos.
+- **Carreras**: Asegura que los nombres y facultades no estén vacíos.
+Si un dato es inválido, el servidor responderá con un código `400 Bad Request` y los detalles del error.
+
 ## 📦 Instalación
 1.  Entrar a la carpeta: `cd backend`
 2.  Instalar dependencias: `npm install`
