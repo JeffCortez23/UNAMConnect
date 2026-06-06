@@ -11,33 +11,32 @@ Facilitar el aprendizaje colaborativo dentro de la universidad mediante un siste
 - **Maricielo Victoria Salas Torres** (2021204115)
 
 ## 🛠️ Stack Tecnológico
-- **Frontend:** Angular 17+ (Estructura base inicializada)
-- **Backend:** Node.js con Express (Completado y fusionado en main)
+- **Frontend:** Angular 17+
+- **Backend:** Node.js + Express (Arquitectura MVC)
 - **Base de Datos:** PostgreSQL
-- **Control de Versiones:** Git
+- **Seguridad:** JWT (JSON Web Tokens) + BcryptJS
 
 ## 📂 Estructura del Proyecto
 
 A continuación se detalla la organización de las carpetas del repositorio:
 
-- [**/backend**](./backend): Contiene el servidor, API REST y lógica de negocio (Merge completo).
-  - [**/config**](./backend/config): Configuraciones globales.
-  - [**/controllers**](./backend/controllers): Procesamiento de peticiones.
-  - [**/routes**](./backend/routes): Definición de endpoints.
-- [**/frontend**](./frontend): Aplicación Angular (Solo boilerplate inicial).
-  - [**/public**](./frontend/public): Activos estáticos.
-  - [**/src**](./frontend/src): Código fuente base.
-    - [**/app**](./frontend/src/app): Componentes y servicios (Vacío).
+- [**/backend**](./backend): Servidor API REST robusto.
+  - [**/config**](./backend/config): Conexión a DB.
+  - [**/models**](./backend/models): **(Nuevo)** Lógica de acceso a datos y consultas SQL.
+  - [**/controllers**](./backend/controllers): Lógica de negocio y control de flujo.
+  - [**/routes**](./backend/routes): Definición de rutas del API.
+- [**/frontend**](./frontend): Aplicación Angular (Estructura base).
 
-## 📌 Documentación Adicional
+## 📌 Documentación y Pruebas
 - `GUIA_MAESTRA_UNAMConnect.pdf`: Guía detallada del proyecto.
-- `init_db.sql`: Script SQL para la inicialización de la base de datos PostgreSQL.
+- `tester.html`: Herramienta para probar el API rápidamente desde el navegador.
 
 ## ✅ Estado del Proyecto
-- [x] Diseño de Base de Datos (Semana 4)
-- [x] Implementación y Merge del Backend (Finalizado en main)
-- [ ] Desarrollo del Frontend (Carpeta inicializada, sin lógica aplicada)
-- [ ] Pruebas y Despliegue Final
+- [x] Diseño de Base de Datos.
+- [x] Refactorización MVC completa.
+- [x] Implementación de Autenticación (Login/Registro).
+- [x] CRUD dinámico para todas las entidades.
+- [ ] Desarrollo del Frontend (En progreso).
 
 ---
 *Proyecto desarrollado para el curso de Aplicaciones Web II (2026).*
