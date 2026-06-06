@@ -7,12 +7,12 @@ const {
   actualizarCarrera,
   eliminarCarrera,
 } = require('../controllers/carreras.controller');
+const { validateCarrera } = require('../middlewares/carreraValidator');
 
-// CRUD estándar
 router.get('/', obtenerCarreras);
 router.get('/:id', obtenerCarreraPorId);
-router.post('/', crearCarrera);
-router.put('/:id', actualizarCarrera);
+router.post('/', validateCarrera, crearCarrera);
+router.put('/:id', validateCarrera, actualizarCarrera);
 router.delete('/:id', eliminarCarrera);
 
 module.exports = router;

@@ -10,12 +10,13 @@ const {
   asignarRolAUsuario,
   eliminarRolDeUsuario,
 } = require('../controllers/usuarios.controller');
+const { validateUserCreate, validateUserUpdate } = require('../middlewares/userValidator');
 
 // CRUD estándar
 router.get('/', obtenerUsuarios);
 router.get('/:id', obtenerUsuarioPorId);
-router.post('/', crearUsuario);
-router.put('/:id', actualizarUsuario);
+router.post('/', validateUserCreate, crearUsuario);
+router.put('/:id', validateUserUpdate, actualizarUsuario);
 router.delete('/:id', eliminarUsuario);
 
 // Gestión de roles del usuario
