@@ -56,8 +56,11 @@ const Solicitudes = {
     const values = [];
     let i = 1;
 
+    // Solo permitir columnas reales de la tabla
+    const allowedColumns = ['id_usuario', 'id_curso', 'nota_obtenida', 'url_boleta_notas', 'estado_solicitud', 'fecha_postulacion'];
+
     for (const [key, value] of Object.entries(solicitudData)) {
-      if (value !== undefined && key !== 'id_solicitud') {
+      if (value !== undefined && allowedColumns.includes(key)) {
         fields.push(`${key} = $${i}`);
         values.push(value);
         i++;

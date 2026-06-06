@@ -53,8 +53,11 @@ const Asesorias = {
     const values = [];
     let i = 1;
 
+    // Solo permitir columnas reales de la tabla
+    const allowedColumns = ['id_alumno', 'id_tutor', 'id_curso', 'fecha_programada', 'estado', 'enlace_reunion'];
+
     for (const [key, value] of Object.entries(asesoriaData)) {
-      if (value !== undefined && key !== 'id_asesoria') {
+      if (value !== undefined && allowedColumns.includes(key)) {
         fields.push(`${key} = $${i}`);
         values.push(value);
         i++;

@@ -55,8 +55,11 @@ const Horarios = {
     const values = [];
     let i = 1;
 
+    // Solo permitir columnas reales de la tabla
+    const allowedColumns = ['id_tutor', 'dia_semana', 'hora_inicio', 'hora_fin'];
+
     for (const [key, value] of Object.entries(horarioData)) {
-      if (value !== undefined && key !== 'id_horario') {
+      if (value !== undefined && allowedColumns.includes(key)) {
         fields.push(`${key} = $${i}`);
         values.push(value);
         i++;

@@ -45,8 +45,11 @@ const Usuarios = {
     const values = [];
     let i = 1;
 
+    // Solo permitir columnas reales de la tabla
+    const allowedColumns = ['id_carrera', 'codigo_univ', 'nombres', 'apellidos', 'correo', 'password'];
+
     for (const [key, value] of Object.entries(usuarioData)) {
-      if (value !== undefined && key !== 'id_usuario') {
+      if (value !== undefined && allowedColumns.includes(key)) {
         fields.push(`${key} = $${i}`);
         values.push(value);
         i++;

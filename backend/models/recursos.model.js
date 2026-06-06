@@ -38,8 +38,11 @@ const Recursos = {
     const values = [];
     let i = 1;
 
+    // Solo permitir columnas reales de la tabla
+    const allowedColumns = ['id_curso', 'id_tutor', 'titulo', 'url_archivo'];
+
     for (const [key, value] of Object.entries(recursoData)) {
-      if (value !== undefined && key !== 'id_recurso') {
+      if (value !== undefined && allowedColumns.includes(key)) {
         fields.push(`${key} = $${i}`);
         values.push(value);
         i++;
