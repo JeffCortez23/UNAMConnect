@@ -8,6 +8,13 @@
   width: 100%;
   overflow: hidden;
   animation: authPageEnter 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+
+  @media (max-width: 900px) {
+    height: auto;
+    min-height: 100vh;
+    overflow: visible;
+    flex-direction: column;
+  }
 }
 
 /* ============================================
