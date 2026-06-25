@@ -22,5 +22,6 @@ router.delete('/:id', eliminarNotificacion);
 
 // Endpoint especial: marcar notificación como leída
 router.patch('/:id/leer', marcarComoLeida);
+router.put('/marcar-leida/:id', marcarComoLeida);
 
 module.exports = router;
