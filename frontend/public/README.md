@@ -4,8 +4,8 @@ Esta carpeta contiene activos estáticos que no pasan por el proceso de compilac
 
 ## 📄 Contenido
 
-- `favicon.ico`: El icono que aparece en la pestaña del navegador.
-- **Activos Estáticos**: Aquí se pueden añadir imágenes, logotipos de la universidad o documentos que necesiten ser accedidos directamente vía URL.
+- [**favicon.png**](./favicon.png): Logotipo en formato PNG que actúa como favicon de la pestaña del navegador.
+- [**logo.png**](./logo.png): Logotipo principal utilizado en el login y en el sidebar del portal académico.
 
 ## ⚠️ Nota
-Los archivos en esta carpeta deben ser referenciados usando rutas relativas directas (ej: `/favicon.ico`).
+Los archivos en esta carpeta deben ser referenciados usando rutas relativas directas en el frontend (ej: `/favicon.png`).
