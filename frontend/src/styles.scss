@@ -669,3 +669,96 @@ body.dark-theme {
   }
 }
 
+/* Global Light Theme overrides for Login & Register pages */
+body.light-theme {
+  .form-panel {
+    background-color: #f1f5f9 !important;
+  }
+
+  .login-card, .register-card {
+    background: rgba(255, 255, 255, 0.6) !important;
+    border: 1px solid rgba(15, 23, 42, 0.08) !important;
+    box-shadow: 0 20px 40px rgba(15, 23, 42, 0.06) !important;
+    --text-muted: #64748b;
+    --text-primary: #0f172a;
+    --text-secondary: #475569;
+    --input-bg: rgba(15, 23, 42, 0.04);
+    --input-border: rgba(15, 23, 42, 0.1);
+    --input-text: #0f172a;
+    --hover-bg: rgba(15, 23, 42, 0.05);
+
+    h2, .form-header h2 {
+      color: #0f172a !important;
+    }
+
+    p, .form-header p, .text-theme-muted, label.text-muted, p.text-muted {
+      color: #475569 !important;
+    }
+
+    label {
+      color: #334155 !important;
+    }
+
+    input, select {
+      background-color: rgba(15, 23, 42, 0.04) !important;
+      border: 1px solid rgba(15, 23, 42, 0.1) !important;
+      color: #0f172a !important;
+
+      &::placeholder {
+        color: #94a3b8 !important;
+      }
+    }
+
+    .input-wrapper .icon-left, .input-wrapper .eye-toggle {
+      color: #64748b !important;
+    }
+
+    .role-selector-tabs {
+      background: rgba(15, 23, 42, 0.04) !important;
+      border: 1px solid rgba(15, 23, 42, 0.08) !important;
+
+      .role-tab {
+        color: #475569 !important;
+        background: transparent !important;
+
+        &.active {
+          background: var(--unam-secondary) !important;
+          color: #191438 !important;
+        }
+      }
+    }
+
+    .btn-submit, .btn-primary-custom {
+      color: #191438 !important;
+      background: var(--unam-secondary) !important;
+    }
+
+    .forgot-link, .card-footer a {
+      color: var(--unam-primary) !important;
+
+      &:hover {
+        color: var(--unam-secondary) !important;
+      }
+    }
+
+    .validation-err {
+      color: #ef4444 !important;
+    }
+
+    .btn-outline-custom {
+      border-color: rgba(15, 23, 42, 0.15) !important;
+      color: #475569 !important;
+
+      &:hover {
+        background: rgba(15, 23, 42, 0.05) !important;
+      }
+    }
+
+    .otp-inputs input {
+      background-color: rgba(15, 23, 42, 0.04) !important;
+      border: 1px solid rgba(15, 23, 42, 0.1) !important;
+      color: #0f172a !important;
+    }
+  }
+}
+
