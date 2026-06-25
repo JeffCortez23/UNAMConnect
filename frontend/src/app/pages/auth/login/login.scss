@@ -171,15 +171,15 @@
   position: relative;
   flex: 1;
   height: 100vh;
-  overflow: hidden; /* Prevent blobs causing scrollbars */
+  overflow-y: auto; /* Prevent blobs causing scrollbars, allow content scrolling */
   background-color: var(--bg-app); /* High contrast deep backdrop */
   display: flex;
-  justify-content: center;
+  flex-direction: column;
   align-items: center;
-  padding: 40px;
+  padding: 40px 20px;
 
   @media (max-width: 900px) {
-    padding: 20px;
+    padding: 20px 10px;
     height: auto;
     overflow-y: visible;
   }
@@ -218,6 +218,7 @@
 }
 
 .login-card {
+  margin: auto;
   position: relative;
   z-index: 1; /* Sits above background blobs */
   width: 100%;
@@ -232,6 +233,11 @@
   box-shadow: 0 24px 80px rgba(0, 0, 0, 0.55), 
               inset 0 1px 1px rgba(255, 255, 255, 0.15) !important;
   border-radius: 24px !important;
+
+  @media (max-width: 500px) {
+    padding: 30px 15px;
+    border-radius: 16px !important;
+  }
 
   /* High contrast dark theme overrides for accessibility */
   --text-muted: #cbd5e1;
