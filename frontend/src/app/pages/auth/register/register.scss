@@ -235,11 +235,11 @@
   position: relative;
   flex: 1;
   height: 100vh;
-  overflow: hidden; /* Evita barras de desplazamiento por los blobs */
+  overflow-y: auto; /* Permite desplazarse en el formulario */
   background-color: var(--bg-app); /* Fondo oscuro de alto contraste */
   display: flex;
   justify-content: center;
-  align-items: center;
+  align-items: flex-start;
   padding: 40px;
 
   @media (max-width: 900px) {

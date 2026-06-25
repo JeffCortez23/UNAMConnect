@@ -102,6 +102,27 @@ export class RegisterComponent implements OnInit, OnDestroy {
     }
   }
 
+  allCursosSelected = computed(() => {
+    const prev = this.cursosPrevios();
+    if (prev.length === 0) return false;
+    const selected = this.cursosAprobadosSeleccionados();
+    return prev.every(c => selected.includes(c.id_curso));
+  });
+
+  toggleSelectAllCursos(): void {
+    if (this.allCursosSelected()) {
+      const prevIds = new Set(this.cursosPrevios().map(c => c.id_curso));
+      this.cursosAprobadosSeleccionados.update(current => current.filter(id => !prevIds.has(id)));
+    } else {
+      const prevIds = this.cursosPrevios().map(c => c.id_curso);
+      this.cursosAprobadosSeleccionados.update(current => {
+        const currentSet = new Set(current);
+        prevIds.forEach(id => currentSet.add(id));
+        return Array.from(currentSet);
+      });
+    }
+  }
+
   toggleCursoAprobado(id: number): void {
     const current = this.cursosAprobadosSeleccionados();
     if (current.includes(id)) {
