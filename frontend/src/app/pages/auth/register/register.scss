@@ -238,8 +238,6 @@
   overflow-y: auto; /* Permite desplazarse en el formulario */
   background-color: var(--bg-app); /* Fondo oscuro de alto contraste */
   display: flex;
-  justify-content: center;
-  align-items: flex-start;
   padding: 40px;
 
   @media (max-width: 900px) {
@@ -282,6 +280,7 @@
 }
 
 .register-card {
+  margin: auto;
   position: relative;
   z-index: 1; /* Por encima de los blobs */
   width: 100%;
