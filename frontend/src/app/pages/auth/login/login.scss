@@ -165,7 +165,7 @@
   flex: 1;
   height: 100vh;
   overflow: hidden; /* Prevent blobs causing scrollbars */
-  background-color: #06040c; /* High contrast deep backdrop */
+  background-color: var(--bg-app); /* High contrast deep backdrop */
   display: flex;
   justify-content: center;
   align-items: center;
@@ -550,4 +550,67 @@
 .login-form-view {
   display: flex;
   flex-direction: column;
+}
+
+/* Light theme overrides for login/register elements specifically */
+body.light-theme {
+  .form-panel {
+    background-color: #f1f5f9;
+  }
+  .login-card {
+    background: rgba(255, 255, 255, 0.6) !important;
+    border: 1px solid rgba(15, 23, 42, 0.08) !important;
+    box-shadow: 0 20px 40px rgba(15, 23, 42, 0.06) !important;
+    --text-muted: #64748b;
+    --text-primary: #0f172a;
+    --text-secondary: #475569;
+    --input-bg: rgba(15, 23, 42, 0.04);
+    --input-border: rgba(15, 23, 42, 0.1);
+    --input-text: #0f172a;
+    --hover-bg: rgba(15, 23, 42, 0.05);
+  }
+  
+  .input-wrapper input {
+    color: #0f172a !important;
+    &::placeholder {
+      color: #94a3b8 !important;
+    }
+  }
+
+  .input-wrapper .icon-left, .input-wrapper .eye-toggle {
+    color: #64748b !important;
+  }
+
+  .form-header h2 {
+    color: #0f172a;
+  }
+  .form-header p {
+    color: #475569;
+  }
+  .role-selector-tabs {
+    background: rgba(15, 23, 42, 0.04) !important;
+  }
+  .role-tab {
+    color: #475569;
+    background: transparent;
+    &.active {
+      background: var(--unam-secondary) !important;
+      color: #191438 !important;
+    }
+  }
+  
+  .btn-submit {
+    color: #191438;
+  }
+  
+  .forgot-link {
+    color: var(--unam-primary);
+    &:hover {
+      color: var(--unam-secondary);
+    }
+  }
+
+  .card-footer p {
+    color: #475569 !important;
+  }
 }

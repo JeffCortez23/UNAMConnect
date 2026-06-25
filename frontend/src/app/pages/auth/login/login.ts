@@ -5,6 +5,7 @@ import { Router, RouterModule } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { AuthService } from '../../../services/auth.service';
 import { NotificationService } from '../../../services/notification.service';
+import { ThemeService } from '../../../services/theme.service';
 import { auth } from '../../../config/firebase.config';
 import { signInWithEmailAndPassword, sendEmailVerification } from 'firebase/auth';
 import { BYPASS_EMAILS } from '../../../config/bypass-emails.config';
@@ -19,6 +20,7 @@ import { ForgotPasswordComponent } from '../forgot-password/forgot-password.comp
   styleUrl: './login.scss'
 })
 export class LoginComponent implements OnInit {
+  readonly themeService = inject(ThemeService);
   private readonly authService = inject(AuthService);
   private readonly router = inject(Router);
   private readonly http = inject(HttpClient);

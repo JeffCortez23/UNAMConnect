@@ -9,6 +9,8 @@ import { auth } from '../../../config/firebase.config';
 import { createUserWithEmailAndPassword, sendEmailVerification } from 'firebase/auth';
 import { environment } from '../../../../environments/environment';
 
+import { ThemeService } from '../../../services/theme.service';
+
 interface Carrera {
   id_carrera: number;
   nombre_carrera: string;
@@ -22,6 +24,7 @@ interface Carrera {
   styleUrl: './register.scss'
 })
 export class RegisterComponent implements OnInit, OnDestroy {
+  readonly themeService = inject(ThemeService);
   private readonly authService = inject(AuthService);
   private readonly http = inject(HttpClient);
   private readonly router = inject(Router);

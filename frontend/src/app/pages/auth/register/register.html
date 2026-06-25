@@ -67,6 +67,13 @@
 
   <!-- Panel Derecho (Formulario de Registro) -->
   <div class="form-panel">
+    <!-- Theme Toggle Switch -->
+    <div class="theme-toggle-container" style="position: absolute; top: 20px; right: 20px; z-index: 10;">
+      <button (click)="themeService.toggleTheme()" class="btn-theme-toggle" title="Cambiar Tema">
+        <i class="bi" [class.bi-sun-fill]="themeService.theme() === 'dark'" [class.bi-moon-fill]="themeService.theme() === 'light'"></i>
+      </button>
+    </div>
+
     <div class="glass-panel register-card">
       <div class="form-header">
         <h2>Crear cuenta</h2>
