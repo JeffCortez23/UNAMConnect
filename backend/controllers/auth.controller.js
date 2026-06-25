@@ -99,6 +99,12 @@ const registro = async (req, res) => {
       cursos_aprobados
     });
 
+    // Asignar el rol de 'alumno' (id_rol = 1) de forma predeterminada
+    await db.query(
+      'INSERT INTO usuario_roles (id_usuario, id_rol) VALUES ($1, 1)',
+      [nuevoUsuario.id_usuario]
+    );
+
     res.status(201).json({
       mensaje: 'Usuario registrado y verificado con éxito',
       usuario: nuevoUsuario
