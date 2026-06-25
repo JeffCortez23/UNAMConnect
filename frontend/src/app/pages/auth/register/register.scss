@@ -4,7 +4,7 @@
   width: 100%;
   overflow: hidden;
 
-  @media (max-width: 900px) {
+  @media (max-width: 900px), (max-height: 680px) {
     height: auto;
     min-height: 100vh;
     overflow: visible;
@@ -26,7 +26,7 @@
   color: white;
   overflow: hidden;
 
-  @media (max-width: 900px) {
+  @media (max-width: 900px), (max-height: 680px) {
     display: none;
   }
 }
@@ -249,7 +249,7 @@
   align-items: center;
   padding: 40px 20px;
 
-  @media (max-width: 900px) {
+  @media (max-width: 900px), (max-height: 680px) {
     padding: 20px 10px;
     height: auto;
     overflow-y: visible;
