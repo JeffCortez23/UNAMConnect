@@ -1,24 +1,24 @@
 # Componentes y Lógica de UNAMConnect (Frontend) 🧩
 
-Este es el directorio donde reside la lógica principal de la aplicación Angular. Está organizado siguiendo las mejores prácticas de modularidad y escalabilidad.
+Este es el directorio principal donde reside la lógica de la aplicación Angular. Está organizado siguiendo las mejores prácticas de modularidad, tipado estático y separación de conceptos mediante componentes autónomos (`standalone`).
 
-## 📁 Organización Sugerida
+## 📁 Organización del Proyecto
 
-- **Components**: Interfaces de usuario (ej: Header, Footer, Login, Dashboard).
-- **Services**: Lógica para interactuar con el backend (API) y manejo de datos.
-- **Models**: Definición de interfaces y clases de TypeScript para los datos (Usuarios, Asesorías, etc.).
-- **Guards**: Protección de rutas (ej: solo para usuarios autenticados).
+- [**/components**](./components): Componentes independientes reutilizables y compartidos de la interfaz.
+- [**/config**](./config): Archivos de configuración estática, matrices curriculares y configuraciones de servicios.
+- [**/guards**](./guards): Protectores de navegación para validación de sesiones y roles de usuario.
+- [**/interceptors**](./interceptors): Interceptores HTTP globales para adjuntar tokens y gestionar errores de red.
+- [**/models**](./models): Modelos de datos e interfaces fuertemente tipadas en TypeScript.
+- [**/pages**](./pages): Vistas, formularios de login/registro y dashboards (Alumno, Tutor, Moderador).
+- [**/services**](./services): Servicios inyectables de Angular para llamadas a la API REST e interacción con Firebase.
 
-## 🚀 Cómo empezar
-Para crear un nuevo componente, utiliza el Angular CLI desde la raíz del frontend:
+## 🚀 Creación de Recursos
+Para crear nuevos componentes autónomos dentro del directorio correspondiente:
 ```bash
-ng generate component nombre-del-componente
+ng generate component pages/nombre-del-componente --standalone
 ```
 
-Para un nuevo servicio:
+Para nuevos servicios inyectables:
 ```bash
 ng generate service services/nombre-del-servicio
 ```
-
----
-*Asegúrate de importar los nuevos componentes en sus módulos correspondientes.*
