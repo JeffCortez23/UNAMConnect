@@ -11,8 +11,8 @@
     flex-direction: column;
   }
 
-  @media (min-width: 1600px) {
-    max-width: 1600px;
+  @media (min-width: 2000px) {
+    max-width: 1800px;
     margin: 0 auto;
     border-left: 1px solid var(--border-color);
     border-right: 1px solid var(--border-color);
@@ -631,8 +631,8 @@
   }
 }
 
-/* Force headings and texts inside the register card to be white */
-.register-card {
+/* Force headings and texts inside the register card to be white only when in dark theme */
+body:not(.light-theme) .register-card {
   h2, h3, h4, p {
     color: #ffffff !important;
   }
