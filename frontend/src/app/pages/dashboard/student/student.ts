@@ -340,6 +340,7 @@ export class StudentDashboardComponent implements OnInit, OnDestroy {
   nombreArchivoPostulacion = signal<string>('');
   configNombres = signal('');
   configApellidos = signal('');
+  configAnoIngreso = signal<number | null>(null);
   configCicloActual = signal<number>(10);
   configCursosAprobados = signal<number[]>([]);
   
@@ -604,6 +605,7 @@ export class StudentDashboardComponent implements OnInit, OnDestroy {
 
     this.configNombres.set(user.nombres);
     this.configApellidos.set(user.apellidos);
+    this.configAnoIngreso.set(user.ano_ingreso || null);
     this.configCicloActual.set(user.ciclo_actual || 10);
     this.cicloActualEstudiante.set(user.ciclo_actual || 10);
     this.configCursosAprobados.set(user.cursos_aprobados || []);
@@ -980,6 +982,7 @@ export class StudentDashboardComponent implements OnInit, OnDestroy {
     const payload = {
       nombres: this.configNombres().trim(),
       apellidos: this.configApellidos().trim(),
+      ano_ingreso: this.configAnoIngreso() ? Number(this.configAnoIngreso()) : null,
       ciclo_actual: Number(this.configCicloActual()),
       cursos_aprobados: this.configCursosAprobados()
     };
@@ -989,6 +992,7 @@ export class StudentDashboardComponent implements OnInit, OnDestroy {
         this.authService.updateCurrentUser({ 
           nombres: res.nombres, 
           apellidos: res.apellidos,
+          ano_ingreso: res.ano_ingreso,
           ciclo_actual: res.ciclo_actual,
           cursos_aprobados: res.cursos_aprobados
         });

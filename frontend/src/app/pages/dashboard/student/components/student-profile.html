@@ -23,7 +23,7 @@
     <div class="col-12">
       <label class="form-label text-muted text-uppercase fw-semibold mb-1" style="font-size: 11px;">Cursos Aprobados (Ciclos Anteriores)</label>
       <div class="courses-checkbox-list border rounded-3 p-2 overflow-auto" style="max-height: 180px; background: rgba(0,0,0,0.1); border-color: rgba(255,255,255,0.06); scrollbar-width: thin;">
-        @for (c of parent.cursosPreviosConfig(); track c.id_curso) {
+        @for (c of parent.configCursosPrevios(); track c.id_curso) {
           <div class="d-flex align-items-center justify-content-between p-2 mb-2 rounded-2 cursor-pointer transition-all hover-bg-light-opacity"
                (click)="parent.toggleConfigCursoAprobado(c.id_curso)"
                [style.background]="parent.configCursosAprobados().includes(c.id_curso) ? 'rgba(97, 198, 192, 0.1)' : 'transparent'">
