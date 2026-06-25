@@ -80,7 +80,8 @@ const crearAsesoria = async (req, res) => {
 
     await Notificaciones.create({
       id_usuario: id_tutor,
-      mensaje: `${nombreAlumno} te ha solicitado una asesoría para el curso ${nombreCurso}. Motivo: ${motivo || 'No especificado'}`
+      mensaje: `${nombreAlumno} te ha solicitado una asesoría para el curso ${nombreCurso}. Motivo: ${motivo || 'No especificado'}`,
+      rol_destino: 'tutor'
     });
 
     res.status(201).json(nuevaAsesoria);
@@ -126,12 +127,14 @@ const actualizarAsesoria = async (req, res) => {
     if (estado === 'confirmada') {
       await Notificaciones.create({
         id_usuario: studentId,
-        mensaje: `Tu solicitud de asesoría para el curso ${nombreCurso} fue confirmada para el ${new Date(scheduleDate).toLocaleString()}`
+        mensaje: `Tu solicitud de asesoría para el curso ${nombreCurso} fue confirmada para el ${new Date(scheduleDate).toLocaleString()}`,
+        rol_destino: 'alumno'
       });
     } else if (estado === 'rechazada') {
       await Notificaciones.create({
         id_usuario: studentId,
-        mensaje: `Tu solicitud de asesoría para el curso ${nombreCurso} fue rechazada por el tutor.`
+        mensaje: `Tu solicitud de asesoría para el curso ${nombreCurso} fue rechazada por el tutor.`,
+        rol_destino: 'alumno'
       });
     }
 

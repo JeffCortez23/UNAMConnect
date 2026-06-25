@@ -43,6 +43,36 @@ const getByUsuario = async (req, res) => {
 const create = async (req, res) => {
   try {
     const solicitud = await Solicitudes.create(req.body);
+    
+    // Notificar a los moderadores
+    try {
+      const db = require('../config/db');
+      const Notificaciones = require('../models/notificaciones.model');
+      const { rows: modRows } = await db.query(
+        'SELECT id_usuario FROM usuario_roles WHERE id_rol = 3'
+      );
+      const { rows: userRows } = await db.query(
+        'SELECT nombres, apellidos FROM usuarios WHERE id_usuario = $1',
+        [solicitud.id_usuario]
+      );
+      const { rows: cursoRows } = await db.query(
+        'SELECT nombre_curso FROM cursos WHERE id_curso = $1',
+        [solicitud.id_curso]
+      );
+      const nombreEstudiante = userRows[0] ? `${userRows[0].nombres} ${userRows[0].apellidos}` : 'Un estudiante';
+      const nombreCurso = cursoRows[0] ? cursoRows[0].nombre_curso : 'un curso';
+
+      for (const mod of modRows) {
+        await Notificaciones.create({
+          id_usuario: mod.id_usuario,
+          mensaje: `Nueva postulación de ${nombreEstudiante} para ser tutor del curso ${nombreCurso}.`,
+          rol_destino: 'moderador'
+        });
+      }
+    } catch (notifError) {
+      console.error('Error al crear notificación para moderadores:', notifError.message);
+    }
+
     res.status(201).json(solicitud);
   } catch (error) {
     console.error('Error al crear solicitud:', error.message);
@@ -84,13 +114,15 @@ const update = async (req, res) => {
       // Crear notificación
       await Notificaciones.create({
         id_usuario,
-        mensaje: `Felicidades, tu solicitud de tutoría para el curso ${nombreCurso} ha sido aprobada.`
+        mensaje: `Felicidades, tu solicitud de tutoría para el curso ${nombreCurso} ha sido aprobada.`,
+        rol_destino: 'alumno'
       });
     } else if (req.body.estado_solicitud === 'rechazada') {
       const motivo = req.body.motivo_rechazo || 'No cumple con los requisitos mínimos.';
       await Notificaciones.create({
         id_usuario: solicitud.id_usuario,
-        mensaje: `Tu solicitud de tutoría para el curso ${nombreCurso} fue rechazada. Motivo: ${motivo}`
+        mensaje: `Tu solicitud de tutoría para el curso ${nombreCurso} fue rechazada. Motivo: ${motivo}`,
+        rol_destino: 'alumno'
       });
     }
 

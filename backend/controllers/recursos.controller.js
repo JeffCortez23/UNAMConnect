@@ -62,7 +62,8 @@ const crearRecurso = async (req, res) => {
     for (const s of studentRows) {
       await Notificaciones.create({
         id_usuario: s.id_alumno,
-        mensaje: `El tutor ${nombreTutor} ha subido un nuevo material de apoyo: "${titulo}" en el curso ${nombreCurso}.`
+        mensaje: `El tutor ${nombreTutor} ha subido un nuevo material de apoyo: "${titulo}" en el curso ${nombreCurso}.`,
+        rol_destino: 'alumno'
       });
     }
 

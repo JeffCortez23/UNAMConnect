@@ -11,7 +11,14 @@ const Notificaciones = {
     return rows[0];
   },
 
-  getByUsuario: async (id_usuario) => {
+  getByUsuario: async (id_usuario, rol_destino) => {
+    if (rol_destino) {
+      const { rows } = await db.query(
+        'SELECT * FROM notificaciones WHERE id_usuario = $1 AND rol_destino = $2 ORDER BY fecha_envio DESC',
+        [id_usuario, rol_destino]
+      );
+      return rows;
+    }
     const { rows } = await db.query(
       'SELECT * FROM notificaciones WHERE id_usuario = $1 ORDER BY fecha_envio DESC',
       [id_usuario]
@@ -20,10 +27,10 @@ const Notificaciones = {
   },
 
   create: async (notificacionData) => {
-    const { id_usuario, mensaje } = notificacionData;
+    const { id_usuario, mensaje, rol_destino } = notificacionData;
     const { rows } = await db.query(
-      'INSERT INTO notificaciones (id_usuario, mensaje) VALUES ($1, $2) RETURNING *',
-      [id_usuario, mensaje]
+      'INSERT INTO notificaciones (id_usuario, mensaje, rol_destino) VALUES ($1, $2, $3) RETURNING *',
+      [id_usuario, mensaje, rol_destino || 'alumno']
     );
     return rows[0];
   },

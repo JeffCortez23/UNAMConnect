@@ -64,7 +64,8 @@ const crearValoracion = async (req, res) => {
       const { id_tutor, nombres, apellidos, nombre_curso } = asesoriaRows[0];
       await Notificaciones.create({
         id_usuario: id_tutor,
-        mensaje: `El alumno ${nombres} ${apellidos} ha calificado tu asesoría de ${nombre_curso} con ${puntuacion} estrellas.`
+        mensaje: `El alumno ${nombres} ${apellidos} ha calificado tu asesoría de ${nombre_curso} con ${puntuacion} estrellas.`,
+        rol_destino: 'tutor'
       });
     }
 

@@ -211,6 +211,7 @@ CREATE TABLE notificaciones (
     mensaje VARCHAR(255) NOT NULL,
     leido BOOLEAN NOT NULL DEFAULT false,
     fecha_envio TIMESTAMP NOT NULL DEFAULT NOW(),
+    rol_destino VARCHAR(20) DEFAULT 'alumno',
     CONSTRAINT fk_notif_usuario FOREIGN KEY (id_usuario) REFERENCES usuarios(id_usuario) ON UPDATE CASCADE ON DELETE CASCADE
 );
 

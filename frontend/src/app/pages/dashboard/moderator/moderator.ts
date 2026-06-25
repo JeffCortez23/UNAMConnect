@@ -1,4 +1,4 @@
-import { Component, OnInit, signal, inject, computed } from '@angular/core';
+import { Component, OnInit, OnDestroy, signal, inject, computed } from '@angular/core';
 import { environment } from '../../../../environments/environment';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
@@ -9,6 +9,8 @@ import { NotificationService } from '../../../services/notification.service';
 import { auth } from '../../../config/firebase.config';
 import { sendPasswordResetEmail } from 'firebase/auth';
 import { CURRICULUM_CONFIG } from '../../../config/curriculum.config';
+import { timer, of, Subscription } from 'rxjs';
+import { switchMap, catchError } from 'rxjs/operators';
 
 interface Solicitud {
   id_solicitud: number;
@@ -27,11 +29,12 @@ interface Solicitud {
   templateUrl: './moderator.html',
   styleUrl: '../student/student.scss'
 })
-export class ModeratorDashboardComponent implements OnInit {
+export class ModeratorDashboardComponent implements OnInit, OnDestroy {
   readonly authService = inject(AuthService);
   readonly themeService = inject(ThemeService);
   private readonly http = inject(HttpClient);
   private readonly notificationService = inject(NotificationService);
+  private notificationSubscription?: Subscription;
 
   // Tab activo de Sidebar (SPA)
   activeTab = signal<string>('principal');
@@ -135,12 +138,40 @@ export class ModeratorDashboardComponent implements OnInit {
   cargarNotificaciones(): void {
     const user = this.authService.currentUser();
     if (!user) return;
-    this.http.get<any[]>(`${environment.apiUrl}/notificaciones/usuario/${user.id}`).subscribe({
+    this.http.get<any[]>(`${environment.apiUrl}/notificaciones/usuario/${user.id}?rol=moderador`).subscribe({
       next: (data) => {
         this.notificacionesList.set(data);
       },
       error: (err) => console.error('Error al obtener notificaciones:', err)
     });
+  }
+
+  startNotificationPolling(): void {
+    const user = this.authService.currentUser();
+    if (!user) return;
+
+    this.destroyNotificationPolling();
+
+    this.notificationSubscription = timer(0, 5000)
+      .pipe(
+        switchMap(() => this.http.get<any[]>(`${environment.apiUrl}/notificaciones/usuario/${user.id}?rol=moderador`).pipe(
+          catchError((err) => {
+            console.error('Error fetching notifications:', err);
+            return of(this.notificacionesList());
+          })
+        ))
+      )
+      .subscribe({
+        next: (data) => {
+          this.notificacionesList.set(data);
+        }
+      });
+  }
+
+  destroyNotificationPolling(): void {
+    if (this.notificationSubscription) {
+      this.notificationSubscription.unsubscribe();
+    }
   }
 
   marcarLeida(n: any): void {
@@ -192,6 +223,11 @@ export class ModeratorDashboardComponent implements OnInit {
 
   ngOnInit(): void {
     this.cargarDatos();
+    this.startNotificationPolling();
+  }
+
+  ngOnDestroy(): void {
+    this.destroyNotificationPolling();
   }
 
   cargarDatos(): void {

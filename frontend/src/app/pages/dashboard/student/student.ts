@@ -55,6 +55,7 @@ export class StudentDashboardComponent implements OnInit, OnDestroy {
   private readonly notificationService = inject(NotificationService);
   private readonly firebaseService = inject(FirebaseService);
   private chatSubscription?: Subscription;
+  private notificationSubscription?: Subscription;
 
   // Tab activo del Sidebar (SPA)
   activeTab = signal<string>('principal');
@@ -201,6 +202,7 @@ export class StudentDashboardComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.cargarDatos();
     this.startChatPolling();
+    this.startNotificationPolling();
   }
 
   onTutorSelected(id: any): void {
@@ -597,6 +599,7 @@ export class StudentDashboardComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.destroyChatPolling();
+    this.destroyNotificationPolling();
   }
 
   cargarDatos(): void {
@@ -720,12 +723,40 @@ export class StudentDashboardComponent implements OnInit, OnDestroy {
   cargarNotificaciones(): void {
     const user = this.authService.currentUser();
     if (!user) return;
-    this.http.get<any[]>(`${environment.apiUrl}/notificaciones/usuario/${user.id}`).subscribe({
+    this.http.get<any[]>(`${environment.apiUrl}/notificaciones/usuario/${user.id}?rol=alumno`).subscribe({
       next: (data) => {
         this.notificacionesList.set(data);
       },
       error: (err) => console.error('Error al obtener notificaciones:', err)
     });
+  }
+
+  startNotificationPolling(): void {
+    const user = this.authService.currentUser();
+    if (!user) return;
+
+    this.destroyNotificationPolling();
+
+    this.notificationSubscription = timer(0, 5000)
+      .pipe(
+        switchMap(() => this.http.get<any[]>(`${environment.apiUrl}/notificaciones/usuario/${user.id}?rol=alumno`).pipe(
+          catchError((err) => {
+            console.error('Error fetching notifications:', err);
+            return of(this.notificacionesList());
+          })
+        ))
+      )
+      .subscribe({
+        next: (data) => {
+          this.notificacionesList.set(data);
+        }
+      });
+  }
+
+  destroyNotificationPolling(): void {
+    if (this.notificationSubscription) {
+      this.notificationSubscription.unsubscribe();
+    }
   }
 
   marcarLeida(n: any): void {

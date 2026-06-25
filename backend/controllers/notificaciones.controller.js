@@ -30,7 +30,8 @@ const obtenerNotificacionPorId = async (req, res) => {
 const obtenerNotificacionesPorUsuario = async (req, res) => {
   try {
     const { id } = req.params;
-    const rows = await Notificaciones.getByUsuario(id);
+    const { rol } = req.query; // 'alumno', 'tutor' o 'moderador'
+    const rows = await Notificaciones.getByUsuario(id, rol);
     res.json(rows);
   } catch (error) {
     console.error('Error al obtener notificaciones del usuario:', error);
