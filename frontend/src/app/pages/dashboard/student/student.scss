@@ -1669,32 +1669,8 @@ table {
   }
 }
 
-/* ============================================
-   Notifications Dropdown Styles
-   ============================================ */
-.notifications-dropdown {
-  position: absolute;
-  top: calc(100% + 8px);
-  right: 0;
-  width: 320px;
-  max-height: 400px;
-  overflow-y: auto;
-  background: var(--bg-sidebar);
-  border: 1px solid var(--border-color);
-  border-radius: 12px;
-  padding: 16px;
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3), 0 8px 10px -6px rgba(0, 0, 0, 0.3);
-  z-index: 1050;
-  animation: slideInUp 0.25s cubic-bezier(0.16, 1, 0.3, 1) both;
+/* Notifications Dropdown Styles are declared globally in styles.scss */
 
-  &::-webkit-scrollbar {
-    width: 6px;
-  }
-  &::-webkit-scrollbar-thumb {
-    background: var(--border-color);
-    border-radius: 3px;
-  }
-}
 
 /* ============================================
    Premium Postulation Modal UX Customizations
