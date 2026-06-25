@@ -1,10 +1,12 @@
 // Controlador para la entidad Cursos
 const Cursos = require('../models/cursos.model');
+const PREREQUISITES_MAP = require('../config/prerequisites.config');
 
 // Obtener todos los cursos (con datos de carrera)
 const obtenerCursos = async (req, res) => {
   try {
-    const cursos = await Cursos.getAll();
+    const { id_carrera } = req.query;
+    const cursos = await Cursos.getAll(id_carrera);
     res.json(cursos);
   } catch (error) {
     console.error('Error al obtener cursos:', error);
@@ -66,7 +68,20 @@ const eliminarCurso = async (req, res) => {
     res.json(cursoEliminado);
   } catch (error) {
     console.error('Error al eliminar curso:', error);
+    if (error.code === '23503') {
+      return res.status(409).json({ error: 'No se puede eliminar el curso porque tiene tutorías, solicitudes u otros registros asociados.' });
+    }
     res.status(500).json({ error: 'Error al eliminar curso' });
+  }
+};
+
+// Obtener mapa de prerrequisitos de los cursos
+const obtenerPrerequisitos = async (req, res) => {
+  try {
+    res.json(PREREQUISITES_MAP);
+  } catch (error) {
+    console.error('Error al obtener prerrequisitos:', error);
+    res.status(500).json({ error: 'Error al obtener prerrequisitos' });
   }
 };
 
@@ -76,4 +91,5 @@ module.exports = {
   crearCurso,
   actualizarCurso,
   eliminarCurso,
+  obtenerPrerequisitos,
 };

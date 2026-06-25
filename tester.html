@@ -118,6 +118,7 @@
             <option value="DELETE">DELETE</option>
         </select>
         <button onclick="sendRequest()">Enviar Consulta</button>
+        <button onclick="localStorage.removeItem('unamconnect_token'); alert('Token eliminado');" style="background-color: #dc3545;">Limpiar Token</button>
     </div>
 
     <div style="margin-bottom: 20px;">
@@ -196,6 +197,7 @@
         buttonsContainer.appendChild(btn);
     });
 
+    // Almacenar token en localStorage de forma dinámica
     async function sendRequest() {
         const url = urlInput.value;
         const method = document.getElementById('method').value;
@@ -204,11 +206,18 @@
         output.textContent = 'Cargando...';
         statusDisplay.innerHTML = '';
 
+        const headers = {
+            'Content-Type': 'application/json'
+        };
+
+        const token = localStorage.getItem('unamconnect_token');
+        if (token) {
+            headers['Authorization'] = `Bearer ${token}`;
+        }
+
         const options = {
             method,
-            headers: {
-                'Content-Type': 'application/json'
-            }
+            headers
         };
 
         if (method !== 'GET' && bodyInput) {
@@ -224,7 +233,13 @@
             const response = await fetch(url, options);
             const data = await response.json();
             
-            statusDisplay.innerHTML = `<span class="status ${response.ok ? 'status-ok' : 'status-error'}">
+            // Si es login exitoso, guardar token en localStorage
+            if (response.ok && data.token) {
+                localStorage.setItem('unamconnect_token', data.token);
+                statusDisplay.innerHTML = `<span class="status status-ok">Token Guardado Localmente!</span> `;
+            }
+            
+            statusDisplay.innerHTML += `<span class="status ${response.ok ? 'status-ok' : 'status-error'}">
                 Status: ${response.status} ${response.statusText}
             </span>`;
             

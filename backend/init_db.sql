@@ -2,10 +2,8 @@
 -- UNAMConnect - Script de Inicialización de BD
 -- ============================================
 
--- 1. Conectarse a la base de datos (se asume que UNAMConnect ya existe)
--- \c "UNAMConnect"
-
 -- Eliminar tablas en orden inverso de dependencia
+DROP TABLE IF EXISTS mensajes CASCADE;
 DROP TABLE IF EXISTS notificaciones CASCADE;
 DROP TABLE IF EXISTS recursos CASCADE;
 DROP TABLE IF EXISTS valoraciones CASCADE;
@@ -44,9 +42,12 @@ CREATE TABLE usuarios (
     apellidos VARCHAR(100) NOT NULL,
     correo VARCHAR(150) NOT NULL UNIQUE,
     password VARCHAR(255) NOT NULL,
+    ano_ingreso INT,
+    ciclo_actual INT,
+    cursos_aprobados JSONB DEFAULT '[]'::jsonb,
     CONSTRAINT fk_usuarios_carrera
         FOREIGN KEY (id_carrera) REFERENCES carreras(id_carrera)
-        ON DELETE RESTRICT
+        ON UPDATE CASCADE ON DELETE RESTRICT
 );
 
 -- Hash para 'unamconnect2026'
@@ -87,8 +88,8 @@ CREATE TABLE usuario_roles (
     id_usuario INT NOT NULL,
     id_rol INT NOT NULL,
     PRIMARY KEY (id_usuario, id_rol),
-    CONSTRAINT fk_ur_usuario FOREIGN KEY (id_usuario) REFERENCES usuarios(id_usuario) ON DELETE CASCADE,
-    CONSTRAINT fk_ur_rol FOREIGN KEY (id_rol) REFERENCES roles(id_rol) ON DELETE CASCADE
+    CONSTRAINT fk_ur_usuario FOREIGN KEY (id_usuario) REFERENCES usuarios(id_usuario) ON UPDATE CASCADE ON DELETE CASCADE,
+    CONSTRAINT fk_ur_rol FOREIGN KEY (id_rol) REFERENCES roles(id_rol) ON UPDATE CASCADE ON DELETE CASCADE
 );
 
 -- Asignar moderador a los 3 admins
@@ -106,7 +107,7 @@ CREATE TABLE cursos (
     id_carrera INT NOT NULL,
     nombre_curso VARCHAR(150) NOT NULL,
     ciclo INT NOT NULL,
-    CONSTRAINT fk_cursos_carrera FOREIGN KEY (id_carrera) REFERENCES carreras(id_carrera) ON DELETE CASCADE
+    CONSTRAINT fk_cursos_carrera FOREIGN KEY (id_carrera) REFERENCES carreras(id_carrera) ON UPDATE CASCADE ON DELETE CASCADE
 );
 
 INSERT INTO cursos (id_carrera, nombre_curso, ciclo) VALUES
@@ -129,8 +130,8 @@ CREATE TABLE tutores_cursos (
     id_tutor INT NOT NULL,
     id_curso INT NOT NULL,
     estado_aprobacion VARCHAR(20) NOT NULL DEFAULT 'aprobado',
-    CONSTRAINT fk_tc_tutor FOREIGN KEY (id_tutor) REFERENCES usuarios(id_usuario) ON DELETE CASCADE,
-    CONSTRAINT fk_tc_curso FOREIGN KEY (id_curso) REFERENCES cursos(id_curso) ON DELETE CASCADE
+    CONSTRAINT fk_tc_tutor FOREIGN KEY (id_tutor) REFERENCES usuarios(id_usuario) ON UPDATE CASCADE ON DELETE CASCADE,
+    CONSTRAINT fk_tc_curso FOREIGN KEY (id_curso) REFERENCES cursos(id_curso) ON UPDATE CASCADE ON DELETE CASCADE
 );
 
 INSERT INTO tutores_cursos (id_tutor, id_curso) VALUES 
@@ -145,7 +146,7 @@ CREATE TABLE horarios_tutor (
     dia_semana VARCHAR(15) NOT NULL,
     hora_inicio TIME NOT NULL,
     hora_fin TIME NOT NULL,
-    CONSTRAINT fk_ht_tutor FOREIGN KEY (id_tutor) REFERENCES usuarios(id_usuario) ON DELETE CASCADE
+    CONSTRAINT fk_ht_tutor FOREIGN KEY (id_tutor) REFERENCES usuarios(id_usuario) ON UPDATE CASCADE ON DELETE CASCADE
 );
 
 INSERT INTO horarios_tutor (id_tutor, dia_semana, hora_inicio, hora_fin) VALUES
@@ -165,9 +166,10 @@ CREATE TABLE asesorias (
     fecha_programada TIMESTAMP NOT NULL,
     estado VARCHAR(20) NOT NULL DEFAULT 'pendiente',
     enlace_reunion VARCHAR(255),
-    CONSTRAINT fk_ases_alumno FOREIGN KEY (id_alumno) REFERENCES usuarios(id_usuario) ON DELETE CASCADE,
-    CONSTRAINT fk_ases_tutor FOREIGN KEY (id_tutor) REFERENCES usuarios(id_usuario) ON DELETE CASCADE,
-    CONSTRAINT fk_ases_curso FOREIGN KEY (id_curso) REFERENCES cursos(id_curso) ON DELETE CASCADE
+    motivo VARCHAR(255),
+    CONSTRAINT fk_ases_alumno FOREIGN KEY (id_alumno) REFERENCES usuarios(id_usuario) ON UPDATE CASCADE ON DELETE CASCADE,
+    CONSTRAINT fk_ases_tutor FOREIGN KEY (id_tutor) REFERENCES usuarios(id_usuario) ON UPDATE CASCADE ON DELETE CASCADE,
+    CONSTRAINT fk_ases_curso FOREIGN KEY (id_curso) REFERENCES cursos(id_curso) ON UPDATE CASCADE ON DELETE CASCADE
 );
 
 INSERT INTO asesorias (id_alumno, id_tutor, id_curso, fecha_programada, estado, enlace_reunion) VALUES
@@ -177,35 +179,44 @@ INSERT INTO asesorias (id_alumno, id_tutor, id_curso, fecha_programada, estado, 
 (9, 5, 1, '2026-06-13 09:00:00', 'cancelada', NULL);
 
 -- ============================================
--- 9. OTROS
+-- 9. VALORACIONES
 -- ============================================
 CREATE TABLE valoraciones (
     id_valoracion SERIAL PRIMARY KEY,
     id_asesoria INT NOT NULL UNIQUE,
     puntuacion INT NOT NULL,
     comentario TEXT,
-    CONSTRAINT fk_val_asesoria FOREIGN KEY (id_asesoria) REFERENCES asesorias(id_asesoria) ON DELETE CASCADE
+    CONSTRAINT fk_val_asesoria FOREIGN KEY (id_asesoria) REFERENCES asesorias(id_asesoria) ON UPDATE CASCADE ON DELETE CASCADE
 );
 
+-- ============================================
+-- 10. RECURSOS
+-- ============================================
 CREATE TABLE recursos (
     id_recurso SERIAL PRIMARY KEY,
     id_curso INT NOT NULL,
     id_tutor INT NOT NULL,
     titulo VARCHAR(200) NOT NULL,
     url_archivo VARCHAR(255) NOT NULL,
-    CONSTRAINT fk_rec_curso FOREIGN KEY (id_curso) REFERENCES cursos(id_curso) ON DELETE CASCADE,
-    CONSTRAINT fk_rec_tutor FOREIGN KEY (id_tutor) REFERENCES usuarios(id_usuario) ON DELETE CASCADE
+    CONSTRAINT fk_rec_curso FOREIGN KEY (id_curso) REFERENCES cursos(id_curso) ON UPDATE CASCADE ON DELETE CASCADE,
+    CONSTRAINT fk_rec_tutor FOREIGN KEY (id_tutor) REFERENCES usuarios(id_usuario) ON UPDATE CASCADE ON DELETE CASCADE
 );
 
+-- ============================================
+-- 11. NOTIFICACIONES
+-- ============================================
 CREATE TABLE notificaciones (
     id_notificacion SERIAL PRIMARY KEY,
     id_usuario INT NOT NULL,
     mensaje VARCHAR(255) NOT NULL,
     leido BOOLEAN NOT NULL DEFAULT false,
     fecha_envio TIMESTAMP NOT NULL DEFAULT NOW(),
-    CONSTRAINT fk_notif_usuario FOREIGN KEY (id_usuario) REFERENCES usuarios(id_usuario) ON DELETE CASCADE
+    CONSTRAINT fk_notif_usuario FOREIGN KEY (id_usuario) REFERENCES usuarios(id_usuario) ON UPDATE CASCADE ON DELETE CASCADE
 );
 
+-- ============================================
+-- 12. SOLICITUDES_TUTOR
+-- ============================================
 CREATE TABLE solicitudes_tutor (
     id_solicitud SERIAL PRIMARY KEY,
     id_usuario INT NOT NULL,
@@ -213,9 +224,24 @@ CREATE TABLE solicitudes_tutor (
     nota_obtenida NUMERIC(4,2) NOT NULL,
     url_boleta_notas VARCHAR(255),
     estado_solicitud VARCHAR(20) NOT NULL DEFAULT 'pendiente',
+    motivo_rechazo VARCHAR(255),
     fecha_postulacion TIMESTAMP NOT NULL DEFAULT NOW(),
-    CONSTRAINT fk_sol_usuario FOREIGN KEY (id_usuario) REFERENCES usuarios(id_usuario) ON DELETE CASCADE,
-    CONSTRAINT fk_sol_curso FOREIGN KEY (id_curso) REFERENCES cursos(id_curso) ON DELETE CASCADE
+    CONSTRAINT fk_sol_usuario FOREIGN KEY (id_usuario) REFERENCES usuarios(id_usuario) ON UPDATE CASCADE ON DELETE CASCADE,
+    CONSTRAINT fk_sol_curso FOREIGN KEY (id_curso) REFERENCES cursos(id_curso) ON UPDATE CASCADE ON DELETE CASCADE
+);
+
+-- ============================================
+-- 13. MENSAJES (CHAT)
+-- ============================================
+CREATE TABLE mensajes (
+    id_mensaje SERIAL PRIMARY KEY,
+    id_emisor INT NOT NULL,
+    id_receptor INT NOT NULL,
+    contenido TEXT NOT NULL,
+    fecha_envio TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
+    leido BOOLEAN NOT NULL DEFAULT false,
+    CONSTRAINT fk_mensajes_emisor FOREIGN KEY (id_emisor) REFERENCES usuarios(id_usuario) ON UPDATE CASCADE ON DELETE CASCADE,
+    CONSTRAINT fk_mensajes_receptor FOREIGN KEY (id_receptor) REFERENCES usuarios(id_usuario) ON UPDATE CASCADE ON DELETE CASCADE
 );
 
 -- Otorgar permisos al usuario actual automáticamente

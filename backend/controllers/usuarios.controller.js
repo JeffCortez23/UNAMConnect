@@ -31,7 +31,7 @@ const obtenerUsuarioPorId = async (req, res) => {
 // Crear un nuevo usuario
 const crearUsuario = async (req, res) => {
   try {
-    const { id_carrera, codigo_univ, nombres, apellidos, correo, password } = req.body;
+    const { id_carrera, codigo_univ, nombres, apellidos, correo, password, ano_ingreso, ciclo_actual } = req.body;
     
     // Hash de la contraseña si se proporciona, sino usar una por defecto o fallar
     const salt = await bcrypt.genSalt(10);
@@ -43,7 +43,9 @@ const crearUsuario = async (req, res) => {
       nombres,
       apellidos,
       correo,
-      password: hashedPassword
+      password: hashedPassword,
+      ano_ingreso,
+      ciclo_actual
     });
     res.status(201).json(nuevoUsuario);
   } catch (error) {
@@ -56,9 +58,9 @@ const crearUsuario = async (req, res) => {
 const actualizarUsuario = async (req, res) => {
   try {
     const { id } = req.params;
-    const { id_carrera, codigo_univ, nombres, apellidos, correo, password } = req.body;
+    const { id_carrera, codigo_univ, nombres, apellidos, correo, password, ano_ingreso, ciclo_actual, cursos_aprobados } = req.body;
     
-    const usuarioData = { id_carrera, codigo_univ, nombres, apellidos, correo };
+    const usuarioData = { id_carrera, codigo_univ, nombres, apellidos, correo, ano_ingreso, ciclo_actual, cursos_aprobados };
 
     if (password) {
       const salt = await bcrypt.genSalt(10);

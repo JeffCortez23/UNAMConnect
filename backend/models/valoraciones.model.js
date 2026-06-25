@@ -2,7 +2,18 @@ const db = require('../config/db');
 
 const Valoraciones = {
   getAll: async () => {
-    const { rows } = await db.query('SELECT * FROM valoraciones ORDER BY id_valoracion');
+    const { rows } = await db.query(`
+      SELECT v.*, 
+             CONCAT(al.nombres, ' ', al.apellidos) AS nombre_alumno,
+             CONCAT(t.nombres, ' ', t.apellidos) AS nombre_tutor,
+             c.nombre_curso
+      FROM valoraciones v
+      JOIN asesorias a ON v.id_asesoria = a.id_asesoria
+      JOIN usuarios al ON a.id_alumno = al.id_usuario
+      JOIN usuarios t ON a.id_tutor = t.id_usuario
+      JOIN cursos c ON a.id_curso = c.id_curso
+      ORDER BY v.id_valoracion DESC
+    `);
     return rows;
   },
 

@@ -1,0 +1,533 @@
+<div class="dashboard-container" [class.sidebar-collapsed]="sidebarCollapsed()">
+  <input type="checkbox" id="sidebar-toggle-check" style="display: none;">
+  <label for="sidebar-toggle-check" class="sidebar-overlay"></label>
+
+  <div class="mobile-header-bar d-flex d-md-none justify-content-between align-items-center px-3 py-2">
+    <label for="sidebar-toggle-check" class="sidebar-toggle-btn fs-4"><i class="bi bi-list"></i></label>
+    <span class="mobile-brand-text fw-bold fs-5 text-success">UNAMConnect</span>
+  </div>
+
+  <!-- Sidebar de Navegación -->
+  <aside class="sidebar glass-panel py-4 px-3">
+    <div class="sidebar-header d-flex align-items-center justify-content-between gap-2 mb-4">
+      <div class="d-flex align-items-center gap-2">
+        <img src="favicon.png" alt="UNAMConnect Symbol" style="height: 38px; object-fit: contain; filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.45));">
+        <div class="brand-text">
+          <h3 class="m-0 fs-6 fw-bold text-white">UNAMConnect</h3>
+          <p class="m-0 text-muted" style="font-size: 10px;">Portal de Tutorías</p>
+        </div>
+      </div>
+      <!-- Botón para colapsar/expandir sidebar en desktop -->
+      <button type="button" class="btn btn-sm text-white border-0 p-1 d-none d-md-block opacity-75 hover-opacity-100 toggle-sidebar-btn" (click)="sidebarCollapsed.set(!sidebarCollapsed())">
+        <i class="bi" [class.bi-chevron-left]="!sidebarCollapsed()" [class.bi-chevron-right]="sidebarCollapsed()"></i>
+      </button>
+    </div>
+
+    <!-- Menú Principal -->
+    <div class="menu-section mb-4">
+      <span class="section-label text-muted fw-bold text-uppercase d-block mb-2" style="font-size: 10px; letter-spacing: 0.5px;">PRINCIPAL</span>
+      <nav class="nav-menu d-flex flex-column gap-1">
+        <a (click)="activeTab.set('principal')" class="nav-item d-flex align-items-center gap-2 py-2 px-3 rounded text-decoration-none" [class.active]="activeTab() === 'principal'">
+          <i class="bi bi-bar-chart-line-fill"></i> Panel Principal
+        </a>
+        <a (click)="activeTab.set('tutores')" class="nav-item d-flex align-items-center gap-2 py-2 px-3 rounded text-decoration-none" [class.active]="activeTab() === 'tutores'">
+          <i class="bi bi-people-fill"></i> Mis Tutores
+        </a>
+        <a (click)="activeTab.set('citas')" class="nav-item d-flex align-items-center gap-2 py-2 px-3 rounded text-decoration-none" [class.active]="activeTab() === 'citas'">
+          <i class="bi bi-calendar-event-fill"></i> Mis Tutorías <span class="badge bg-danger ms-auto rounded-pill">{{ asesorias().length }}</span>
+        </a>
+        <a (click)="activeTab.set('cursos')" class="nav-item d-flex align-items-center gap-2 py-2 px-3 rounded text-decoration-none" [class.active]="activeTab() === 'cursos'">
+          <i class="bi bi-book-fill"></i> Mis Cursos
+        </a>
+      </nav>
+    </div>
+
+    <!-- Menú Progreso -->
+    <div class="menu-section mb-4">
+      <span class="section-label text-muted fw-bold text-uppercase d-block mb-2" style="font-size: 10px; letter-spacing: 0.5px;">PROGRESO</span>
+      <nav class="nav-menu d-flex flex-column gap-1">
+        <a (click)="activeTab.set('estadisticas')" class="nav-item d-flex align-items-center gap-2 py-2 px-3 rounded text-decoration-none" [class.active]="activeTab() === 'estadisticas'">
+          <i class="bi bi-graph-up-arrow"></i> Estadísticas
+        </a>
+        <a (click)="activeTab.set('mensajes')" class="nav-item d-flex align-items-center gap-2 py-2 px-3 rounded text-decoration-none" [class.active]="activeTab() === 'mensajes'">
+          <i class="bi bi-chat-dots-fill"></i> Mensajes <span class="badge bg-primary ms-auto rounded-pill" *ngIf="mensajesSinLeerTotal() > 0">{{ mensajesSinLeerTotal() }}</span>
+        </a>
+        <a (click)="activeTab.set('configuracion')" class="nav-item d-flex align-items-center gap-2 py-2 px-3 rounded text-decoration-none" [class.active]="activeTab() === 'configuracion'">
+          <i class="bi bi-gear-fill"></i> Configuración
+        </a>
+      </nav>
+    </div>
+
+    <!-- Perfil de Usuario Footer -->
+    <div class="user-profile-footer mt-auto pt-3 border-top d-flex flex-column align-items-stretch gap-2" *ngIf="authService.currentUser() as user">
+      <div class="d-flex align-items-center gap-2">
+        <div class="avatar bg-primary text-white rounded-circle d-flex align-items-center justify-content-center fw-bold" style="width: 36px; height: 36px; font-size: 12px;">{{ user.nombres[0] }}{{ user.apellidos[0] }}</div>
+        <div class="user-info flex-grow-1 overflow-hidden">
+          <h4 class="m-0 fs-6 fw-bold text-truncate text-white" style="max-width: 130px;">{{ user.nombres }}</h4>
+          <p class="m-0 text-muted text-truncate" style="font-size: 10px;">Alumno · {{ user.nombre_carrera || 'Sistemas' }}</p>
+        </div>
+        <button (click)="logout()" class="btn-logout-icon border-0 bg-transparent opacity-70 hover-opacity-100 fs-5 text-white" title="Cerrar Sesión"><i class="bi bi-box-arrow-right"></i></button>
+      </div>
+
+      <!-- Si es tutor, puede alternar vista -->
+      <button *ngIf="esTutor()" (click)="cambiarAPanelTutor()" class="btn btn-outline-light btn-sm w-100 mt-1" style="font-size: 11px;">
+        <i class="bi bi-arrow-repeat me-1"></i> Cambiar a Vista Tutor
+      </button>
+
+      <!-- Si no es tutor, puede mandar solicitud -->
+      <button *ngIf="!esTutor()" (click)="mostrarModalPostulacion.set(true)" class="btn btn-success btn-sm w-100 mt-1" style="font-size: 11px;">
+        <i class="bi bi-mortarboard me-1"></i> Postular como Tutor
+      </button>
+    </div>
+  </aside>
+
+  <!-- Área de Contenido Principal y Footer -->
+  <div class="main-layout-wrapper">
+    <main class="main-content container-fluid p-4 d-flex flex-column gap-4">
+    <!-- Header Superior -->
+    <header class="content-header d-flex justify-content-between align-items-center flex-wrap gap-3">
+      <div>
+        <h1 class="fs-4 fw-bold m-0" *ngIf="activeTab() === 'principal'">Panel del Alumno</h1>
+        <h1 class="fs-4 fw-bold m-0" *ngIf="activeTab() === 'tutores'">Mis Tutores</h1>
+        <h1 class="fs-4 fw-bold m-0" *ngIf="activeTab() === 'citas'">Mis Tutorías</h1>
+        <h1 class="fs-4 fw-bold m-0" *ngIf="activeTab() === 'cursos'">Mis Cursos</h1>
+        <h1 class="fs-4 fw-bold m-0" *ngIf="activeTab() === 'estadisticas'">Estadísticas</h1>
+        <h1 class="fs-4 fw-bold m-0" *ngIf="activeTab() === 'mensajes'">Mensajes</h1>
+        <h1 class="fs-4 fw-bold m-0" *ngIf="activeTab() === 'configuracion'">Configuración</h1>
+      </div>
+      <div class="header-actions d-flex align-items-center gap-3">
+        <div class="search-bar position-relative d-flex align-items-center">
+          <i class="bi bi-search position-absolute text-muted ms-3" style="font-size: 13px;"></i>
+          <input type="text" 
+                 class="form-control rounded-3 py-2 ps-5 search-input-animated" 
+                 placeholder="Buscar tutores o cursos..." 
+                 style="font-size: 13px;"
+                 [ngModel]="searchQuery()" 
+                 (ngModelChange)="searchQuery.set($event)">
+        </div>
+        <button (click)="themeService.toggleTheme()" class="btn btn-outline-secondary p-2 d-flex align-items-center justify-content-center rounded-3" title="Cambiar Tema">
+          <i class="bi" [class.bi-sun-fill]="themeService.theme() === 'dark'" [class.bi-moon-fill]="themeService.theme() === 'light'"></i>
+        </button>
+        <div class="position-relative d-inline-block" style="position: relative; z-index: 1100;">
+          <button (click)="toggleNotifications()" class="btn btn-outline-secondary p-2 d-flex align-items-center justify-content-center rounded-3 position-relative" title="Notificaciones">
+            <i class="bi bi-bell-fill"></i>
+            @if (unreadNotificationsCount() > 0) {
+              <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size: 9px; padding: 3px 6px;">
+                {{ unreadNotificationsCount() }}
+              </span>
+            }
+          </button>
+          
+          @if (notificationsOpen()) {
+            <div class="position-fixed top-0 start-0 w-100 h-100" style="z-index: 1000;" (click)="notificationsOpen.set(false)"></div>
+            <div class="notifications-dropdown text-start">
+              <div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-2">
+                <h6 class="m-0 fw-bold text-white" style="font-size: 13px;">Notificaciones</h6>
+                @if (unreadNotificationsCount() > 0) {
+                  <button (click)="marcarTodasLeidas()" class="btn btn-link p-0 text-info text-decoration-none fw-bold" style="font-size: 11px;">Marcar todo como leído</button>
+                }
+              </div>
+              <div class="d-flex flex-column gap-2">
+                @for (n of notificacionesList(); track n.id_notificacion) {
+                  <div class="p-2 rounded-3 hover-bg-light-opacity" 
+                       [class.bg-secondary]="n.leido" 
+                       [class.bg-opacity-10]="n.leido" 
+                       [class.bg-primary]="!n.leido" 
+                       [class.bg-opacity-15]="!n.leido" 
+                       style="font-size: 12px; cursor: pointer; transition: all 0.2s;"
+                       (click)="marcarLeida(n)">
+                    <div class="d-flex justify-content-between align-items-start gap-1">
+                      <p class="m-0 text-white" style="line-height: 1.3;">{{ n.mensaje }}</p>
+                      @if (!n.leido) {
+                        <span class="badge bg-info p-1 rounded-circle" style="width: 6px; height: 6px;"></span>
+                      }
+                    </div>
+                    <span class="text-muted" style="font-size: 9px; display: block; margin-top: 4px;">{{ n.fecha_envio | date:'short' }}</span>
+                  </div>
+                } @empty {
+                  <div class="text-center text-muted py-4" style="font-size: 12px;">No tienes notificaciones</div>
+                }
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+    </header>
+
+    <!-- Tab Principal (Dashboard) -->
+    <app-student-stats [parent]="this" *ngIf="activeTab() === 'principal'"></app-student-stats>
+
+    <!-- Tab Mis Tutores -->
+    <app-student-tutors [parent]="this" *ngIf="activeTab() === 'tutores'"></app-student-tutors>
+
+    <!-- Tab Mis Tutorías -->
+    <app-student-advisories [parent]="this" *ngIf="activeTab() === 'citas'"></app-student-advisories>
+
+    <!-- Tab Mis Cursos -->
+    <app-student-courses [parent]="this" *ngIf="activeTab() === 'cursos'"></app-student-courses>
+
+    <!-- Tab Estadísticas -->
+    <app-student-stats-tab [parent]="this" *ngIf="activeTab() === 'estadisticas'"></app-student-stats-tab>
+
+    <!-- Tab Mensajes -->
+    <app-student-chat [parent]="this" *ngIf="activeTab() === 'mensajes'"></app-student-chat>
+
+    <!-- Tab Configuración -->
+    <app-student-profile [parent]="this" *ngIf="activeTab() === 'configuracion'"></app-student-profile>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="dashboard-footer py-3 px-4 d-flex justify-content-between align-items-center flex-wrap gap-3">
+      <div class="d-flex align-items-center gap-2">
+        <span class="footer-logo fw-bold text-success fs-6">UNAMConnect</span>
+        <span class="text-muted fs-7">| Portal de Tutorías Académicas</span>
+      </div>
+      <div class="d-flex align-items-center gap-3 flex-wrap">
+        <span class="text-muted fs-7">© 2026 UNAMConnect. Todos los derechos reservados.</span>
+        <span class="badge bg-success bg-opacity-10 text-success rounded-pill px-2.5 py-1.5 fs-8 d-flex align-items-center gap-1">
+          <span class="led-dot bg-success rounded-circle"></span>
+          {{ cicloAcademicoActivo() }}
+        </span>
+      </div>
+    </footer>
+  </div>
+</div>
+
+<!-- Modal para Solicitar Asesoría -->
+<div class="modal-overlay d-flex align-items-center justify-content-center" *ngIf="mostrarModalSolicitar()" style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 1050;">
+  <div class="modal-dialog modal-dialog-centered m-3" style="max-width: 450px; width: 100%;">
+    <div class="modal-content glass-panel p-4 text-start">
+      <div class="modal-header border-0 p-0 mb-3 d-flex justify-content-between align-items-center">
+        <h5 class="modal-title fw-bold m-0"><i class="bi bi-calendar-event-fill text-success me-2"></i>Solicitar Asesoría</h5>
+        <button (click)="mostrarModalSolicitar.set(false)" class="btn-close" aria-label="Close"></button>
+      </div>
+      <div class="modal-body p-0 d-flex flex-column gap-3">
+        <div>
+          <label class="form-label text-muted small fw-semibold mb-1">Seleccionar Curso</label>
+          <select class="form-select rounded-3" [(ngModel)]="nuevoIdCurso">
+            <option [value]="0">-- Elegir materia --</option>
+            @for (c of cursosFiltradosModal(); track c.id_curso) {
+              <option [value]="c.id_curso">{{ c.nombre_curso }}</option>
+            }
+          </select>
+        </div>
+
+        <div>
+          <label class="form-label text-muted small fw-semibold mb-1">Seleccionar Tutor</label>
+          <select class="form-select rounded-3" [ngModel]="nuevoIdTutor()" (ngModelChange)="onTutorSelected($event)">
+            <option [value]="0">-- Elegir tutor --</option>
+            @for (t of tutores(); track t.id_usuario) {
+              <option [value]="t.id_usuario">{{ t.nombres }} {{ t.apellidos }}</option>
+            }
+          </select>
+        </div>
+
+        <div *ngIf="nuevoIdTutor() > 0">
+          <label class="form-label text-muted small fw-semibold mb-1">Horario disponible del tutor</label>
+          <select class="form-select rounded-3" [ngModel]="nuevoHorarioSeleccionadoId()" (ngModelChange)="onHorarioSlotChange($event)">
+            <option [value]="0">-- Seleccionar horario disponible --</option>
+            @for (h of tutorHorariosDisponibles(); track h.id_horario) {
+              <option [value]="h.id_horario">{{ h.dia_semana }} ({{ h.hora_inicio }} - {{ h.hora_fin }})</option>
+            }
+          </select>
+          <div *ngIf="tutorHorariosDisponibles().length === 0" class="text-warning small mt-1" style="font-size: 11px;">
+            <i class="bi bi-exclamation-triangle-fill"></i> El tutor seleccionado no tiene horarios de disponibilidad registrados.
+          </div>
+        </div>
+
+        <div>
+          <label class="form-label text-muted small fw-semibold mb-1">Motivo / Por qué solicitas asesoría</label>
+          <textarea class="form-control rounded-3" rows="2" [ngModel]="nuevoMotivo()" (ngModelChange)="nuevoMotivo.set($event)" placeholder="Ej. Tengo dudas sobre matrices y determinantes..."></textarea>
+        </div>
+
+        <div class="row g-2" *ngIf="nuevoHorarioSeleccionadoId() > 0">
+          <div class="col-6">
+            <label class="form-label text-muted small fw-semibold mb-1">Fecha de la sesión</label>
+            <select class="form-select rounded-3" [(ngModel)]="nuevaFecha">
+              @for (fd of fechasDisponibles(); track fd.value) {
+                <option [value]="fd.value">{{ fd.label }}</option>
+              }
+            </select>
+          </div>
+          <div class="col-6">
+            <label class="form-label text-muted small fw-semibold mb-1">Hora de inicio</label>
+            <input type="time" class="form-control rounded-3" [(ngModel)]="nuevaHora" disabled style="background: rgba(255,255,255,0.05); font-style: italic;">
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer border-0 p-0 mt-4 d-flex gap-2">
+        <button (click)="mostrarModalSolicitar.set(false)" class="btn btn-outline-secondary rounded-3 flex-grow-1">Cancelar</button>
+        <button (click)="solicitarAsesoria()" class="btn btn-success rounded-3 flex-grow-1">Solicitar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal para Postular como Tutor -->
+<div class="modal-overlay d-flex align-items-center justify-content-center" *ngIf="mostrarModalPostulacion()" style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); z-index: 1050; backdrop-filter: blur(8px);">
+  <div class="modal-dialog modal-dialog-centered m-3" style="max-width: 500px; width: 100%;">
+    <div class="modal-content glass-panel p-4 text-start rounded-4 border border-white border-opacity-10 shadow-2xl">
+      <div class="modal-header border-0 p-0 mb-3 d-flex justify-content-between align-items-center">
+        <h5 class="modal-title fw-bold m-0 d-flex align-items-center gap-2 text-white">
+          <i class="bi bi-mortarboard-fill text-success fs-4"></i> Postulación para Tutor
+        </h5>
+        <button (click)="mostrarModalPostulacion.set(false)" class="btn-close btn-close-white" aria-label="Close"></button>
+      </div>
+      <div class="modal-body p-0 d-flex flex-column gap-3">
+        <div>
+          <div class="d-flex justify-content-between align-items-center mb-1">
+            <label class="form-label text-muted small fw-semibold m-0">Cursos que desea Acreditar</label>
+            <span class="badge fw-bold" style="font-size: 11px; background: rgba(97, 198, 192, 0.15) !important; color: #61c6c0 !important; border: 1px solid rgba(97, 198, 192, 0.3);">
+              {{ cursosSeleccionadosPostulacion().length }} seleccionados
+            </span>
+          </div>
+          <!-- Input de búsqueda/filtrado de cursos -->
+          <div class="position-relative mb-2">
+            <i class="bi bi-search position-absolute start-0 top-50 translate-middle-y ms-2 text-muted" style="font-size: 12px;"></i>
+            <input type="text" 
+                   [ngModel]="filtroCursoPostulacion()" 
+                   (ngModelChange)="filtroCursoPostulacion.set($event)"
+                   placeholder="Buscar curso por nombre..." 
+                   class="form-control form-control-sm ps-4 rounded-3 text-white bg-dark bg-opacity-30 border-white border-opacity-10"
+                   style="font-size: 12px;">
+          </div>
+          
+          <div class="courses-checkbox-list border rounded-3 p-2 overflow-auto" style="max-height: 260px; background: rgba(0, 0, 0, 0.2); border-color: rgba(255, 255, 255, 0.08); scrollbar-width: thin;">
+            @for (c of cursosTutorFiltrados(); track c.id_curso) {
+              <div class="course-card-item p-2 mb-2 rounded-2 cursor-pointer transition-all" 
+                   [class.selected]="cursosSeleccionadosPostulacion().includes(c.id_curso)"
+                   (click)="toggleCursoPostulacion(c.id_curso)">
+                <div class="d-flex align-items-center justify-content-between">
+                  <div class="d-flex align-items-center gap-2">
+                    <input type="checkbox" 
+                           class="form-check-input text-success m-0" 
+                           [id]="'student-check-curso-' + c.id_curso"
+                           [checked]="cursosSeleccionadosPostulacion().includes(c.id_curso)"
+                           (click)="$event.stopPropagation(); toggleCursoPostulacion(c.id_curso)">
+                    <label class="form-check-label small text-white cursor-pointer fw-semibold" [for]="'student-check-curso-' + c.id_curso" (click)="$event.stopPropagation()">
+                      {{ c.nombre_curso }}
+                    </label>
+                  </div>
+                  <span class="badge bg-secondary bg-opacity-20 text-muted" style="font-size: 10px;">Ciclo {{ c.ciclo }}</span>
+                </div>
+                
+                <!-- Per-course Grade Selector (Only shown if selected) -->
+                <div *ngIf="cursosSeleccionadosPostulacion().includes(c.id_curso)" 
+                     class="mt-2 p-1.5 rounded-3" 
+                     style="background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.06);"
+                     (click)="$event.stopPropagation()">
+                  <div class="d-flex justify-content-between align-items-center mb-1 px-1">
+                    <span class="text-muted" style="font-size: 10px;">Nota obtenida en el curso:</span>
+                    <span class="badge fw-bold" style="font-size: 11px; background: rgba(97, 198, 192, 0.15) !important; color: #61c6c0 !important; border: 1px solid rgba(97, 198, 192, 0.3);">{{ getNotaForCurso(c.id_curso) }}</span>
+                  </div>
+                  <div class="d-flex justify-content-between gap-1">
+                    @for (grade of [14, 15, 16, 17, 18, 19, 20]; track grade) {
+                      <button type="button" 
+                              class="btn btn-sm rounded-2 flex-grow-1 border-0 py-1 transition-all" 
+                              [class.btn-success]="getNotaForCurso(c.id_curso) === grade"
+                              [class.text-white]="getNotaForCurso(c.id_curso) === grade"
+                              [class.bg-transparent]="getNotaForCurso(c.id_curso) !== grade"
+                              [class.text-muted]="getNotaForCurso(c.id_curso) !== grade"
+                              (click)="setNotaForCurso(c.id_curso, grade)"
+                              style="font-size: 11px; font-weight: 700; min-width: 24px;">
+                        {{ grade }}
+                      </button>
+                    }
+                  </div>
+                </div>
+              </div>
+            } @empty {
+              <div class="text-center py-4 text-muted small">No se encontraron cursos coincidentes.</div>
+            }
+          </div>
+        </div>
+
+        <div>
+          <label class="form-label text-muted small fw-semibold mb-1">Subir Boleta de Notas / Constancia</label>
+          <!-- Drag & Drop Zone Estilizada e Interactiva -->
+          <div class="file-upload-zone d-flex flex-column align-items-center justify-content-center gap-2 p-4 rounded-3 text-center cursor-pointer border border-dashed transition-all" 
+               (click)="fileInput.click()" 
+               (dragover)="onDragOver($event)"
+               (dragleave)="onDragLeave($event)"
+               (drop)="onDropFile($event)"
+               [class.drag-over]="fileDragOver()"
+               style="border-color: rgba(97, 198, 192, 0.3); background: rgba(97, 198, 192, 0.03);">
+            <i class="bi fs-2 transition-transform" 
+               [class.bi-cloud-arrow-up-fill]="!selectedFilePostulacion"
+               [class.bi-file-earmark-check-fill]="selectedFilePostulacion"
+               [class.text-success]="selectedFilePostulacion"
+               [class.text-info]="!selectedFilePostulacion && !fileDragOver()"
+               [class.text-warning]="fileDragOver()"
+               [class.scale-up-pulse]="fileDragOver()"
+               style="font-size: 28px;"></i>
+            <span class="small fw-semibold text-success">
+              {{ nombreArchivoPostulacion() || 'Haga clic o arrastre su constancia aquí' }}
+            </span>
+            <span class="text-muted" style="font-size: 11px;">Formatos aceptados: PDF, JPG, PNG (Máx. 5MB)</span>
+            <input type="file" #fileInput (change)="onFileSelectedPostulacion($event)" class="d-none">
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer border-0 p-0 mt-4 d-flex gap-2">
+        <button (click)="mostrarModalPostulacion.set(false)" class="btn btn-outline-secondary rounded-3 flex-grow-1 py-2 fw-semibold">Cancelar</button>
+        <button (click)="enviarPostulacionTutor()" class="btn btn-success rounded-3 flex-grow-1 py-2 fw-semibold" [disabled]="cursosSeleccionadosPostulacion().length === 0 || !selectedFilePostulacion">Enviar Postulación</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Detalle de Curso (Catálogo Interactivo) -->
+<div class="modal-overlay d-flex align-items-center justify-content-center" *ngIf="mostrarModalCursoDetalle()" style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); z-index: 1050; backdrop-filter: blur(8px);">
+  <div class="modal-dialog modal-dialog-centered m-3" style="max-width: 550px; width: 100%;">
+    <div class="modal-content glass-panel p-4 text-start rounded-4 border border-white border-opacity-10 shadow-2xl">
+      
+      <div class="modal-header border-0 p-0 mb-3 d-flex justify-content-between align-items-center">
+        <h5 class="modal-title fw-bold m-0 d-flex align-items-center gap-2 text-white">
+          <i class="bi bi-journal-bookmark-fill text-info fs-4"></i> {{ cursoDetalleSeleccionado()?.nombre_curso }}
+        </h5>
+        <button (click)="mostrarModalCursoDetalle.set(false)" class="btn-close btn-close-white" aria-label="Close"></button>
+      </div>
+
+      <div class="modal-body p-0 d-flex flex-column gap-3">
+        
+        <!-- Status indicator panel -->
+        <div class="p-3 rounded-3 d-flex align-items-center justify-content-between" 
+             [style.background]="isCursoAprobado(cursoDetalleSeleccionado()!.id_curso) ? 'rgba(25, 135, 84, 0.1)' : (isCursoBloqueado(cursoDetalleSeleccionado()!) ? 'rgba(255, 193, 7, 0.08)' : 'rgba(13, 202, 240, 0.08)')"
+             [style.border]="isCursoAprobado(cursoDetalleSeleccionado()!.id_curso) ? '1px solid rgba(25, 135, 84, 0.2)' : (isCursoBloqueado(cursoDetalleSeleccionado()!) ? '1px solid rgba(255, 193, 7, 0.2)' : '1px solid rgba(13, 202, 240, 0.2)')">
+          <div>
+            <span class="text-muted small">Estado del curso:</span>
+            <div class="fw-bold mt-1" 
+                 [class.text-success]="isCursoAprobado(cursoDetalleSeleccionado()!.id_curso)"
+                 [class.text-warning]="isCursoBloqueado(cursoDetalleSeleccionado()!)"
+                 [class.text-info]="!isCursoAprobado(cursoDetalleSeleccionado()!.id_curso) && !isCursoBloqueado(cursoDetalleSeleccionado()!)">
+              {{ isCursoAprobado(cursoDetalleSeleccionado()!.id_curso) ? 'Aprobado' : (isCursoBloqueado(cursoDetalleSeleccionado()!) ? 'Bloqueado por Prerrequisito' : 'Disponible para Asesorías') }}
+            </div>
+          </div>
+          <span class="badge bg-secondary bg-opacity-20 text-white px-2.5 py-1.5" style="font-size: 11px;">Ciclo {{ cursoDetalleSeleccionado()?.ciclo }}</span>
+        </div>
+
+        <!-- Prerequisite details if blocked -->
+        <div *ngIf="isCursoBloqueado(cursoDetalleSeleccionado()!)" class="p-3 rounded-3 bg-warning bg-opacity-10 border border-warning border-opacity-10">
+          <div class="text-warning small fw-semibold mb-1"><i class="bi bi-exclamation-triangle-fill"></i> Prerrequisito pendiente:</div>
+          <div class="text-white-50 small">Para desbloquear este curso, debes haber aprobado: <strong>{{ getPrerequisitosFaltantes(cursoDetalleSeleccionado()!).join(', ') }}</strong></div>
+        </div>
+
+        <!-- Section: Tutores disponibles -->
+        <div>
+          <h6 class="text-muted small fw-semibold mb-2">TUTORES DISPONIBLES ({{ tutoresParaCursoDetalle().length }})</h6>
+          <div class="list-group rounded-3 overflow-auto" style="max-height: 150px; scrollbar-width: thin;">
+            @for (tutor of tutoresParaCursoDetalle(); track tutor.id_usuario) {
+              <div class="list-group-item bg-dark bg-opacity-30 border-white border-opacity-10 text-white d-flex align-items-center justify-content-between p-2.5">
+                <div class="d-flex align-items-center gap-2">
+                  <div class="rounded-circle bg-info bg-opacity-20 text-info d-flex align-items-center justify-content-center fw-bold" style="width: 32px; height: 32px; font-size: 12px;">
+                    {{ tutor.nombres.charAt(0) }}{{ tutor.apellidos.charAt(0) }}
+                  </div>
+                  <div>
+                    <div class="small fw-semibold">{{ tutor.nombres }} {{ tutor.apellidos }}</div>
+                    <div class="text-muted" style="font-size: 10px;">{{ tutor.correo }}</div>
+                  </div>
+                </div>
+                <button [disabled]="isCursoBloqueado(cursoDetalleSeleccionado()!)" 
+                        (click)="solicitarAsesoriaRapida(tutor)" 
+                        class="btn btn-sm btn-info rounded-2 fw-semibold px-3" 
+                        style="font-size: 11px;">
+                  Solicitar
+                </button>
+              </div>
+            } @empty {
+              <div class="text-center py-3 text-muted small bg-dark bg-opacity-25 rounded-3">No hay tutores registrados para este curso.</div>
+            }
+          </div>
+        </div>
+
+        <!-- Section: Material / Recursos Académicos -->
+        <div>
+          <h6 class="text-muted small fw-semibold mb-2">RECURSOS ACADÉMICOS COMPARTIDOS ({{ recursosParaCursoDetalle().length }})</h6>
+          <div class="list-group rounded-3 overflow-auto" style="max-height: 150px; scrollbar-width: thin;">
+            @for (rec of recursosParaCursoDetalle(); track rec.id_recurso) {
+              <a [href]="rec.url_archivo" target="_blank" class="list-group-item list-group-item-action bg-dark bg-opacity-30 border-white border-opacity-10 text-white d-flex align-items-center justify-content-between p-2.5">
+                <div class="d-flex align-items-center gap-2">
+                  <i class="bi bi-file-earmark-pdf-fill text-danger fs-5"></i>
+                  <div>
+                    <div class="small fw-semibold text-truncate" style="max-width: 250px;">{{ rec.titulo }}</div>
+                    <div class="text-muted" style="font-size: 10px;">Compartido por un tutor</div>
+                  </div>
+                </div>
+                <i class="bi bi-download text-info fs-6"></i>
+              </a>
+            } @empty {
+              <div class="text-center py-3 text-muted small bg-dark bg-opacity-25 rounded-3">Aún no se han subido materiales de estudio para este curso.</div>
+            }
+          </div>
+        </div>
+
+      </div>
+
+      <div class="modal-footer border-0 p-0 mt-4">
+        <button (click)="mostrarModalCursoDetalle.set(false)" class="btn btn-outline-secondary rounded-3 w-100 py-2 fw-semibold">Cerrar Detalle</button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- Modal de Valoración / Calificación de Asesoría (Alumno) -->
+<div class="modal-overlay d-flex align-items-center justify-content-center" *ngIf="mostrarModalValorar()" style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); z-index: 1050; backdrop-filter: blur(8px);">
+  <div class="modal-dialog modal-dialog-centered m-3" style="max-width: 480px; width: 100%;">
+    <div class="modal-content glass-panel p-4 text-start rounded-4 border border-white border-opacity-10 shadow-2xl">
+      <div class="modal-header border-0 p-0 mb-3 d-flex justify-content-between align-items-center">
+        <h5 class="modal-title fw-bold m-0 d-flex align-items-center gap-2 text-white">
+          <i class="bi bi-star-fill text-warning fs-4"></i> Calificar Tutoría
+        </h5>
+        <button (click)="mostrarModalValorar.set(false)" class="btn-close btn-close-white" aria-label="Close"></button>
+      </div>
+      
+      <div class="modal-body p-0 d-flex flex-column gap-3 text-white" *ngIf="asesoriaAValorar() as asesoria">
+        <div>
+          <p class="m-0 small text-muted">Estás calificando la tutoría del curso:</p>
+          <h4 class="m-0 fs-5 fw-bold text-white mt-1">{{ asesoria.nombre_curso }}</h4>
+          <p class="m-0 text-success small">Tutor: Prof. {{ asesoria.tutor_nombres }} {{ asesoria.tutor_apellidos }}</p>
+        </div>
+
+        <!-- Selector de Estrellas -->
+        <div class="text-center my-3">
+          <label class="form-label text-muted small fw-semibold d-block mb-2 text-start">Tu Calificación</label>
+          <div class="d-flex align-items-center justify-content-center gap-3">
+            <span *ngFor="let star of [1, 2, 3, 4, 5]" 
+                  (click)="puntuacionValoracion.set(star)" 
+                  class="cursor-pointer transition-transform" 
+                  style="font-size: 32px; cursor: pointer; transition: transform 0.1s;"
+                  onmouseover="this.style.transform='scale(1.15)';"
+                  onmouseout="this.style.transform='none';">
+              <i class="bi" 
+                 [class.bi-star-fill]="puntuacionValoracion() >= star" 
+                 [class.bi-star]="puntuacionValoracion() < star"
+                 [class.text-warning]="puntuacionValoracion() >= star"
+                 [class.text-muted]="puntuacionValoracion() < star"></i>
+            </span>
+          </div>
+          <span class="badge bg-warning bg-opacity-10 text-warning mt-2 px-2 py-1" style="font-size: 11px; font-weight: bold;">
+            {{ puntuacionValoracion() }} de 5 estrellas
+          </span>
+        </div>
+
+        <!-- Comentario -->
+        <div>
+          <label class="form-label text-muted small fw-semibold mb-1">Comentarios / Reseña (Opcional)</label>
+          <textarea [ngModel]="comentarioValoracion()" 
+                    (ngModelChange)="comentarioValoracion.set($event)" 
+                    class="form-control text-white bg-dark bg-opacity-40 border-white border-opacity-15 rounded-3" 
+                    rows="3" 
+                    placeholder="Escribe tu opinión sobre la sesión para ayudar al tutor a mejorar..."></textarea>
+        </div>
+
+        <!-- Botones de Acción -->
+        <div class="d-flex gap-2 mt-3">
+          <button (click)="mostrarModalValorar.set(false)" class="btn btn-outline-secondary rounded-3 flex-grow-1 py-2 fw-semibold">Cancelar</button>
+          <button (click)="enviarValoracion()" class="btn btn-success rounded-3 flex-grow-1 py-2 fw-semibold">Enviar Calificación</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

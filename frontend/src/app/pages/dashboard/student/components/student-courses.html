@@ -1,0 +1,35 @@
+<div class="glass-panel p-4 text-start">
+  <h3 class="fs-5 fw-bold mb-1"><i class="bi bi-book-fill"></i> Catálogo de Cursos</h3>
+  <p class="text-muted mb-4" style="font-size: 13px;">Cursos registrados e impartidos en la Universidad Nacional de Moquegua.</p>
+
+  <div class="d-flex flex-column gap-4">
+    @for (grupo of parent.filteredCiclosConCursos(); track grupo.ciclo) {
+      <div>
+        <h4 class="fs-6 fw-bold border-bottom pb-2 mb-3 text-info" style="border-color: rgba(255,255,255,0.08) !important;">Ciclo {{ grupo.nombreCiclo }}</h4>
+        <div class="row g-3">
+          @for (c of grupo.cursos; track c.id_curso) {
+            <div class="col-md-6 col-lg-4">
+              <div class="p-3 rounded-3 bg-secondary bg-opacity-10 border border-secondary border-opacity-10 d-flex justify-content-between align-items-center cursor-pointer hover-bg-light-opacity"
+                   (click)="parent.abrirDetalleCurso(c)">
+                <div class="text-start">
+                  <div class="small text-muted mb-1 d-flex align-items-center gap-1.5" style="font-size: 10px;">
+                    <span>{{ c.codigo_curso }}</span>
+                    <span class="bullet-separator"></span>
+                    <span [class.text-success]="parent.isCursoAprobado(c.id_curso)" 
+                          [class.text-warning]="parent.isCursoBloqueado(c)" 
+                          [class.text-info]="!parent.isCursoAprobado(c.id_curso) && !parent.isCursoBloqueado(c)" 
+                          style="font-weight: 600;">
+                      {{ parent.isCursoAprobado(c.id_curso) ? 'Aprobado' : (parent.isCursoBloqueado(c) ? 'Bloqueado' : 'Disponible') }}
+                    </span>
+                  </div>
+                  <h4 class="m-0 fs-6 fw-bold text-white">{{ c.nombre_curso }}</h4>
+                </div>
+                <i class="bi bi-chevron-right text-muted" style="font-size: 13px;"></i>
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+    }
+  </div>
+</div>

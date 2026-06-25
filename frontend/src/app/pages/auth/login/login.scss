@@ -1,0 +1,553 @@
+/* ============================================
+   Login Page — Premium Styles
+   ============================================ */
+
+.login-split-container {
+  display: flex;
+  height: 100vh;
+  width: 100%;
+  overflow: hidden;
+  animation: authPageEnter 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* ============================================
+   Banner Panel (Left Side)
+   ============================================ */
+.banner-panel {
+  flex: 1;
+  height: 100vh;
+  position: sticky;
+  top: 0;
+  background: linear-gradient(135deg, var(--unam-primary) 0%, #1a1040 60%, #0d0820 100%);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 40px;
+  color: white;
+  overflow: hidden;
+
+  @media (max-width: 900px) {
+    display: none;
+  }
+}
+
+/* Floating Particles */
+.particles-container {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.particle {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(var(--unam-secondary-rgb), 0.3);
+  animation: particleFloat linear infinite;
+
+  &.p1 {
+    width: 6px; height: 6px;
+    left: 10%; bottom: -10%;
+    animation-duration: 12s;
+    animation-delay: 0s;
+  }
+  &.p2 {
+    width: 4px; height: 4px;
+    left: 25%; bottom: -10%;
+    animation-duration: 15s;
+    animation-delay: 2s;
+    background: rgba(255, 255, 255, 0.15);
+  }
+  &.p3 {
+    width: 8px; height: 8px;
+    left: 45%; bottom: -10%;
+    animation-duration: 10s;
+    animation-delay: 4s;
+  }
+  &.p4 {
+    width: 5px; height: 5px;
+    left: 60%; bottom: -10%;
+    animation-duration: 14s;
+    animation-delay: 1s;
+    background: rgba(255, 255, 255, 0.1);
+  }
+  &.p5 {
+    width: 7px; height: 7px;
+    left: 75%; bottom: -10%;
+    animation-duration: 11s;
+    animation-delay: 3s;
+  }
+  &.p6 {
+    width: 3px; height: 3px;
+    left: 85%; bottom: -10%;
+    animation-duration: 16s;
+    animation-delay: 5s;
+    background: rgba(255, 255, 255, 0.2);
+  }
+  &.p7 {
+    width: 5px; height: 5px;
+    left: 35%; bottom: -10%;
+    animation-duration: 13s;
+    animation-delay: 6s;
+  }
+}
+
+@keyframes particleFloat {
+  0% {
+    transform: translateY(0) translateX(0);
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  90% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-105vh) translateX(50px);
+    opacity: 0;
+  }
+}
+
+/* Banner Content */
+.banner-content {
+  max-width: 480px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+  position: relative;
+  z-index: 1;
+
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+
+    .brand-icon {
+      font-size: 28px;
+      padding: 8px;
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 10px;
+      color: var(--unam-secondary);
+    }
+
+    h3 {
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+    }
+
+    p {
+      font-size: 10px;
+      letter-spacing: 1px;
+      opacity: 0.6;
+    }
+  }
+
+  .illustration-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    .abstract-svg {
+      width: 200px;
+      height: 200px;
+    }
+  }
+}
+
+/* ============================================
+   Form Panel (Right Side) — Liquid Glass Aesthetic
+   ============================================ */
+.form-panel {
+  position: relative;
+  flex: 1;
+  height: 100vh;
+  overflow: hidden; /* Prevent blobs causing scrollbars */
+  background-color: #06040c; /* High contrast deep backdrop */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 40px;
+
+  @media (max-width: 900px) {
+    padding: 20px;
+    height: auto;
+    overflow-y: visible;
+  }
+
+  /* Liquid Blob 1 - Cyan */
+  &::before {
+    content: '';
+    position: absolute;
+    width: 320px;
+    height: 320px;
+    background: radial-gradient(circle, rgba(0, 229, 255, 0.22) 0%, rgba(0, 229, 255, 0) 70%);
+    top: 15%;
+    left: 20%;
+    filter: blur(60px);
+    border-radius: 50%;
+    animation: liquidMove1 22s infinite alternate ease-in-out;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* Liquid Blob 2 - Purple */
+  &::after {
+    content: '';
+    position: absolute;
+    width: 380px;
+    height: 380px;
+    background: radial-gradient(circle, rgba(112, 0, 255, 0.22) 0%, rgba(112, 0, 255, 0) 70%);
+    bottom: 15%;
+    right: 15%;
+    filter: blur(80px);
+    border-radius: 50%;
+    animation: liquidMove2 28s infinite alternate ease-in-out;
+    pointer-events: none;
+    z-index: 0;
+  }
+}
+
+.login-card {
+  position: relative;
+  z-index: 1; /* Sits above background blobs */
+  width: 100%;
+  max-width: 440px;
+  padding: 40px 35px;
+  display: flex;
+  flex-direction: column;
+  background: rgba(255, 255, 255, 0.035) !important;
+  backdrop-filter: blur(28px) !important;
+  -webkit-backdrop-filter: blur(28px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.55), 
+              inset 0 1px 1px rgba(255, 255, 255, 0.15) !important;
+  border-radius: 24px !important;
+
+  /* High contrast dark theme overrides for accessibility */
+  --text-muted: #cbd5e1;
+  --text-primary: #ffffff;
+  --text-secondary: #cbd5e1;
+  --input-bg: rgba(255, 255, 255, 0.05);
+  --input-border: rgba(255, 255, 255, 0.15);
+  --input-text: #ffffff;
+  --hover-bg: rgba(255, 255, 255, 0.08);
+}
+
+@keyframes liquidMove1 {
+  0% {
+    transform: translate(0, 0) scale(1) rotate(0deg);
+  }
+  33% {
+    transform: translate(120px, 80px) scale(1.2) rotate(120deg);
+  }
+  66% {
+    transform: translate(-60px, 150px) scale(0.9) rotate(240deg);
+  }
+  100% {
+    transform: translate(0, 0) scale(1) rotate(360deg);
+  }
+}
+
+@keyframes liquidMove2 {
+  0% {
+    transform: translate(0, 0) scale(1) rotate(0deg);
+  }
+  33% {
+    transform: translate(-100px, -120px) scale(0.8) rotate(-120deg);
+  }
+  66% {
+    transform: translate(140px, -40px) scale(1.15) rotate(-240deg);
+  }
+  100% {
+    transform: translate(0, 0) scale(1) rotate(-360deg);
+  }
+}
+
+/* Status Badge */
+.status-badge {
+  align-self: flex-start;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--unam-secondary);
+  background: rgba(var(--unam-secondary-rgb), 0.1);
+  padding: 5px 12px;
+  border-radius: 20px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 20px;
+  transition: all 0.3s ease;
+
+  &.inactive {
+    color: #ff9800;
+    background: rgba(255, 152, 0, 0.1);
+    
+    .dot-active {
+      background: #ff9800;
+    }
+  }
+
+  .dot-active {
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #10b981;
+    animation: dotPulse 2s ease-in-out infinite;
+  }
+}
+
+/* Form Header */
+.form-header {
+  text-align: left;
+  margin-bottom: 20px;
+
+  h2 {
+    font-size: 26px;
+    font-weight: 700;
+    color: #ffffff !important;
+    margin-bottom: 6px;
+  }
+
+  p {
+    font-size: 13px;
+    color: var(--text-muted);
+  }
+}
+
+/* Role Selector & Moderator Badge */
+.role-selector-tabs {
+  background: var(--input-bg);
+  border: 1px solid var(--input-border);
+  transition: all 0.3s ease;
+
+  .role-tab {
+    background: transparent;
+    color: var(--text-muted);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+    &:hover:not(.active) {
+      color: var(--text-primary);
+      background: var(--hover-bg);
+    }
+
+    &.active {
+      background: var(--unam-secondary) !important;
+      color: #191438 !important; /* Premium contrast */
+      font-weight: 600;
+      box-shadow: 0 4px 12px rgba(0, 229, 255, 0.3);
+    }
+  }
+}
+
+.moderator-badge {
+  background: rgba(0, 229, 255, 0.08) !important;
+  border: 1.5px solid rgba(0, 229, 255, 0.3) !important;
+  box-shadow: 0 4px 15px rgba(0, 229, 255, 0.15), inset 0 0 8px rgba(0, 229, 255, 0.05);
+  justify-content: center;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  transition: all 0.3s ease;
+
+  i {
+    font-size: 15px;
+    color: #00e5ff !important;
+    filter: drop-shadow(0 0 6px rgba(0, 229, 255, 0.6));
+  }
+
+  span {
+    color: #00e5ff !important;
+    font-size: 11.5px;
+    font-weight: 600;
+    letter-spacing: 0.7px !important;
+  }
+}
+
+/* Auth Form */
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  text-align: left;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  position: relative;
+
+  label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    color: var(--text-muted);
+  }
+
+  input {
+    width: 100%;
+    padding: 14px 16px;
+    border-radius: 10px;
+    border: 1px solid var(--input-border);
+    background: var(--input-bg);
+    color: var(--input-text);
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+                box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+    &::placeholder {
+      color: var(--text-muted);
+      opacity: 0.6;
+    }
+
+    &:focus {
+      border-color: var(--unam-secondary);
+      box-shadow: 0 0 0 3px rgba(var(--unam-secondary-rgb), 0.15);
+    }
+  }
+}
+
+/* Password & Text Input Wrapper */
+.input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+
+  .icon-left {
+    position: absolute;
+    left: 16px;
+    color: var(--text-muted);
+    opacity: 0.7;
+    pointer-events: none;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+  }
+
+  input {
+    padding-left: 44px;
+    padding-right: 48px;
+  }
+}
+
+.eye-toggle {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  transition: color 0.2s, background 0.2s;
+
+  &:hover {
+    color: var(--text-primary);
+    background: var(--hover-bg);
+  }
+}
+
+/* Forgot Link */
+.forgot-link {
+  text-align: right;
+
+  a {
+    font-size: 12px;
+    color: var(--unam-secondary);
+    text-decoration: none;
+    opacity: 0.8;
+    transition: opacity 0.2s;
+
+    &:hover {
+      opacity: 1;
+      text-decoration: underline;
+    }
+  }
+}
+
+/* Submit Button */
+.btn-submit {
+  width: 100%;
+  padding: 14px;
+  border-radius: 10px;
+  border: none;
+  background: var(--unam-secondary);
+  color: var(--badge-text);
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+              box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  margin-top: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+
+  &:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(var(--unam-secondary-rgb), 0.35);
+  }
+
+  &:active:not(:disabled) {
+    transform: translateY(0) scale(0.98);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+
+/* Error Banner */
+.error-banner {
+  background-color: var(--danger-bg);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  color: var(--danger-text);
+  padding: 12px;
+  border-radius: 10px;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+/* Card Footer */
+.card-footer {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-top: 20px;
+  text-align: center;
+
+  a {
+    color: var(--unam-secondary);
+    text-decoration: none;
+    font-weight: 600;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+}
+
+/* ============================================
+   Login Form View transition wrapper
+   ============================================ */
+.login-form-view {
+  display: flex;
+  flex-direction: column;
+}

@@ -1,0 +1,794 @@
+<div class="dashboard-container" [class.sidebar-collapsed]="sidebarCollapsed()">
+  <input type="checkbox" id="sidebar-toggle-check" style="display: none;">
+  <label for="sidebar-toggle-check" class="sidebar-overlay"></label>
+
+  <div class="mobile-header-bar d-flex d-md-none justify-content-between align-items-center px-3 py-2">
+    <label for="sidebar-toggle-check" class="sidebar-toggle-btn fs-4"><i class="bi bi-list"></i></label>
+    <span class="mobile-brand-text fw-bold fs-5 text-success">UNAMConnect</span>
+  </div>
+
+  <!-- Sidebar de Navegación -->
+  <aside class="sidebar glass-panel py-4 px-3">
+    <div class="sidebar-header d-flex align-items-center justify-content-between gap-2 mb-4">
+      <div class="d-flex align-items-center gap-2">
+        <img src="favicon.png" alt="UNAMConnect Symbol" style="height: 38px; object-fit: contain; filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.45));">
+        <div class="brand-text">
+          <h3 class="m-0 fs-6 fw-bold text-white">UNAMConnect</h3>
+          <p class="m-0 text-muted" style="font-size: 10px;">Portal de Tutorías</p>
+        </div>
+      </div>
+      <!-- Botón para colapsar/expandir sidebar en desktop -->
+      <button type="button" class="btn btn-sm text-white border-0 p-1 d-none d-md-block opacity-75 hover-opacity-100 toggle-sidebar-btn" (click)="sidebarCollapsed.set(!sidebarCollapsed())">
+        <i class="bi" [class.bi-chevron-left]="!sidebarCollapsed()" [class.bi-chevron-right]="sidebarCollapsed()"></i>
+      </button>
+    </div>
+
+    <!-- Menú Principal -->
+    <div class="menu-section mb-4">
+      <span class="section-label text-muted fw-bold text-uppercase d-block mb-2" style="font-size: 10px; letter-spacing: 0.5px;">MODERACIÓN</span>
+      <nav class="nav-menu d-flex flex-column gap-1">
+        <a (click)="activeTab.set('principal')" class="nav-item d-flex align-items-center gap-2 py-2 px-3 rounded text-decoration-none" [class.active]="activeTab() === 'principal'">
+          <i class="bi bi-bar-chart-fill"></i> Panel Principal
+        </a>
+        <a (click)="activeTab.set('validar')" class="nav-item d-flex align-items-center gap-2 py-2 px-3 rounded text-decoration-none" [class.active]="activeTab() === 'validar'">
+          <i class="bi bi-check-circle-fill"></i> Validar Tutores <span class="badge bg-danger ms-auto rounded-pill">{{ tutoresPendientes() }}</span>
+        </a>
+        <a (click)="activeTab.set('usuarios')" class="nav-item d-flex align-items-center gap-2 py-2 px-3 rounded text-decoration-none" [class.active]="activeTab() === 'usuarios'">
+          <i class="bi bi-people-fill"></i> Gestión de Usuarios
+        </a>
+      </nav>
+    </div>
+
+    <!-- Menú Sistema -->
+    <div class="menu-section mb-4">
+      <span class="section-label text-muted fw-bold text-uppercase d-block mb-2" style="font-size: 10px; letter-spacing: 0.5px;">SISTEMA</span>
+      <nav class="nav-menu d-flex flex-column gap-1">
+        <a (click)="activeTab.set('configuracion')" class="nav-item d-flex align-items-center gap-2 py-2 px-3 rounded text-decoration-none" [class.active]="activeTab() === 'configuracion'">
+          <i class="bi bi-gear-fill"></i> Configuración
+        </a>
+      </nav>
+    </div>
+
+    <!-- Perfil de Usuario Footer -->
+    <div class="user-profile-footer mt-auto pt-3 border-top d-flex align-items-center gap-2" *ngIf="authService.currentUser() as user">
+      <div class="avatar bg-primary text-white rounded-circle d-flex align-items-center justify-content-center fw-bold" style="width: 36px; height: 36px; font-size: 12px;">{{ user.nombres[0] }}{{ user.apellidos[0] }}</div>
+      <div class="user-info flex-grow-1">
+        <h4 class="m-0 fs-6 fw-bold text-wrap">{{ user.nombres }}</h4>
+        <p class="m-0 text-muted" style="font-size: 10px;">Moderador</p>
+      </div>
+      <button (click)="logout()" class="btn-logout-icon border-0 bg-transparent opacity-70 hover-opacity-100 fs-5" title="Cerrar Sesión"><i class="bi bi-box-arrow-right"></i></button>
+    </div>
+  </aside>
+
+  <!-- Área de Contenido Principal y Footer -->
+  <div class="main-layout-wrapper">
+    <main class="main-content container-fluid p-4 d-flex flex-column gap-4">
+    <!-- Header Superior -->
+    <header class="content-header d-flex justify-content-between align-items-center flex-wrap gap-3">
+      <div>
+        <h1 class="fs-4 fw-bold m-0" *ngIf="activeTab() === 'principal'">Panel del Moderador</h1>
+        <h1 class="fs-4 fw-bold m-0" *ngIf="activeTab() === 'validar'">Validación de Tutores</h1>
+        <h1 class="fs-4 fw-bold m-0" *ngIf="activeTab() === 'usuarios'">Gestión de Usuarios</h1>
+        <h1 class="fs-4 fw-bold m-0" *ngIf="activeTab() === 'configuracion'">Configuración</h1>
+      </div>
+      <div class="header-actions d-flex align-items-center gap-3">
+        <div class="search-bar position-relative d-flex align-items-center" style="z-index: 1000;">
+          <i class="bi bi-search position-absolute text-muted ms-3" style="font-size: 13px;"></i>
+          <input type="text" 
+                 class="form-control rounded-3 py-2 ps-5 search-input-animated" 
+                 placeholder="Buscar alumno o curso..." 
+                 style="font-size: 13px;"
+                 [ngModel]="searchQuery()" 
+                 (ngModelChange)="searchQuery.set($event)"
+                 (focus)="searchFocused.set(true)"
+                 (blur)="onSearchBlur()">
+
+          <!-- Floating Global Search Dropdown -->
+          @if (searchQuery().trim() && searchFocused()) {
+            <div class="search-results-dropdown glass-panel position-absolute p-3 mt-2 rounded-3 text-start" 
+                 style="top: 100%; right: 0; width: 350px; max-height: 380px; overflow-y: auto; box-shadow: 0 10px 30px rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); background: var(--bg-sidebar); z-index: 1001;">
+              
+              <!-- Postulaciones Coincidentes -->
+              @if (filteredSolicitudes().length > 0) {
+                <div class="mb-3">
+                  <h6 class="text-uppercase fw-bold text-info border-bottom pb-1 mb-2" style="font-size: 10px; letter-spacing: 0.5px;">Postulaciones ({{ filteredSolicitudes().length }})</h6>
+                  @for (s of filteredSolicitudes(); track s.id_solicitud) {
+                    <div class="py-1 px-2 rounded hover-bg-light-opacity d-flex justify-content-between align-items-center" style="font-size: 12px; cursor: pointer;" (click)="activeTab.set('principal')">
+                      <div>
+                        <div class="fw-bold text-white">{{ s.nombre_solicitante }}</div>
+                        <div class="text-muted" style="font-size: 10px;">Curso: {{ s.nombre_curso }}</div>
+                      </div>
+                      <span class="badge" [class.bg-warning]="s.estado_solicitud === 'pendiente'" [class.bg-success]="s.estado_solicitud === 'aprobada'">{{ s.estado_solicitud }}</span>
+                    </div>
+                  }
+                </div>
+              }
+
+              <!-- Usuarios/Estudiantes/Tutores -->
+              @if (filteredUsuarios().length > 0) {
+                <div class="mb-3">
+                  <h6 class="text-uppercase fw-bold text-info border-bottom pb-1 mb-2" style="font-size: 10px; letter-spacing: 0.5px;">Usuarios ({{ filteredUsuarios().length }})</h6>
+                  @for (u of filteredUsuarios(); track u.id_usuario) {
+                    <div class="py-1 px-2 rounded hover-bg-light-opacity" style="font-size: 12px; cursor: pointer;" (click)="activeTab.set('usuarios')">
+                      <div class="fw-bold text-white">{{ u.nombres }} {{ u.apellidos }}</div>
+                      <div class="text-muted" style="font-size: 10px;">{{ u.correo }}</div>
+                    </div>
+                  }
+                </div>
+              }
+
+              <!-- Cursos -->
+              @if (filteredCursos().length > 0) {
+                <div>
+                  <h6 class="text-uppercase fw-bold text-info border-bottom pb-1 mb-2" style="font-size: 10px; letter-spacing: 0.5px;">Cursos ({{ filteredCursos().length }})</h6>
+                  @for (c of filteredCursos(); track c.id_curso) {
+                    <div class="py-1 px-2 rounded hover-bg-light-opacity" style="font-size: 12px; cursor: pointer;" (click)="activeTab.set('configuracion'); configSubTab.set('cursos')">
+                      <div class="fw-bold text-white">{{ c.nombre_curso }}</div>
+                      <div class="text-muted" style="font-size: 10px;">{{ c.nombre_carrera }} · Ciclo {{ c.ciclo }}</div>
+                    </div>
+                  }
+                </div>
+              }
+
+              @if (filteredSolicitudes().length === 0 && filteredUsuarios().length === 0 && filteredCursos().length === 0) {
+                <div class="text-center text-muted py-3" style="font-size: 12px;">No se encontraron resultados</div>
+              }
+            </div>
+          }
+        </div>
+        <button (click)="themeService.toggleTheme()" class="btn btn-outline-secondary p-2 d-flex align-items-center justify-content-center rounded-3" title="Cambiar Tema">
+          <i class="bi" [class.bi-sun-fill]="themeService.theme() === 'dark'" [class.bi-moon-fill]="themeService.theme() === 'light'"></i>
+        </button>
+        <div class="position-relative d-inline-block" style="position: relative; z-index: 1100;">
+          <button (click)="toggleNotifications()" class="btn btn-outline-secondary p-2 d-flex align-items-center justify-content-center rounded-3 position-relative" title="Notificaciones">
+            <i class="bi bi-bell-fill"></i>
+            @if (unreadNotificationsCount() > 0) {
+              <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size: 9px; padding: 3px 6px;">
+                {{ unreadNotificationsCount() }}
+              </span>
+            }
+          </button>
+          
+          @if (notificationsOpen()) {
+            <div class="position-fixed top-0 start-0 w-100 h-100" style="z-index: 1000;" (click)="notificationsOpen.set(false)"></div>
+            <div class="notifications-dropdown text-start">
+              <div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-2">
+                <h6 class="m-0 fw-bold text-white" style="font-size: 13px;">Notificaciones</h6>
+                @if (unreadNotificationsCount() > 0) {
+                  <button (click)="marcarTodasLeidas()" class="btn btn-link p-0 text-info text-decoration-none fw-bold" style="font-size: 11px;">Marcar todo como leído</button>
+                }
+              </div>
+              <div class="d-flex flex-column gap-2">
+                @for (n of notificacionesList(); track n.id_notificacion) {
+                  <div class="p-2 rounded-3 hover-bg-light-opacity" 
+                       [class.bg-secondary]="n.leido" 
+                       [class.bg-opacity-10]="n.leido" 
+                       [class.bg-primary]="!n.leido" 
+                       [class.bg-opacity-15]="!n.leido" 
+                       style="font-size: 12px; cursor: pointer; transition: all 0.2s;"
+                       (click)="marcarLeida(n)">
+                    <div class="d-flex justify-content-between align-items-start gap-1">
+                      <p class="m-0 text-white" style="line-height: 1.3;">{{ n.mensaje }}</p>
+                      @if (!n.leido) {
+                        <span class="badge bg-info p-1 rounded-circle" style="width: 6px; height: 6px;"></span>
+                      }
+                    </div>
+                    <span class="text-muted" style="font-size: 9px; display: block; margin-top: 4px;">{{ n.fecha_envio | date:'short' }}</span>
+                  </div>
+                } @empty {
+                  <p class="small text-muted text-center py-4 mb-0">No tienes notificaciones en la base de datos.</p>
+                }
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+    </header>
+
+    <!-- Tab Principal (Dashboard) -->
+    <ng-container *ngIf="activeTab() === 'principal'">
+      <!-- Fila de Tarjetas de Métricas -->
+      <section class="row g-3">
+        <!-- Tutores Pendientes -->
+        <div class="col-sm-6 col-md-4 col-lg-2">
+          <div class="metric-card glass-panel p-3 d-flex flex-column gap-2 text-start">
+            <div class="card-header text-muted fw-bold" style="font-size: 10px;">TUTORES PENDIENTES</div>
+            <h2 class="m-0 fw-bold fs-2 text-danger">{{ tutoresPendientes() }}</h2>
+            <p class="m-0 text-danger" style="font-size: 11px;">Solicitudes por validar</p>
+          </div>
+        </div>
+
+        <!-- Aprobados Histórico -->
+        <div class="col-sm-6 col-md-4 col-lg-2">
+          <div class="metric-card glass-panel p-3 d-flex flex-column gap-2 text-start">
+            <div class="card-header text-muted fw-bold" style="font-size: 10px;">APROBADOS HISTÓRICO</div>
+            <h2 class="m-0 fw-bold fs-2 text-success">{{ aprobadosEsteMes() }}</h2>
+            <p class="m-0 text-success" style="font-size: 11px;">Tutores promovidos</p>
+          </div>
+        </div>
+
+        <!-- Total Usuarios Activos -->
+        <div class="col-sm-6 col-md-4 col-lg-2">
+          <div class="metric-card glass-panel p-3 d-flex flex-column gap-2 text-start">
+            <div class="card-header text-muted fw-bold" style="font-size: 10px;">TOTAL USUARIOS ACTIVOS</div>
+            <h2 class="m-0 fw-bold fs-2">{{ totalUsuariosActivos() }}</h2>
+            <p class="m-0 text-muted" style="font-size: 11px;">← {{ totalTutores() }} tutores activos</p>
+          </div>
+        </div>
+
+        <!-- Total Cursos y Carreras -->
+        <div class="col-sm-6 col-md-4 col-lg-2">
+          <div class="metric-card glass-panel p-3 d-flex flex-column gap-2 text-start">
+            <div class="card-header text-muted fw-bold" style="font-size: 10px;">TOTAL CURSOS</div>
+            <h2 class="m-0 fw-bold fs-2">{{ totalCursos() }}</h2>
+            <p class="m-0 text-muted" style="font-size: 11px;">{{ totalCarreras() }} carreras registradas</p>
+          </div>
+        </div>
+
+        <!-- Valoración Promedio -->
+        <div class="col-sm-6 col-md-4 col-lg-2" style="cursor: pointer;" (click)="showValuationsModal.set(true)">
+          <div class="metric-card glass-panel p-3 d-flex flex-column gap-2 text-start">
+            <div class="card-header text-muted fw-bold" style="font-size: 10px;">SATISFACCIÓN PROMEDIO</div>
+            <h2 class="m-0 fw-bold fs-2"><i class="bi bi-star-fill text-warning"></i> {{ promedioCalificaciones() }}</h2>
+            <p class="m-0 text-info" style="font-size: 11px;">Calificación general</p>
+          </div>
+        </div>
+
+        <!-- Asesorías Completadas -->
+        <div class="col-sm-6 col-md-4 col-lg-2">
+          <div class="metric-card glass-panel p-3 d-flex flex-column gap-2 text-start">
+            <div class="card-header text-muted fw-bold" style="font-size: 10px;">ASESORÍAS REALIZADAS</div>
+            <h2 class="m-0 fw-bold fs-2">{{ asesoriasCompletadas() }} <span class="fs-6 text-muted">/ {{ totalAsesorias() }}</span></h2>
+            <p class="m-0 text-success" style="font-size: 11px;">Sesiones culminadas</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Tabla y widgets divididos -->
+      <div class="row g-4 mt-1">
+        <!-- Columna Izquierda: Tabla de Aprobación de Solicitudes -->
+        <div class="col-lg-8">
+          <div class="glass-panel p-4 text-start">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <h3 class="fs-6 fw-bold m-0"><i class="bi bi-clipboard-check"></i> Validación de Tutores — Postulaciones</h3>
+              <span class="badge bg-warning bg-opacity-10 text-warning px-2 py-1" style="font-size: 11px;">Pendientes ({{ tutoresPendientes() }})</span>
+            </div>
+
+            <div class="table-responsive">
+              <table class="table align-middle">
+                <thead>
+                  <tr class="text-muted" style="font-size: 12px;">
+                    <th>ALUMNO</th>
+                    <th>CURSO A TUTORAR</th>
+                    <th>NOTA OBTENIDA</th>
+                    <th>BOLETA / CONSTANCIA</th>
+                    <th>FECHA POSTULACIÓN</th>
+                    <th class="text-center">ACCIÓN</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (solicitud of filteredSolicitudes(); track solicitud.id_solicitud) {
+                    <tr>
+                      <td class="fw-bold">{{ solicitud.nombre_solicitante }}</td>
+                      <td>{{ solicitud.nombre_curso }}</td>
+                      <td class="text-success fw-bold">{{ solicitud.nota_obtenida }}</td>
+                      <td>
+                        @if (solicitud.url_boleta_notas) {
+                          <a [href]="solicitud.url_boleta_notas" target="_blank" class="text-info text-decoration-underline fw-bold">
+                            <i class="bi bi-file-earmark-text"></i> Ver documento
+                          </a>
+                        } @else {
+                          <span class="text-muted opacity-50">No adjunta</span>
+                        }
+                      </td>
+                      <td>{{ solicitud.fecha_postulacion | date:'shortDate' }}</td>
+                      <td class="text-center">
+                        <div class="d-flex gap-2 justify-content-center">
+                          @if (solicitud.estado_solicitud === 'pendiente') {
+                            <button (click)="cambiarEstado(solicitud.id_solicitud, 'aprobada')" class="btn btn-success btn-sm py-1 px-2">Aprobar</button>
+                            <button (click)="cambiarEstado(solicitud.id_solicitud, 'rechazada')" class="btn btn-danger btn-sm py-1 px-2">Rechazar</button>
+                          } @else {
+                            <span class="badge px-2 py-1 text-uppercase" 
+                                  [class.bg-success]="solicitud.estado_solicitud === 'aprobada'"
+                                  [class.bg-danger]="solicitud.estado_solicitud === 'rechazada'">
+                              {{ solicitud.estado_solicitud }}
+                            </span>
+                          }
+                        </div>
+                      </td>
+                    </tr>
+                  } @empty {
+                    <tr>
+                      <td colspan="6" class="text-center py-4 text-muted">No hay postulaciones registradas en el sistema.</td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Columna Derecha: Salud del Sistema Widget -->
+        <div class="col-lg-4">
+          <div class="glass-panel p-4 text-start">
+            <h3 class="fs-6 fw-bold mb-3"><i class="bi bi-pc-display"></i> Salud del sistema</h3>
+            <div class="d-flex flex-column gap-2" style="font-size: 13px;">
+              <div class="d-flex justify-content-between">
+                <span class="text-muted">Servidor API</span>
+                <span [class.text-success]="saludServidor() === 'Operativo'" [class.text-danger]="saludServidor() !== 'Operativo'" class="fw-bold">
+                  ● {{ saludServidor() }}
+                </span>
+              </div>
+              <div class="d-flex justify-content-between">
+                <span class="text-muted">Base de datos</span>
+                <span [class.text-success]="saludBD() === 'Operativo'" [class.text-danger]="saludBD() !== 'Operativo'" class="fw-bold">
+                  ● {{ saludBD() }}
+                </span>
+              </div>
+              <div class="d-flex justify-content-between">
+                <span class="text-muted">Almacenamiento</span>
+                <span class="text-success fw-bold">● {{ almacenamientoUsado() }} en uso</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </ng-container>
+
+    <!-- Tab Validar -->
+    <ng-container *ngIf="activeTab() === 'validar'">
+      <div class="glass-panel p-4 text-start">
+        <h3 class="fs-5 fw-bold mb-3"><i class="bi bi-clipboard-check"></i> Validación de Solicitudes Pendientes</h3>
+        <div class="table-responsive">
+          <table class="table align-middle">
+            <thead>
+              <tr class="text-muted" style="font-size: 12px;">
+                <th>SOLICITANTE</th>
+                <th>CURSO DE INTERÉS</th>
+                <th>NOTA ALCANZADA</th>
+                <th>BOLETA / CONSTANCIA</th>
+                <th>FECHA DE SOLICITUD</th>
+                <th class="text-center">ACCIÓN DE AVAL</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (solicitud of filteredSolicitudes(); track solicitud.id_solicitud) {
+                <tr>
+                  <td class="fw-bold">{{ solicitud.nombre_solicitante }}</td>
+                  <td>{{ solicitud.nombre_curso }}</td>
+                  <td class="text-success fw-bold">{{ solicitud.nota_obtenida }}</td>
+                  <td>
+                    @if (solicitud.url_boleta_notas) {
+                      <a [href]="solicitud.url_boleta_notas" target="_blank" class="text-info text-decoration-underline fw-bold">
+                        <i class="bi bi-file-earmark-text"></i> Ver documento
+                      </a>
+                    } @else {
+                      <span class="text-muted opacity-50">No adjunta</span>
+                    }
+                  </td>
+                  <td>{{ solicitud.fecha_postulacion | date:'shortDate' }}</td>
+                  <td class="text-center">
+                    <div class="d-flex gap-2 justify-content-center">
+                      @if (solicitud.estado_solicitud === 'pendiente') {
+                        <button (click)="cambiarEstado(solicitud.id_solicitud, 'aprobada')" class="btn btn-success btn-sm py-1 px-2">Aceptar</button>
+                        <button (click)="cambiarEstado(solicitud.id_solicitud, 'rechazada')" class="btn btn-danger btn-sm py-1 px-2">Rechazar</button>
+                      } @else {
+                        <span class="badge px-2 py-1 text-uppercase" 
+                              [class.bg-success]="solicitud.estado_solicitud === 'aprobada'"
+                              [class.bg-danger]="solicitud.estado_solicitud === 'rechazada'">
+                          {{ solicitud.estado_solicitud }}
+                        </span>
+                      }
+                    </div>
+                  </td>
+                </tr>
+              } @empty {
+                <tr>
+                  <td colspan="6" class="text-center py-4 text-muted">No hay postulaciones registradas en el sistema.</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </ng-container>
+
+    <!-- Tab Usuarios -->
+    <ng-container *ngIf="activeTab() === 'usuarios'">
+      <div class="glass-panel p-4 text-start">
+        <h3 class="fs-5 fw-bold mb-3"><i class="bi bi-people-fill"></i> Directorio de Usuarios de UNAMConnect</h3>
+        <div class="table-responsive">
+          <table class="table align-middle">
+            <thead>
+              <tr class="text-muted" style="font-size: 12px;">
+                <th>CÓDIGO</th>
+                <th>NOMBRES Y APELLIDOS</th>
+                <th>CORREO</th>
+                <th>CARRERA</th>
+                <th>ROLES ACTUALES</th>
+                <th class="text-center">ACCIONES</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (u of filteredUsuarios(); track u.id_usuario) {
+                <tr>
+                  <td class="text-nowrap">{{ u.codigo_univ }}</td>
+                  <td class="fw-bold">{{ u.nombres }} {{ u.apellidos }}</td>
+                  <td>{{ u.correo }}</td>
+                  <td>{{ u.nombre_carrera || 'N/A' }}</td>
+                  <td>
+                    <div class="d-flex gap-1 flex-wrap">
+                      @for (r of u.roles; track r.id_rol) {
+                        <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-20 d-inline-flex align-items-center gap-1">
+                          {{ r.nombre_rol | uppercase }}
+                          @if (u.roles.length > 1) {
+                            <button (click)="quitarRol(u.id_usuario, r.id_rol, r.nombre_rol)" class="btn-close border-0 bg-transparent text-danger p-0 ms-1" style="font-size: 8px; line-height: 1;" title="Quitar rol"></button>
+                          }
+                        </span>
+                      }
+                    </div>
+                  </td>
+                  <td class="text-center">
+                    <div class="d-flex gap-2 justify-content-center align-items-center">
+                      <select (change)="agregarRolSeleccionado(u.id_usuario, $event)" class="form-select form-select-sm py-1" style="width: 120px; font-size: 11px;">
+                        <option value="" disabled selected>+ Añadir Rol</option>
+                        @if (!tieneRol(u, 1)) { <option value="1">Alumno</option> }
+                        @if (!tieneRol(u, 2)) { <option value="2">Tutor</option> }
+                        @if (!tieneRol(u, 3)) { <option value="3">Moderador</option> }
+                      </select>
+                      <button (click)="eliminarUsuario(u.id_usuario, u.nombres, u.apellidos)" class="btn btn-outline-danger btn-sm py-1 px-2 fw-semibold" style="font-size: 11px;">
+                        Eliminar
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </ng-container>
+
+    <!-- Tab Configuración -->
+    <ng-container *ngIf="activeTab() === 'configuracion'">
+      <div class="glass-panel p-4 text-start">
+        <h3 class="fs-5 fw-bold mb-1"><i class="bi bi-gear-fill"></i> Configuración del Sistema</h3>
+        <p class="text-muted mb-4" style="font-size: 13px;">Administra los detalles de tu cuenta de forma dinámica, así como las carreras y cursos del portal.</p>
+
+        <!-- Sub Navegación Interna -->
+        <div class="d-flex gap-2 border-bottom pb-2 mb-4">
+          <button (click)="configSubTab.set('perfil')" class="btn btn-sm px-3" [class.btn-success]="configSubTab() === 'perfil'" [class.btn-outline-secondary]="configSubTab() !== 'perfil'"><i class="bi bi-person-fill"></i> Perfil</button>
+          <button (click)="configSubTab.set('carreras')" class="btn btn-sm px-3" [class.btn-success]="configSubTab() === 'carreras'" [class.btn-outline-secondary]="configSubTab() !== 'carreras'"><i class="bi bi-building"></i> Carreras</button>
+          <button (click)="configSubTab.set('cursos')" class="btn btn-sm px-3" [class.btn-success]="configSubTab() === 'cursos'" [class.btn-outline-secondary]="configSubTab() !== 'cursos'"><i class="bi bi-book"></i> Cursos</button>
+        </div>
+
+        <!-- Bloque 1: Perfil de Moderador -->
+        <div *ngIf="configSubTab() === 'perfil'">
+          <div class="row g-3" style="max-width: 500px;" *ngIf="authService.currentUser() as user">
+            <div class="col-md-6">
+              <label class="form-label text-muted text-uppercase fw-semibold" style="font-size: 11px;">Nombres</label>
+              <input type="text" class="form-control rounded-3" [ngModel]="configNombres()" (ngModelChange)="configNombres.set($event)">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label text-muted text-uppercase fw-semibold" style="font-size: 11px;">Apellidos</label>
+              <input type="text" class="form-control rounded-3" [ngModel]="configApellidos()" (ngModelChange)="configApellidos.set($event)">
+            </div>
+            <div class="col-12">
+              <label class="form-label text-muted text-uppercase fw-semibold" style="font-size: 11px;">Correo Electrónico (No modificable)</label>
+              <input type="text" class="form-control bg-light text-muted" [value]="user.correo" disabled style="font-style: italic;">
+            </div>
+            <div class="col-12 d-flex gap-3 mt-3 flex-wrap">
+              <button (click)="guardarConfiguracion()" class="btn btn-success px-4 rounded-3">Guardar Cambios</button>
+              <button (click)="restablecerPasswordConfig()" class="btn btn-outline-danger px-4 rounded-3">Cambiar Contraseña</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Bloque 2: Gestión de Carreras -->
+        <div *ngIf="configSubTab() === 'carreras'">
+          <div class="row g-4">
+            <!-- Formulario de Creación/Edición -->
+            <div class="col-md-4">
+              <div class="card bg-opacity-10 bg-secondary border border-secondary border-opacity-10 p-3 rounded-3">
+                <h4 class="fs-6 fw-bold mb-3"><i class="bi bi-plus-lg"></i> {{ editCarreraId() ? 'Editar Carrera' : 'Registrar Carrera' }}</h4>
+                <div class="d-flex flex-column gap-3">
+                  <div>
+                    <label class="form-label text-muted fw-semibold mb-1" style="font-size: 11px;">Nombre de la Carrera</label>
+                    <input type="text" class="form-control form-control-sm" [ngModel]="carreraFormNombre()" (ngModelChange)="carreraFormNombre.set($event)" placeholder="Ej. Ingeniería de Sistemas">
+                  </div>
+                  <div>
+                    <label class="form-label text-muted fw-semibold mb-1" style="font-size: 11px;">Facultad</label>
+                    <input type="text" class="form-control form-control-sm" [ngModel]="carreraFormFacultad()" (ngModelChange)="carreraFormFacultad.set($event)" placeholder="Ej. Ingeniería de Procesos">
+                  </div>
+                  <div class="d-flex gap-2 mt-2">
+                    <button (click)="guardarCarrera()" class="btn btn-success btn-sm w-100">{{ editCarreraId() ? 'Actualizar' : 'Registrar' }}</button>
+                    <button *ngIf="editCarreraId()" (click)="resetCarreraForm()" class="btn btn-secondary btn-sm w-100">Cancelar</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Tabla de Carreras -->
+            <div class="col-md-8">
+              <div class="table-responsive">
+                <table class="table align-middle">
+                  <thead>
+                    <tr class="text-muted" style="font-size: 12px;">
+                      <th>ID</th>
+                      <th>CARRERA</th>
+                      <th>FACULTAD</th>
+                      <th class="text-center">ACCIONES</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (c of filteredCarreras(); track c.id_carrera) {
+                      <tr>
+                        <td>#{{ c.id_carrera }}</td>
+                        <td class="fw-bold">{{ c.nombre_carrera }}</td>
+                        <td>{{ c.facultad }}</td>
+                        <td class="text-center">
+                          <div class="d-flex gap-2 justify-content-center">
+                            <button (click)="editarCarrera(c)" class="btn btn-outline-success btn-sm py-1">Editar</button>
+                            <button (click)="eliminarCarrera(c.id_carrera)" class="btn btn-outline-danger btn-sm py-1">Eliminar</button>
+                          </div>
+                        </td>
+                      </tr>
+                    } @empty {
+                      <tr>
+                        <td colspan="4" class="text-center py-4 text-muted">No hay carreras registradas en el sistema.</td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Bloque 3: Gestión de Cursos -->
+        <div *ngIf="configSubTab() === 'cursos'">
+          <div class="row g-4">
+            <!-- Formulario de Creación/Edición -->
+            <div class="col-md-4">
+              <div class="card bg-opacity-10 bg-secondary border border-secondary border-opacity-10 p-3 rounded-3">
+                <h4 class="fs-6 fw-bold mb-3"><i class="bi bi-plus-lg"></i> {{ editCursoId() ? 'Editar Curso' : 'Registrar Curso' }}</h4>
+                <div class="d-flex flex-column gap-3">
+                  <div>
+                    <label class="form-label text-muted fw-semibold mb-1" style="font-size: 11px;">Nombre del Curso</label>
+                    <input type="text" class="form-control form-control-sm" [ngModel]="cursoFormNombre()" (ngModelChange)="cursoFormNombre.set($event)" placeholder="Ej. Base de Datos II">
+                  </div>
+                  <div>
+                    <label class="form-label text-muted fw-semibold mb-1" style="font-size: 11px;">Carrera Perteneciente</label>
+                    <select class="form-select form-select-sm" [ngModel]="cursoFormCarrera()" (ngModelChange)="cursoFormCarrera.set($event)">
+                      <option [ngValue]="null" disabled selected>Selecciona una Carrera</option>
+                      @for (c of carrerasList(); track c.id_carrera) {
+                        <option [value]="c.id_carrera">{{ c.nombre_carrera }}</option>
+                      }
+                    </select>
+                  </div>
+                  <div>
+                    <label class="form-label text-muted fw-semibold mb-1" style="font-size: 11px;">Ciclo de Estudios</label>
+                    <select class="form-select form-select-sm" [ngModel]="cursoFormCiclo()" (ngModelChange)="cursoFormCiclo.set($event)">
+                      <option [value]="1">I Ciclo</option>
+                      <option [value]="2">II Ciclo</option>
+                      <option [value]="3">III Ciclo</option>
+                      <option [value]="4">IV Ciclo</option>
+                      <option [value]="5">V Ciclo</option>
+                      <option [value]="6">VI Ciclo</option>
+                      <option [value]="7">VII Ciclo</option>
+                      <option [value]="8">VIII Ciclo</option>
+                      <option [value]="9">IX Ciclo</option>
+                      <option [value]="10">X Ciclo</option>
+                    </select>
+                  </div>
+                  <div class="d-flex gap-2 mt-2">
+                    <button (click)="guardarCurso()" class="btn btn-success btn-sm w-100">{{ editCursoId() ? 'Actualizar' : 'Registrar' }}</button>
+                    <button *ngIf="editCursoId()" (click)="resetCursoForm()" class="btn btn-secondary btn-sm w-100">Cancelar</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Tabla de Cursos -->
+            <div class="col-md-8">
+              <div class="table-responsive">
+                <table class="table align-middle">
+                  <thead>
+                    <tr class="text-muted" style="font-size: 12px;">
+                      <th>CURSO</th>
+                      <th>CARRERA</th>
+                      <th>CICLO</th>
+                      <th class="text-center">ACCIONES</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (curso of filteredCursos(); track curso.id_curso) {
+                      <tr>
+                        <td class="fw-bold">{{ curso.nombre_curso }}</td>
+                        <td>{{ curso.nombre_carrera }}</td>
+                        <td class="text-success fw-bold">Ciclo {{ curso.ciclo }}</td>
+                        <td class="text-center">
+                          <div class="d-flex gap-2 justify-content-center">
+                            <button (click)="editarCurso(curso)" class="btn btn-outline-success btn-sm py-1">Editar</button>
+                            <button (click)="eliminarCurso(curso.id_curso)" class="btn btn-outline-danger btn-sm py-1">Eliminar</button>
+                          </div>
+                        </td>
+                      </tr>
+                    } @empty {
+                      <tr>
+                        <td colspan="4" class="text-center py-4 text-muted">No hay cursos registrados en el sistema.</td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </ng-container>
+
+    <!-- Modal de Valoraciones con scrollbar y estilos premium -->
+    @if (showValuationsModal()) {
+      <div class="valuations-modal-overlay">
+        <div class="valuations-modal-card">
+          <div class="d-flex justify-content-between align-items-center border-bottom border-secondary pb-3 mb-3">
+            <h5 class="fw-bold text-white m-0 d-flex align-items-center gap-2" style="font-size: 18px;">
+              <i class="bi bi-star-fill text-warning"></i> Valoraciones del Sistema
+            </h5>
+            <button (click)="showValuationsModal.set(false)" class="modal-close-btn" title="Cerrar"><i class="bi bi-x-lg"></i></button>
+          </div>
+
+          <div class="d-flex flex-column gap-3">
+            @for (val of valoracionesList(); track val.id_valoracion) {
+              <div class="valuation-item text-start">
+                <div class="d-flex justify-content-between align-items-start gap-2 flex-wrap mb-2">
+                  <div>
+                    <span class="fw-bold text-white d-block" style="font-size: 13.5px; letter-spacing: -0.2px;">Alumno: {{ val.nombre_alumno || 'Anónimo' }}</span>
+                    <span class="text-muted d-block mt-1" style="font-size: 11px;">Tutor: <strong class="text-success">{{ val.nombre_tutor || 'Anónimo' }}</strong></span>
+                    <span class="text-muted d-block" style="font-size: 11px;">Curso: <span class="text-info">{{ val.nombre_curso || 'N/A' }}</span></span>
+                  </div>
+                  <div class="stars d-flex gap-1 bg-black bg-opacity-20 px-2 py-1 rounded-pill">
+                    @for (star of [1, 2, 3, 4, 5]; track star) {
+                      <i class="bi" 
+                         [class.bi-star-fill]="star <= val.puntuacion" 
+                         [class.bi-star]="star > val.puntuacion" 
+                         [class.text-warning]="star <= val.puntuacion" 
+                         [class.text-muted]="star > val.puntuacion" 
+                         style="font-size: 11px;"></i>
+                    }
+                  </div>
+                </div>
+                <p class="m-0 text-white opacity-90 italic-comment" style="font-size: 12.5px; line-height: 1.45; font-style: italic;">
+                  "{{ val.comentario }}"
+                </p>
+              </div>
+            } @empty {
+              <p class="text-muted text-center py-5 my-0" style="font-size: 13px;">No hay valoraciones registradas en la base de datos.</p>
+            }
+          </div>
+
+          <div class="text-end mt-4 pt-3 border-top border-secondary border-opacity-20">
+            <button (click)="showValuationsModal.set(false)" class="btn btn-outline-light btn-sm px-4 rounded-pill">Cerrar</button>
+          </div>
+        </div>
+      </div>
+    }
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="dashboard-footer py-3 px-4 d-flex justify-content-between align-items-center flex-wrap gap-3">
+    <div class="d-flex align-items-center gap-2">
+      <span class="footer-logo fw-bold text-success fs-6">UNAMConnect</span>
+      <span class="text-muted fs-7">| Portal de Tutorías Académicas</span>
+    </div>
+    <div class="d-flex align-items-center gap-3 flex-wrap">
+      <span class="text-muted fs-7">© 2026 UNAMConnect. Todos los derechos reservados.</span>
+      <span class="badge bg-success bg-opacity-10 text-success rounded-pill px-2.5 py-1.5 fs-8 d-flex align-items-center gap-1">
+        <span class="led-dot bg-success rounded-circle"></span>
+        {{ cicloAcademicoActivo() }}
+      </span>
+    </div>
+  </footer>
+</div>
+</div>
+
+<style>
+/* Custom scrollbar for valuations modal */
+.valuations-modal-card::-webkit-scrollbar {
+  width: 8px;
+}
+.valuations-modal-card::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 8px;
+}
+.valuations-modal-card::-webkit-scrollbar-thumb {
+  background: rgba(0, 229, 255, 0.3);
+  border-radius: 8px;
+  border: 2px solid #13111C;
+}
+.valuations-modal-card::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 229, 255, 0.5);
+}
+
+/* Modal styling */
+.valuations-modal-overlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1050;
+  background: rgba(6, 4, 12, 0.75);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  animation: modalFadeIn 0.25s ease-out;
+}
+
+.valuations-modal-card {
+  width: 95%;
+  max-width: 680px;
+  max-height: 85vh;
+  overflow-y: auto;
+  background: rgba(19, 17, 28, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  padding: 30px;
+  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.6),
+              inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  animation: modalScaleIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.modal-close-btn {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #cbd5e1;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.modal-close-btn:hover {
+  background: rgba(239, 68, 68, 0.15);
+  border-color: rgba(239, 68, 68, 0.3);
+  color: #ef4444;
+  transform: rotate(90deg);
+}
+
+.valuation-item {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 14px;
+  padding: 18px;
+  transition: all 0.25s ease;
+}
+
+.valuation-item:hover {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(0, 229, 255, 0.25);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+}
+
+@keyframes modalFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes modalScaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.96) translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+</style>

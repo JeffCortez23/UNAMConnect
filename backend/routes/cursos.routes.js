@@ -6,7 +6,11 @@ const {
   crearCurso,
   actualizarCurso,
   eliminarCurso,
+  obtenerPrerequisitos,
 } = require('../controllers/cursos.controller');
+
+// GET    /api/cursos/prerequisitos  → Obtener mapa de prerrequisitos
+router.get('/prerequisitos', obtenerPrerequisitos);
 
 // GET    /api/cursos      → Obtener todos los cursos (incluye datos de carrera)
 router.get('/', obtenerCursos);

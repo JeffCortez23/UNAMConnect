@@ -18,9 +18,8 @@ const validateRegister = [
     .exists().withMessage('El correo es obligatorio')
     .isEmail().withMessage('Debe ser un correo electrónico válido')
     .normalizeEmail(),
-  body('password')
-    .exists().withMessage('La contraseña es obligatoria')
-    .isLength({ min: 6 }).withMessage('La contraseña debe tener al menos 6 caracteres'),
+  body('idToken')
+    .exists().withMessage('El ID Token de Firebase es obligatorio'),
   (req, res, next) => validateResult(req, res, next)
 ];
 

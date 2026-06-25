@@ -66,6 +66,9 @@ const eliminarCarrera = async (req, res) => {
     res.json(carreraEliminada);
   } catch (error) {
     console.error('Error al eliminar carrera:', error);
+    if (error.code === '23503') {
+      return res.status(409).json({ error: 'No se puede eliminar la carrera porque tiene cursos u otros registros asociados.' });
+    }
     res.status(500).json({ error: 'Error al eliminar carrera' });
   }
 };

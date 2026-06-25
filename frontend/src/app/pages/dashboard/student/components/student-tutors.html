@@ -1,0 +1,30 @@
+<div class="glass-panel p-4 text-start">
+  <h3 class="fs-5 fw-bold mb-1"><i class="bi bi-people-fill"></i> Catálogo de Tutores Autorizados</h3>
+  <p class="text-muted mb-4" style="font-size: 13px;">Lista de tutores registrados en la Universidad Nacional de Moquegua.</p>
+  <div class="row g-3">
+    @for (tutor of parent.filteredTutores(); track tutor.id_usuario) {
+      <div class="col-sm-6 col-md-4 col-xl-3">
+        <div class="card h-100 bg-opacity-10 bg-secondary border border-secondary border-opacity-10 p-3 rounded-3 text-center">
+          <div class="d-flex flex-column align-items-center justify-content-between h-100">
+            <div class="rounded-circle bg-info bg-opacity-20 text-info d-flex align-items-center justify-content-center fw-bold mb-2 shadow-sm" style="width: 48px; height: 48px; font-size: 16px;">
+              {{ tutor.nombres.charAt(0) }}{{ tutor.apellidos.charAt(0) }}
+            </div>
+            <h4 class="fs-6 fw-bold text-white mb-1">{{ tutor.nombres }} {{ tutor.apellidos }}</h4>
+            <p class="text-success small mb-3 text-truncate w-100" style="font-size: 11px;">{{ tutor.correo }}</p>
+            
+            <div class="d-flex gap-2 w-100 mt-auto justify-content-center">
+              <button (click)="parent.seleccionarTutorChat(tutor.id_usuario); parent.activeTab.set('mensajes')" class="btn btn-outline-info btn-sm flex-grow-1 rounded-2" style="font-size: 11px;">
+                <i class="bi bi-chat-dots-fill"></i> Mensaje
+              </button>
+              <button (click)="parent.onTutorSelected(tutor.id_usuario); parent.mostrarModalSolicitar.set(true)" class="btn btn-success btn-sm flex-grow-1 rounded-2" style="font-size: 11px;">
+                <i class="bi bi-plus-lg"></i> Asesoría
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    } @empty {
+      <div class="col-12 py-4 text-center text-muted">No hay tutores disponibles en este momento.</div>
+    }
+  </div>
+</div>

@@ -1,0 +1,934 @@
+<div class="dashboard-container" [class.sidebar-collapsed]="sidebarCollapsed()">
+  <input type="checkbox" id="sidebar-toggle-check" style="display: none;">
+  <label for="sidebar-toggle-check" class="sidebar-overlay"></label>
+
+  <div class="mobile-header-bar d-flex d-md-none justify-content-between align-items-center px-3 py-2">
+    <label for="sidebar-toggle-check" class="sidebar-toggle-btn fs-4"><i class="bi bi-list"></i></label>
+    <span class="mobile-brand-text fw-bold fs-5 text-success">UNAMConnect</span>
+  </div>
+
+  <!-- Sidebar de Navegación -->
+  <aside class="sidebar glass-panel py-4 px-3">
+    <div class="sidebar-header d-flex align-items-center justify-content-between gap-2 mb-4">
+      <div class="d-flex align-items-center gap-2">
+        <img src="favicon.png" alt="UNAMConnect Symbol" style="height: 38px; object-fit: contain; filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.45));">
+        <div class="brand-text">
+          <h3 class="m-0 fs-6 fw-bold text-white">UNAMConnect</h3>
+          <p class="m-0 text-muted" style="font-size: 10px;">Portal de Tutorías</p>
+        </div>
+      </div>
+      <!-- Botón para colapsar/expandir sidebar en desktop -->
+      <button type="button" class="btn btn-sm text-white border-0 p-1 d-none d-md-block opacity-75 hover-opacity-100 toggle-sidebar-btn" (click)="sidebarCollapsed.set(!sidebarCollapsed())">
+        <i class="bi" [class.bi-chevron-left]="!sidebarCollapsed()" [class.bi-chevron-right]="sidebarCollapsed()"></i>
+      </button>
+    </div>
+
+    <!-- Menú Principal -->
+    <div class="menu-section mb-4">
+      <span class="section-label text-muted fw-bold text-uppercase d-block mb-2" style="font-size: 10px; letter-spacing: 0.5px;">PRINCIPAL</span>
+      <nav class="nav-menu d-flex flex-column gap-1">
+        <a (click)="activeTab.set('principal')" class="nav-item d-flex align-items-center gap-2 py-2 px-3 rounded text-decoration-none" [class.active]="activeTab() === 'principal'">
+          <i class="bi bi-bar-chart-line-fill"></i> Panel Principal
+        </a>
+        <a (click)="activeTab.set('disponibilidad')" class="nav-item d-flex align-items-center gap-2 py-2 px-3 rounded text-decoration-none" [class.active]="activeTab() === 'disponibilidad'">
+          <i class="bi bi-calendar-event-fill"></i> Mi Disponibilidad
+        </a>
+        <a (click)="activeTab.set('cursos')" class="nav-item d-flex align-items-center gap-2 py-2 px-3 rounded text-decoration-none" [class.active]="activeTab() === 'cursos'">
+          <i class="bi bi-book-fill"></i> Mis Cursos
+        </a>
+        <a (click)="activeTab.set('alumnos')" class="nav-item d-flex align-items-center gap-2 py-2 px-3 rounded text-decoration-none" [class.active]="activeTab() === 'alumnos'">
+          <i class="bi bi-people-fill"></i> Mis Alumnos
+        </a>
+        <a (click)="activeTab.set('mensajes')" class="nav-item d-flex align-items-center gap-2 py-2 px-3 rounded text-decoration-none" [class.active]="activeTab() === 'mensajes'">
+          <i class="bi bi-chat-dots-fill"></i> Mensajes <span class="badge bg-danger ms-auto rounded-pill" *ngIf="mensajesSinLeerTotal() > 0">{{ mensajesSinLeerTotal() }}</span>
+        </a>
+        <a (click)="activeTab.set('recursos')" class="nav-item d-flex align-items-center gap-2 py-2 px-3 rounded text-decoration-none" [class.active]="activeTab() === 'recursos'">
+          <i class="bi bi-folder-fill"></i> Recursos Subidos
+        </a>
+      </nav>
+    </div>
+
+    <!-- Menú Gestión -->
+    <div class="menu-section mb-4">
+      <span class="section-label text-muted fw-bold text-uppercase d-block mb-2" style="font-size: 10px; letter-spacing: 0.5px;">GESTIÓN</span>
+      <nav class="nav-menu d-flex flex-column gap-1">
+        <a (click)="activeTab.set('estadisticas')" class="nav-item d-flex align-items-center gap-2 py-2 px-3 rounded text-decoration-none" [class.active]="activeTab() === 'estadisticas'">
+          <i class="bi bi-graph-up-arrow"></i> Estadísticas
+        </a>
+        <a (click)="activeTab.set('valoraciones')" class="nav-item d-flex align-items-center gap-2 py-2 px-3 rounded text-decoration-none" [class.active]="activeTab() === 'valoraciones'">
+          <i class="bi bi-star-fill"></i> Valoraciones
+        </a>
+        <a (click)="activeTab.set('configuracion')" class="nav-item d-flex align-items-center gap-2 py-2 px-3 rounded text-decoration-none" [class.active]="activeTab() === 'configuracion'">
+          <i class="bi bi-gear-fill"></i> Configuración
+        </a>
+      </nav>
+    </div>
+
+    <!-- Perfil de Usuario Footer -->
+    <div class="user-profile-footer mt-auto pt-3 border-top d-flex flex-column align-items-stretch gap-2" *ngIf="authService.currentUser() as user">
+      <div class="d-flex align-items-center gap-2">
+        <div class="avatar bg-primary text-white rounded-circle d-flex align-items-center justify-content-center fw-bold" style="width: 36px; height: 36px; font-size: 12px;">{{ user.nombres[0] }}{{ user.apellidos[0] }}</div>
+        <div class="user-info flex-grow-1 overflow-hidden">
+          <h4 class="m-0 fs-6 fw-bold text-truncate text-white" style="max-width: 130px;">{{ user.nombres }}</h4>
+          <p class="m-0 text-muted text-truncate" style="font-size: 10px;">Tutor · {{ user.nombre_carrera || 'Matemáticas' }}</p>
+        </div>
+        <button (click)="logout()" class="btn-logout-icon border-0 bg-transparent opacity-70 hover-opacity-100 fs-5 text-white" title="Cerrar Sesión"><i class="bi bi-box-arrow-right"></i></button>
+      </div>
+
+      <!-- Si es alumno, puede alternar vista -->
+      <button *ngIf="esAlumno()" (click)="cambiarAPanelAlumno()" class="btn btn-outline-light btn-sm w-100 mt-1" style="font-size: 11px;">
+        <i class="bi bi-arrow-repeat me-1"></i> Cambiar a Vista Alumno
+      </button>
+    </div>
+  </aside>
+
+  <!-- Área de Contenido Principal y Footer -->
+  <div class="main-layout-wrapper">
+    <main class="main-content container-fluid p-4 d-flex flex-column gap-4">
+    <!-- Header Superior -->
+    <header class="content-header d-flex justify-content-between align-items-center flex-wrap gap-3">
+      <div class="d-flex align-items-center gap-3">
+        <h1 class="fs-4 fw-bold m-0" *ngIf="activeTab() === 'principal'">Panel del Tutor</h1>
+        <h1 class="fs-4 fw-bold m-0" *ngIf="activeTab() === 'disponibilidad'">Mi Disponibilidad</h1>
+        <h1 class="fs-4 fw-bold m-0" *ngIf="activeTab() === 'cursos'">Mis Cursos</h1>
+        <h1 class="fs-4 fw-bold m-0" *ngIf="activeTab() === 'alumnos'">Mis Alumnos</h1>
+        <h1 class="fs-4 fw-bold m-0" *ngIf="activeTab() === 'mensajes'">Mensajes</h1>
+        <h1 class="fs-4 fw-bold m-0" *ngIf="activeTab() === 'recursos'">Recursos Subidos</h1>
+        <h1 class="fs-4 fw-bold m-0" *ngIf="activeTab() === 'estadisticas'">Estadísticas</h1>
+        <h1 class="fs-4 fw-bold m-0" *ngIf="activeTab() === 'valoraciones'">Valoraciones</h1>
+        <h1 class="fs-4 fw-bold m-0" *ngIf="activeTab() === 'configuracion'">Configuración</h1>
+        <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-20 d-flex align-items-center gap-1 rounded-pill" style="font-size: 11px;">
+          <i class="bi bi-circle-fill" style="font-size: 6px;"></i> Disponible
+        </span>
+      </div>
+      <div class="header-actions d-flex align-items-center gap-3">
+        <div class="search-bar position-relative d-flex align-items-center">
+          <i class="bi bi-search position-absolute text-muted ms-3" style="font-size: 13px;"></i>
+          <input type="text" 
+                 class="form-control rounded-3 py-2 ps-5 search-input-animated" 
+                 placeholder="Buscar alumnos o cursos..." 
+                 style="font-size: 13px;"
+                 [ngModel]="searchQuery()" 
+                 (ngModelChange)="searchQuery.set($event)">
+        </div>
+        <button (click)="themeService.toggleTheme()" class="btn btn-outline-secondary p-2 d-flex align-items-center justify-content-center rounded-3" title="Cambiar Tema">
+          <i class="bi" [class.bi-sun-fill]="themeService.theme() === 'dark'" [class.bi-moon-fill]="themeService.theme() === 'light'"></i>
+        </button>
+        <div class="position-relative d-inline-block" style="position: relative; z-index: 1100;">
+          <button (click)="toggleNotifications()" class="btn btn-outline-secondary p-2 d-flex align-items-center justify-content-center rounded-3 position-relative" title="Notificaciones">
+            <i class="bi bi-bell-fill"></i>
+            @if (unreadNotificationsCount() > 0) {
+              <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size: 9px; padding: 3px 6px;">
+                {{ unreadNotificationsCount() }}
+              </span>
+            }
+          </button>
+          
+          @if (notificationsOpen()) {
+            <div class="position-fixed top-0 start-0 w-100 h-100" style="z-index: 1000;" (click)="notificationsOpen.set(false)"></div>
+            <div class="notifications-dropdown text-start">
+              <div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-2">
+                <h6 class="m-0 fw-bold text-white" style="font-size: 13px;">Notificaciones</h6>
+                @if (unreadNotificationsCount() > 0) {
+                  <button (click)="marcarTodasLeidas()" class="btn btn-link p-0 text-info text-decoration-none fw-bold" style="font-size: 11px;">Marcar todo como leído</button>
+                }
+              </div>
+              <div class="d-flex flex-column gap-2">
+                @for (n of notificacionesList(); track n.id_notificacion) {
+                  <div class="p-2 rounded-3 hover-bg-light-opacity" 
+                       [class.bg-secondary]="n.leido" 
+                       [class.bg-opacity-10]="n.leido" 
+                       [class.bg-primary]="!n.leido" 
+                       [class.bg-opacity-15]="!n.leido" 
+                       style="font-size: 12px; cursor: pointer; transition: all 0.2s;"
+                       (click)="marcarLeida(n)">
+                    <div class="d-flex justify-content-between align-items-start gap-1">
+                      <p class="m-0 text-white" style="line-height: 1.3;">{{ n.mensaje }}</p>
+                      @if (!n.leido) {
+                        <span class="badge bg-info p-1 rounded-circle" style="width: 6px; height: 6px;"></span>
+                      }
+                    </div>
+                    <span class="text-muted" style="font-size: 9px; display: block; margin-top: 4px;">{{ n.fecha_envio | date:'short' }}</span>
+                  </div>
+                } @empty {
+                  <p class="small text-muted text-center py-4 mb-0">No tienes notificaciones en la base de datos.</p>
+                }
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+    </header>
+
+    <!-- Tab Principal (Dashboard) -->
+    <ng-container *ngIf="activeTab() === 'principal'">
+      <!-- Fila de Tarjetas de Métricas -->
+      <section class="row g-3">
+        <!-- Sesiones Completadas -->
+        <div class="col-md-4">
+          <div class="metric-card glass-panel p-3 d-flex flex-column gap-2 text-start">
+            <div class="card-header text-muted fw-bold" style="font-size: 10px;">SESIONES COMPLETADAS</div>
+            <h2 class="m-0 fw-bold fs-2 text-success">{{ sesionesEsteMes() }}</h2>
+            <p class="m-0 text-success" style="font-size: 11px;">Historial total completado</p>
+          </div>
+        </div>
+
+        <!-- Horas Dictadas -->
+        <div class="col-md-4">
+          <div class="metric-card glass-panel p-3 d-flex flex-column gap-2 text-start">
+            <div class="card-header text-muted fw-bold" style="font-size: 10px;">HORAS DICTADAS</div>
+            <h2 class="m-0 fw-bold fs-2 text-info">{{ horasDictadas() }}h</h2>
+            <p class="m-0 text-muted" style="font-size: 11px;">Ciclo 2026 acumulado</p>
+          </div>
+        </div>
+
+        <!-- Promedio Valoración -->
+        <div class="col-md-4">
+          <div class="metric-card glass-panel p-3 d-flex flex-column gap-2 text-start">
+            <div class="card-header text-muted fw-bold" style="font-size: 10px;">PROMEDIO VALORACIÓN</div>
+            <h2 class="m-0 fw-bold fs-2 text-warning">{{ promedioValoracion() }}</h2>
+            <div class="text-warning small d-flex gap-1">
+              <span *ngIf="promedioValoracion() >= 4.5"><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i></span>
+              <span *ngIf="promedioValoracion() >= 3.5 && promedioValoracion() < 4.5"><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i></span>
+              <span *ngIf="promedioValoracion() >= 2.5 && promedioValoracion() < 3.5"><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i></span>
+              <span *ngIf="promedioValoracion() < 2.5"><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i></span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Layout de Dos Columnas -->
+      <div class="row g-4 mt-1">
+        <!-- Columna Izquierda: Calendario de Disponibilidad Semanal -->
+        <div class="col-lg-7">
+          <div class="glass-panel p-4 text-start mb-4">
+            <h3 class="fs-6 fw-bold mb-3"><i class="bi bi-calendar-event me-2"></i>Disponibilidad Semanal</h3>
+            <!-- Tabla de Calendario Dinámica -->
+            <div class="row row-cols-5 g-2 text-center">
+              @for (day of ['Lunes', 'Martes', 'Miercoles', 'Jueves', 'Viernes']; track day) {
+                <div class="col">
+                  <div class="p-2 rounded border border-secondary border-opacity-10 bg-secondary bg-opacity-10 h-100 d-flex flex-column align-items-center">
+                    <span class="fw-bold text-muted" style="font-size: 10px;">{{ day.substring(0,3) | uppercase }}</span>
+                    @for (slot of getSlotsForDay(day); track slot.id_horario) {
+                      <span class="badge mt-1 w-100" style="font-size: 9px; font-weight: 700; background-color: rgba(97, 198, 192, 0.2) !important; color: #61c6c0 !important; border: 1px solid rgba(97, 198, 192, 0.4) !important; padding: 4px 2px;">
+                        {{ slot.hora_inicio.substring(0,5) }} - {{ slot.hora_fin.substring(0,5) }}
+                      </span>
+                    } @empty {
+                      <span class="text-muted mt-2 fst-italic" style="font-size: 10px;">Sin horas</span>
+                    }
+                  </div>
+                </div>
+              }
+            </div>
+            <div class="d-flex gap-2 mt-3 small text-muted" style="font-size: 11px;">
+              <span class="text-success">●</span> Horarios Registrados en Base de Datos
+            </div>
+          </div>
+
+          <!-- Sesiones Programadas Panel -->
+          <div class="glass-panel p-4 text-start">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <h3 class="fs-6 fw-bold m-0"><i class="bi bi-calendar-check-fill me-1"></i> Sesiones Programadas</h3>
+              <span class="badge bg-success bg-opacity-10 text-success px-2 py-1" style="font-size: 11px;">{{ sesionesProgramadas().length }} activas</span>
+            </div>
+
+            <div class="d-flex flex-column gap-2">
+              @for (sesion of filteredSesionesProgramadas(); track sesion.id_asesoria) {
+                <div class="d-flex justify-content-between align-items-center gap-3 p-3 rounded-3 bg-secondary bg-opacity-10 border border-secondary border-opacity-10">
+                  <div class="d-flex align-items-center gap-2">
+                    <div class="avatar bg-primary text-white rounded-circle d-flex align-items-center justify-content-center fw-bold" style="width: 32px; height: 32px; font-size: 11px;">
+                      {{ sesion.alumno_nombres ? sesion.alumno_nombres[0] : 'A' }}
+                    </div>
+                    <div>
+                      <h4 class="m-0 fs-6 fw-bold" style="font-size: 13px;">{{ sesion.alumno_nombres }} {{ sesion.alumno_apellidos }}</h4>
+                      <p class="m-0 fw-semibold text-success" style="font-size: 11px;">{{ sesion.nombre_curso }}</p>
+                      <p class="m-0 text-muted" style="font-size: 10px;">{{ sesion.fecha_programada | date:'medium' }}</p>
+                    </div>
+                  </div>
+                  @if (sesion.enlace_reunion) {
+                    <a [href]="sesion.enlace_reunion" target="_blank" class="btn btn-success btn-sm d-flex align-items-center gap-1 fw-bold text-decoration-none">
+                      <i class="bi bi-camera-video-fill"></i> Reunión Meet
+                    </a>
+                  } @else {
+                    <span class="small text-muted opacity-50">Sin enlace</span>
+                  }
+                </div>
+              } @empty {
+                <p class="small text-muted fst-italic text-center py-3">No tienes sesiones programadas activas.</p>
+              }
+            </div>
+          </div>
+        </div>
+
+        <!-- Columna Derecha: Solicitudes Entrantes -->
+        <div class="col-lg-5 d-flex flex-column gap-4">
+          <div class="glass-panel p-4 text-start">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <h3 class="fs-6 fw-bold m-0"><i class="bi bi-inbox-fill"></i> Solicitudes Entrantes</h3>
+              <span class="badge bg-warning bg-opacity-10 text-warning px-2 py-1" style="font-size: 11px;">{{ solicitudesEntrantes().length }} pendientes</span>
+            </div>
+
+            <div class="d-flex flex-column gap-3">
+              @for (sol of filteredSolicitudesEntrantes(); track sol.id_asesoria) {
+                <div class="p-3 rounded-3 bg-secondary bg-opacity-10 border border-secondary border-opacity-10">
+                  <div class="d-flex align-items-center gap-2 mb-2">
+                    <div class="avatar bg-success text-white rounded-circle d-flex align-items-center justify-content-center fw-bold" style="width: 32px; height: 32px; font-size: 11px;">
+                      {{ sol.alumno_nombres ? sol.alumno_nombres[0] : 'A' }}{{ sol.alumno_apellidos ? sol.alumno_apellidos[0] : 'S' }}
+                    </div>
+                    <div class="flex-grow-1">
+                      <h4 class="m-0 fs-6 fw-bold" style="font-size: 13px;">{{ sol.alumno_nombres }} {{ sol.alumno_apellidos }}</h4>
+                      <p class="m-0 text-muted" style="font-size: 10px;">Alumno Solicitante</p>
+                    </div>
+                  </div>
+                   <span class="d-block mb-1 fw-bold text-success" style="font-size: 11px;">{{ sol.nombre_curso }}</span>
+                  <p class="text-muted mb-2" style="font-size: 11px;">Fecha: {{ sol.fecha_programada | date:'short' }}</p>
+                  @if (sol.motivo) {
+                    <div class="mb-3 p-2 rounded bg-black bg-opacity-25" style="font-size: 11px; border-left: 3px solid var(--bs-success);">
+                      <strong class="text-white">Motivo:</strong> <span class="text-muted fst-italic">"{{ sol.motivo }}"</span>
+                    </div>
+                  }
+                  <div class="d-flex gap-2">
+                    <button (click)="cambiarEstadoAsesoria(sol.id_asesoria, 'confirmada')" class="btn btn-success btn-sm flex-fill">Aceptar</button>
+                    <button (click)="cambiarEstadoAsesoria(sol.id_asesoria, 'cancelada')" class="btn btn-danger btn-sm flex-fill">Rechazar</button>
+                  </div>
+                </div>
+              } @empty {
+                <p class="small text-muted fst-italic text-center py-2">No hay solicitudes pendientes en este momento.</p>
+              }
+            </div>
+          </div>
+
+          <!-- Promedio de Valoración Widget -->
+          <div class="glass-panel p-4 text-start">
+            <h3 class="fs-6 fw-bold mb-3"><i class="bi bi-star-fill me-1"></i> Promedio de Valoración</h3>
+            <div class="d-flex align-items-center gap-3">
+              <h2 class="display-6 fw-bold mb-0 text-warning">{{ promedioValoracion() }}</h2>
+              <div>
+                <div class="text-warning small d-flex gap-1">
+                  <span *ngIf="promedioValoracion() >= 4.5"><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i></span>
+                  <span *ngIf="promedioValoracion() >= 3.5 && promedioValoracion() < 4.5"><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i></span>
+                  <span *ngIf="promedioValoracion() >= 2.5 && promedioValoracion() < 3.5"><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i></span>
+                  <span *ngIf="promedioValoracion() < 2.5"><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i></span>
+                </div>
+                <p class="text-muted mb-0 mt-1" style="font-size: 11px;">Basado en {{ evaluacionesCount() }} evaluaciones en base de datos</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </ng-container>
+
+    <!-- Tab Disponibilidad -->
+    <ng-container *ngIf="activeTab() === 'disponibilidad'">
+      <div class="row g-4">
+        <!-- Izquierda: Lista de Horarios -->
+        <div class="col-lg-7">
+          <div class="glass-panel p-4 text-start">
+            <h3 class="fs-5 fw-bold mb-3"><i class="bi bi-calendar-week-fill me-2"></i>Mis Horarios Disponibles</h3>
+            <div class="table-responsive">
+              <table class="table align-middle">
+                <thead>
+                  <tr class="text-muted" style="font-size: 12px;">
+                    <th>DÍA DE LA SEMANA</th>
+                    <th>HORA INICIO</th>
+                    <th>HORA FIN</th>
+                    <th class="text-center">ACCIÓN</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (h of horarios(); track h.id_horario) {
+                    <tr>
+                      <td class="fw-bold text-uppercase text-success">{{ h.dia_semana }}</td>
+                      <td>{{ h.hora_inicio.substring(0,5) }}</td>
+                      <td>{{ h.hora_fin.substring(0,5) }}</td>
+                      <td class="text-center">
+                        <button (click)="eliminarHorario(h.id_horario)" class="btn btn-outline-danger btn-sm">Eliminar</button>
+                      </td>
+                    </tr>
+                  } @empty {
+                    <tr>
+                      <td colspan="4" class="text-center py-4 text-muted">No tienes bloques registrados en la base de datos.</td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Derecha: Registrar Nuevo Horario -->
+        <div class="col-lg-5">
+          <div class="glass-panel p-4 text-start">
+            <h3 class="fs-5 fw-bold mb-3"><i class="bi bi-plus-circle-fill me-2"></i>Registrar Nuevo Bloque</h3>
+            <div class="d-flex flex-column gap-3">
+              <div>
+                <label class="form-label text-muted small fw-semibold mb-1">Día de la Semana</label>
+                <select [(ngModel)]="nuevoDia" class="form-select rounded-3">
+                  <option value="lunes">Lunes</option>
+                  <option value="martes">Martes</option>
+                  <option value="miercoles">Miércoles</option>
+                  <option value="jueves">Jueves</option>
+                  <option value="viernes">Viernes</option>
+                </select>
+              </div>
+
+              <div>
+                <label class="form-label text-muted small fw-semibold mb-1">Hora de Inicio</label>
+                <input type="time" [(ngModel)]="nuevaHoraInicio" class="form-control rounded-3">
+              </div>
+
+              <div>
+                <label class="form-label text-muted small fw-semibold mb-1">Hora de Fin</label>
+                <input type="time" [(ngModel)]="nuevaHoraFin" class="form-control rounded-3">
+              </div>
+
+              <button (click)="registrarHorario()" class="btn btn-success w-100 mt-2 py-2 rounded-3 fw-bold">Añadir Horario</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </ng-container>
+
+    <!-- Tab Mis Cursos -->
+    <ng-container *ngIf="activeTab() === 'cursos'">
+      <div class="row g-4">
+        <!-- Izquierda: Cursos habilitados -->
+        <div class="col-lg-7">
+          <div class="glass-panel p-4 text-start">
+            <h3 class="fs-5 fw-bold mb-1"><i class="bi bi-book-half me-2"></i>Cursos Activos para Asesorías</h3>
+            <p class="text-muted small mb-3">Estos son los cursos que actualmente ofreces a los alumnos en tu catálogo.</p>
+            
+            <div class="table-responsive">
+              <table class="table align-middle">
+                <thead>
+                  <tr class="text-muted" style="font-size: 12px;">
+                    <th>CURSO</th>
+                    <th class="text-center">ACCIÓN</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (h of filteredCursosHabilitados(); track h.id_autorizacion) {
+                    <tr>
+                      <td class="fw-bold">{{ h.nombre_curso }}</td>
+                      <td class="text-center">
+                        <button (click)="deshabilitarCurso(h.id_autorizacion)" class="btn btn-outline-danger btn-sm">Deshabilitar</button>
+                      </td>
+                    </tr>
+                  } @empty {
+                    <tr>
+                      <td colspan="2" class="text-center py-4 text-muted">No tienes cursos habilitados. Activa alguno de tus cursos aprobados.</td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Derecha: Habilitar materias acreditadas -->
+        <div class="col-lg-5">
+          <div class="glass-panel p-4 text-start">
+            <h3 class="fs-5 fw-bold mb-1"><i class="bi bi-check-circle-fill me-2"></i>Habilitar Curso Acreditado</h3>
+            <p class="text-muted small mb-3">Selecciona una materia aprobada por el moderador para habilitarla en tu catálogo de asesorías.</p>
+            
+            <div class="d-flex flex-column gap-3">
+              <div>
+                <label class="form-label text-muted small fw-semibold mb-1">Materia Acreditada</label>
+                <select [ngModel]="cursosHabilitarSelect()" (ngModelChange)="cursosHabilitarSelect.set($event)" class="form-select rounded-3">
+                  <option [value]="0">-- Selecciona un curso acreditado --</option>
+                  @for (s of cursosDisponiblesParaHabilitar(); track s.id_solicitud) {
+                    <option [value]="s.id_curso">{{ s.nombre_curso }} (Nota: {{ s.nota_obtenida }})</option>
+                  }
+                </select>
+              </div>
+
+              <button (click)="habilitarCurso(cursosHabilitarSelect())" [disabled]="!cursosHabilitarSelect()" class="btn btn-success w-100 mt-2 py-2 rounded-3 fw-bold">
+                Habilitar Asesorías
+              </button>
+            </div>
+          </div>
+
+          <!-- Solicitar acreditación de nuevo curso -->
+          <div class="glass-panel p-4 text-start mt-4">
+            <h3 class="fs-5 fw-bold mb-1"><i class="bi bi-mortarboard-fill me-2 text-success"></i>Solicitar Nuevo Curso</h3>
+            <p class="text-muted small mb-3">¿Deseas dar asesorías de otro curso? Envía tu postulación adjuntando tu boleta de notas para su aprobación por el moderador.</p>
+            
+            <button (click)="mostrarModalPostulacion.set(true)" class="btn btn-outline-success w-100 py-2 rounded-3 fw-bold">
+              <i class="bi bi-plus-circle me-1"></i>Postular a Nuevo Curso
+            </button>
+          </div>
+        </div>
+      </div>
+    </ng-container>
+
+    <!-- Tab Alumnos -->
+    <ng-container *ngIf="activeTab() === 'alumnos'">
+      <div class="glass-panel p-4 text-start">
+         <h3 class="fs-5 fw-bold mb-1"><i class="bi bi-people-fill me-2"></i>Alumnos Asignados</h3>
+         <p class="text-muted small mb-4">Lista de alumnos que tienen asesorías programadas contigo.</p>
+         
+         <div class="row g-3">
+           @for (asesoria of filteredAsesorias(); track asesoria.id_asesoria) {
+             <div class="col-lg-4 col-md-6">
+                <div (click)="abrirDetalleAlumno(asesoria.id_alumno)" 
+                     class="card bg-opacity-10 bg-secondary border border-secondary border-opacity-10 p-3 rounded-3 h-100 cursor-pointer shadow-sm"
+                     style="transition: transform 0.2s, box-shadow 0.2s, background-color 0.2s; cursor: pointer;"
+                     onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.15)'; this.style.backgroundColor='rgba(var(--unam-secondary-rgb), 0.1)';"
+                     onmouseout="this.style.transform='none'; this.style.boxShadow='none'; this.style.backgroundColor='rgba(var(--unam-secondary-rgb), 0.05)';"
+                >
+                  <div class="d-flex align-items-center gap-2">
+                    <div class="avatar bg-primary text-white rounded-circle d-flex align-items-center justify-content-center fw-bold" style="width: 40px; height: 40px; font-size: 14px;">
+                      {{ asesoria.alumno_nombres ? asesoria.alumno_nombres[0] : 'A' }}
+                    </div>
+                    <div class="overflow-hidden">
+                      <h4 class="m-0 fs-6 fw-bold text-white text-truncate">{{ asesoria.alumno_nombres }} {{ asesoria.alumno_apellidos }}</h4>
+                      <p class="m-0 text-success text-truncate" style="font-size: 11px;">Materia: {{ asesoria.nombre_curso }}</p>
+                      <span class="badge bg-success bg-opacity-10 text-success mt-1" style="font-size: 9px;">{{ asesoria.estado | uppercase }}</span>
+                    </div>
+                  </div>
+                </div>
+             </div>
+           } @empty {
+             <div class="col-12 py-4 text-center text-muted">No tienes alumnos agendados en la base de datos.</div>
+           }
+         </div>
+      </div>
+    </ng-container>
+
+    <!-- Tab Mensajes -->
+    <ng-container *ngIf="activeTab() === 'mensajes'">
+      <div class="glass-panel p-4 text-start">
+        <div class="row g-4" style="min-height: 500px;">
+          <!-- Conversaciones (Alumnos con chat) -->
+          <div class="col-md-4 border-end">
+            <h4 class="fs-6 fw-bold mb-3">Mis Alumnos</h4>
+            <div class="d-flex flex-column gap-2 overflow-auto" style="max-height: 440px;">
+              @for (conv of conversaciones(); track conv.id_usuario) {
+                <div (click)="seleccionarAlumnoChat(conv.id_usuario)" 
+                     class="d-flex align-items-center gap-2 p-2 rounded-3 cursor-pointer"
+                     [class.bg-success]="idAlumnoChatSeleccionado() === conv.id_usuario"
+                     [class.bg-opacity-15]="idAlumnoChatSeleccionado() === conv.id_usuario"
+                     style="transition: background 0.2s;">
+                  <div class="avatar bg-secondary text-dark rounded-circle d-flex align-items-center justify-content-center fw-bold" style="width: 32px; height: 32px; font-size: 11px;">
+                    {{ conv.nombres[0] }}{{ conv.apellidos[0] }}
+                  </div>
+                  <span class="small fw-semibold text-truncate" style="max-width: 140px;">
+                    {{ conv.nombres }} {{ conv.apellidos }}
+                  </span>
+                </div>
+              } @empty {
+                <p class="small text-muted mb-0">No hay chats activos.</p>
+              }
+            </div>
+          </div>
+
+          <!-- Ventana del Chat -->
+          <div class="col-md-8 d-flex flex-column justify-content-between">
+            <div class="d-flex flex-column gap-2 overflow-auto mb-3 p-3 rounded-3" style="background: var(--input-bg); max-height: 380px; min-height: 300px;">
+              @for (msg of mensajesChat(); track msg.id_mensaje) {
+                <div class="p-2 px-3 rounded-3 small text-wrap text-break" style="max-width: 75%;"
+                     [class.align-self-end]="msg.id_emisor === authService.currentUser()?.id"
+                     [class.bg-success]="msg.id_emisor === authService.currentUser()?.id"
+                     [class.text-white]="msg.id_emisor === authService.currentUser()?.id"
+                     [class.align-self-start]="msg.id_emisor !== authService.currentUser()?.id"
+                     [class.bg-secondary]="msg.id_emisor !== authService.currentUser()?.id"
+                     [class.bg-opacity-15]="msg.id_emisor !== authService.currentUser()?.id">
+                  <strong>{{ msg.id_emisor === authService.currentUser()?.id ? 'Tú' : msg.emisor_nombres }}:</strong> {{ msg.contenido }}
+                  <div class="text-end mt-1 opacity-50" style="font-size: 9px;">{{ msg.fecha_envio | date:'shortTime' }}</div>
+                </div>
+              } @empty {
+                <p class="small text-muted text-center mt-5">No hay mensajes previos.</p>
+              }
+            </div>
+            <div class="input-group">
+              <input type="text" 
+                     [(ngModel)]="nuevoMensajeTexto" 
+                     (keyup.enter)="enviarMensajeChat()"
+                     placeholder="Escribe tu respuesta..." 
+                     class="form-control rounded-start-3">
+              <button class="btn btn-success rounded-end-3" (click)="enviarMensajeChat()"><i class="bi bi-send-fill"></i> Enviar</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </ng-container>
+
+    <!-- Tab Estadísticas -->
+    <ng-container *ngIf="activeTab() === 'estadisticas'">
+      <div class="glass-panel p-4 text-start">
+        <h3 class="fs-5 fw-bold mb-4"><i class="bi bi-graph-up me-2"></i>Estadísticas Generales del Tutor</h3>
+        <div class="row g-3">
+          <div class="col-md-6">
+            <div class="card bg-opacity-10 bg-secondary border border-secondary border-opacity-10 p-4 rounded-3 text-start">
+              <h4 class="fs-6 fw-bold mb-2">Horas Totales Impartidas</h4>
+              <h2 class="display-6 fw-bold text-success my-2">{{ horasDictadas() }}h</h2>
+              <p class="small text-muted mb-0">Equivalente a {{ sesionesEsteMes() }} sesiones de 1.5 horas cada una.</p>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="card bg-opacity-10 bg-secondary border border-secondary border-opacity-10 p-4 rounded-3 text-start">
+              <h4 class="fs-6 fw-bold mb-2">Calificación de Alumnos</h4>
+              <h2 class="display-6 fw-bold text-warning my-2">{{ promedioValoracion() }} / 5</h2>
+              <p class="small text-muted mb-0">Promedio ponderado total según la base de datos.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </ng-container>
+
+    <!-- Tab Valoraciones -->
+    <ng-container *ngIf="activeTab() === 'valoraciones'">
+      <div class="glass-panel p-4 text-start">
+         <h3 class="fs-5 fw-bold mb-1"><i class="bi bi-star-fill me-2"></i>Evaluaciones y Comentarios Recibidos</h3>
+         <p class="text-muted small mb-4">Opiniones de alumnos registradas en la base de datos.</p>
+         
+         <div class="d-flex flex-column gap-3">
+           <div class="card bg-opacity-10 bg-secondary border border-secondary border-opacity-10 p-3 rounded-3 text-start">
+             <div class="d-flex justify-content-between align-items-center">
+               <h4 class="fs-6 fw-bold mb-0">Excelente sesión</h4>
+               <span class="text-warning small"><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i></span>
+             </div>
+             <p class="small text-muted mt-2 fst-italic mb-0">"Explicó paso a paso y de manera sumamente clara."</p>
+           </div>
+         </div>
+      </div>
+    </ng-container>
+
+    <!-- Tab Recursos -->
+    <ng-container *ngIf="activeTab() === 'recursos'">
+      <div class="row g-4">
+        <!-- Lista de Materiales Subidos -->
+        <div class="col-lg-7">
+          <div class="glass-panel p-4 text-start">
+            <h3 class="fs-5 fw-bold mb-3"><i class="bi bi-folder-fill me-2"></i>Material de Estudio Publicado</h3>
+            <div class="table-responsive">
+              <table class="table align-middle">
+                <thead>
+                  <tr class="text-muted" style="font-size: 12px;">
+                    <th>TÍTULO DEL RECURSO</th>
+                    <th>ENLACE</th>
+                    <th class="text-center">ACCIÓN</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (rec of filteredRecursos(); track rec.id_recurso) {
+                    <tr>
+                      <td class="fw-bold">{{ rec.titulo }}</td>
+                      <td>
+                        <a [href]="rec.url_archivo" target="_blank" class="text-info text-decoration-underline fw-bold">
+                          <i class="bi bi-download me-1"></i>Descargar
+                        </a>
+                      </td>
+                      <td class="text-center">
+                        <button (click)="eliminarRecurso(rec.id_recurso)" class="btn btn-outline-danger btn-sm">Eliminar</button>
+                      </td>
+                    </tr>
+                  } @empty {
+                    <tr>
+                      <td colspan="3" class="text-center py-4 text-muted">No tienes material de estudio registrado en la BD.</td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Formulario para Subir Material -->
+        <div class="col-lg-5">
+          <div class="glass-panel p-4 text-start">
+            <h3 class="fs-5 fw-bold mb-3"><i class="bi bi-plus-circle-fill me-2"></i>Publicar Nuevo Recurso</h3>
+            <div class="d-flex flex-column gap-3">
+              <div>
+                <label class="form-label text-muted small fw-semibold mb-1">Título del Recurso</label>
+                <input type="text" [(ngModel)]="nuevoTituloRecurso" placeholder="Ej. Guía de Álgebra Lineal - Semana 5" class="form-control rounded-3">
+              </div>
+
+              <div>
+                <label class="form-label text-muted small fw-semibold mb-1">Curso Asociado</label>
+                <select [(ngModel)]="nuevoIdCursoRecurso" class="form-select rounded-3">
+                  <option [value]="0">-- Seleccionar curso habilitado --</option>
+                  @for (c of cursosHabilitados(); track c.id_curso) {
+                    <option [value]="c.id_curso">{{ c.nombre_curso }}</option>
+                  }
+                </select>
+              </div>
+
+              <div>
+                <label class="form-label text-muted small fw-semibold mb-1">Seleccionar Archivo</label>
+                <div class="file-upload-zone d-flex flex-column align-items-center justify-content-center gap-1 p-3 rounded-3 text-center border border-dashed cursor-pointer" style="border-color: rgba(var(--unam-secondary-rgb), 0.3); background: rgba(var(--unam-secondary-rgb), 0.03);" (click)="fileInput.click()">
+                  <i class="bi bi-folder-fill fs-3 text-success"></i>
+                  <span class="small fw-semibold text-success">
+                    {{ nombreArchivoRecurso() || 'Haga clic para seleccionar archivo' }}
+                  </span>
+                  <span class="text-muted" style="font-size: 10px;">Formatos aceptados: PDF, DOCX, PPTX, ZIP (Máx. 10MB)</span>
+                  <input type="file" #fileInput (change)="onFileSelected($event)" class="d-none">
+                </div>
+              </div>
+
+              <button (click)="subirRecurso()" class="btn btn-success w-100 mt-2 py-2 rounded-3 fw-bold">Subir y Compartir</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </ng-container>
+
+    <!-- Tab Configuración -->
+    <ng-container *ngIf="activeTab() === 'configuracion'">
+      <div class="glass-panel p-4 text-start">
+          <h3 class="fs-5 fw-bold mb-1"><i class="bi bi-gear-fill me-2"></i>Configuración del Tutor</h3>
+          <p class="text-muted small mb-4">Administra los detalles de tu cuenta de forma dinámica.</p>
+          <div class="d-flex flex-column gap-3" style="max-width: 500px;" *ngIf="authService.currentUser() as user">
+            <div class="row g-3">
+              <div class="col-6">
+                <label class="form-label text-muted small fw-semibold mb-1">Nombres</label>
+                <input type="text" [ngModel]="configNombres()" (ngModelChange)="configNombres.set($event)" class="form-control rounded-3">
+              </div>
+              <div class="col-6">
+                <label class="form-label text-muted small fw-semibold mb-1">Apellidos</label>
+                <input type="text" [ngModel]="configApellidos()" (ngModelChange)="configApellidos.set($event)" class="form-control rounded-3">
+              </div>
+            </div>
+            <div>
+              <label class="form-label text-muted small fw-semibold mb-1">Correo Electrónico (No modificable)</label>
+              <input type="text" [value]="user.correo" disabled class="form-control bg-light text-muted rounded-3" style="font-style: italic;">
+            </div>
+
+            <div class="d-flex gap-3 mt-2 flex-wrap">
+              <button (click)="guardarConfiguracion()" class="btn btn-success px-4 py-2 rounded-3 fw-bold">
+                Guardar Cambios
+              </button>
+              <button (click)="restablecerPasswordConfig()" class="btn btn-outline-danger px-4 py-2 rounded-3 fw-bold">
+                Cambiar Contraseña
+              </button>
+            </div>
+          </div>
+       </div>
+      </ng-container>
+
+      <!-- Modal de Postulación de Cursos (Tutor) -->
+      <div class="modal-overlay d-flex align-items-center justify-content-center" *ngIf="mostrarModalPostulacion()" style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); z-index: 1050; backdrop-filter: blur(8px);">
+        <div class="modal-dialog modal-dialog-centered m-3" style="max-width: 500px; width: 100%;">
+          <div class="modal-content glass-panel p-4 text-start rounded-4 border border-white border-opacity-10 shadow-2xl">
+            <div class="modal-header border-0 p-0 mb-3 d-flex justify-content-between align-items-center">
+              <h5 class="modal-title fw-bold m-0 d-flex align-items-center gap-2 text-white">
+                <i class="bi bi-mortarboard-fill text-success fs-4"></i> Postulación para Nuevo Curso
+              </h5>
+              <button (click)="mostrarModalPostulacion.set(false)" class="btn-close btn-close-white" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-0 d-flex flex-column gap-3">
+              <div>
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                  <label class="form-label text-muted small fw-semibold m-0">Cursos que desea Acreditar</label>
+                  <span class="badge fw-bold" style="font-size: 11px; background: rgba(97, 198, 192, 0.15) !important; color: #61c6c0 !important; border: 1px solid rgba(97, 198, 192, 0.3);">
+                    {{ cursosSeleccionadosPostulacion().length }} seleccionados
+                  </span>
+                </div>
+                <!-- Input de búsqueda/filtrado de cursos -->
+                <div class="position-relative mb-2">
+                  <i class="bi bi-search position-absolute start-0 top-50 translate-middle-y ms-2 text-muted" style="font-size: 12px;"></i>
+                  <input type="text" 
+                         [ngModel]="filtroCursoPostulacion()" 
+                         (ngModelChange)="filtroCursoPostulacion.set($event)"
+                         placeholder="Buscar curso por nombre..." 
+                         class="form-control form-control-sm ps-4 rounded-3 text-white bg-dark bg-opacity-30 border-white border-opacity-10"
+                         style="font-size: 12px;">
+                </div>
+                
+                <div class="courses-checkbox-list border rounded-3 p-2 overflow-auto" style="max-height: 260px; background: rgba(0, 0, 0, 0.2); border-color: rgba(255, 255, 255, 0.08); scrollbar-width: thin;">
+                  @for (c of cursosTutorFiltrados(); track c.id_curso) {
+                    <div class="course-card-item p-2 mb-2 rounded-2 cursor-pointer transition-all" 
+                         [class.selected]="cursosSeleccionadosPostulacion().includes(c.id_curso)"
+                         (click)="toggleCursoPostulacion(c.id_curso)">
+                      <div class="d-flex align-items-center justify-content-between">
+                        <div class="d-flex align-items-center gap-2">
+                          <input type="checkbox" 
+                                 class="form-check-input text-success m-0" 
+                                 [id]="'tutor-check-curso-' + c.id_curso"
+                                 [checked]="cursosSeleccionadosPostulacion().includes(c.id_curso)"
+                                 (click)="$event.stopPropagation(); toggleCursoPostulacion(c.id_curso)">
+                          <label class="form-check-label small text-white cursor-pointer fw-semibold" [for]="'tutor-check-curso-' + c.id_curso" (click)="$event.stopPropagation()">
+                            {{ c.nombre_curso }}
+                          </label>
+                        </div>
+                        <span class="badge bg-secondary bg-opacity-20 text-muted" style="font-size: 10px;">Ciclo {{ c.ciclo }}</span>
+                      </div>
+                      
+                      <!-- Per-course Grade Selector (Only shown if selected) -->
+                      <div *ngIf="cursosSeleccionadosPostulacion().includes(c.id_curso)" 
+                           class="mt-2 p-1.5 rounded-3" 
+                           style="background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.06);"
+                           (click)="$event.stopPropagation()">
+                        <div class="d-flex justify-content-between align-items-center mb-1 px-1">
+                          <span class="text-muted" style="font-size: 10px;">Nota obtenida en el curso:</span>
+                          <span class="badge fw-bold" style="font-size: 11px; background: rgba(97, 198, 192, 0.15) !important; color: #61c6c0 !important; border: 1px solid rgba(97, 198, 192, 0.3);">{{ getNotaForCurso(c.id_curso) }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between gap-1">
+                          @for (grade of [14, 15, 16, 17, 18, 19, 20]; track grade) {
+                            <button type="button" 
+                                    class="btn btn-sm rounded-2 flex-grow-1 border-0 py-1 transition-all" 
+                                    [class.btn-success]="getNotaForCurso(c.id_curso) === grade"
+                                    [class.text-white]="getNotaForCurso(c.id_curso) === grade"
+                                    [class.bg-transparent]="getNotaForCurso(c.id_curso) !== grade"
+                                    [class.text-muted]="getNotaForCurso(c.id_curso) !== grade"
+                                    (click)="setNotaForCurso(c.id_curso, grade)"
+                                    style="font-size: 11px; font-weight: 700; min-width: 24px;">
+                              {{ grade }}
+                            </button>
+                          }
+                        </div>
+                      </div>
+                    </div>
+                  } @empty {
+                    <div class="text-center py-4 text-muted small">No se encontraron cursos coincidentes.</div>
+                  }
+                </div>
+              </div>
+
+              <div>
+                <label class="form-label text-muted small fw-semibold mb-1">Subir Boleta de Notas / Constancia</label>
+                <!-- Drag & Drop Zone Estilizada e Interactiva -->
+                <div class="file-upload-zone d-flex flex-column align-items-center justify-content-center gap-2 p-4 rounded-3 text-center cursor-pointer border border-dashed transition-all" 
+                     (click)="fileInput.click()" 
+                     (dragover)="onDragOver($event)"
+                     (dragleave)="onDragLeave($event)"
+                     (drop)="onDropFile($event)"
+                     [class.drag-over]="fileDragOver()"
+                     style="border-color: rgba(97, 198, 192, 0.3); background: rgba(97, 198, 192, 0.03);">
+                  <i class="bi fs-2 transition-transform" 
+                     [class.bi-cloud-arrow-up-fill]="!selectedFilePostulacion"
+                     [class.bi-file-earmark-check-fill]="selectedFilePostulacion"
+                     [class.text-success]="selectedFilePostulacion"
+                     [class.text-info]="!selectedFilePostulacion && !fileDragOver()"
+                     [class.text-warning]="fileDragOver()"
+                     [class.scale-up-pulse]="fileDragOver()"
+                     style="font-size: 28px;"></i>
+                  <span class="small fw-semibold text-success">
+                    {{ nombreArchivoPostulacion() || 'Haga clic o arrastre su constancia aquí' }}
+                  </span>
+                  <span class="text-muted" style="font-size: 11px;">Formatos aceptados: PDF, JPG, PNG (Máx. 5MB)</span>
+                  <input type="file" #fileInput (change)="onFileSelectedPostulacion($event)" class="d-none">
+                </div>
+              </div>
+            </div>
+            <div class="modal-footer border-0 p-0 mt-4 d-flex gap-2">
+              <button (click)="mostrarModalPostulacion.set(false)" class="btn btn-outline-secondary rounded-3 flex-grow-1 py-2 fw-semibold">Cancelar</button>
+              <button (click)="enviarPostulacionTutor()" class="btn btn-success rounded-3 flex-grow-1 py-2 fw-semibold" [disabled]="cursosSeleccionadosPostulacion().length === 0 || !selectedFilePostulacion">Enviar Postulación</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- Modal de Detalles del Alumno (Tutor) -->
+      <div class="modal-overlay d-flex align-items-center justify-content-center" *ngIf="mostrarModalDetalleAlumno()" style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); z-index: 1050; backdrop-filter: blur(8px);">
+        <div class="modal-dialog modal-dialog-centered m-3" style="max-width: 600px; width: 100%;">
+          <div class="modal-content glass-panel p-4 text-start rounded-4 border border-white border-opacity-10 shadow-2xl">
+            <div class="modal-header border-0 p-0 mb-3 d-flex justify-content-between align-items-center">
+              <h5 class="modal-title fw-bold m-0 d-flex align-items-center gap-2 text-white">
+                <i class="bi bi-person-badge-fill text-success fs-4"></i> Perfil del Alumno
+              </h5>
+              <button (click)="mostrarModalDetalleAlumno.set(false)" class="btn-close btn-close-white" aria-label="Close"></button>
+            </div>
+            
+            <div class="modal-body p-0 d-flex flex-column gap-3 text-white" *ngIf="alumnoDetalle() as alumno">
+              <!-- Información Básica -->
+              <div class="d-flex align-items-center gap-3 border-bottom border-white border-opacity-10 pb-3">
+                <div class="avatar bg-primary text-white rounded-circle d-flex align-items-center justify-content-center fw-bold" style="width: 56px; height: 56px; font-size: 20px;">
+                  {{ alumno.nombres[0] }}{{ alumno.apellidos[0] }}
+                </div>
+                <div>
+                  <h4 class="m-0 fs-5 fw-bold text-white">{{ alumno.nombres }} {{ alumno.apellidos }}</h4>
+                  <p class="m-0 text-success" style="font-size: 13px;">{{ alumno.nombre_carrera }}</p>
+                  <p class="m-0 text-muted" style="font-size: 11px;">Ciclo Actual: {{ alumno.ciclo_actual || 'No definido' }} | Código: {{ alumno.codigo_univ }}</p>
+                </div>
+              </div>
+
+              <!-- Contacto -->
+              <div class="d-flex justify-content-between align-items-center p-2 rounded-3" style="font-size: 12px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1);">
+                <span><i class="bi bi-envelope-fill me-1 text-success"></i> {{ alumno.correo }}</span>
+                <span><i class="bi bi-calendar-check-fill me-1 text-success"></i> Ingreso: {{ alumno.ano_ingreso || 'N/A' }}</span>
+              </div>
+
+              <!-- Cursos Aprobados -->
+              <div>
+                <h6 class="fw-bold mb-2 small text-muted text-uppercase tracking-wider">Cursos Aprobados</h6>
+                <div class="d-flex flex-wrap gap-2 overflow-auto" style="max-height: 100px;">
+                  @for (cursoName of cursosAprobadosAlumnoNames(); track $index) {
+                    <span class="badge bg-secondary bg-opacity-30 text-white rounded-pill px-2 py-1" style="font-size: 11px;">
+                      <i class="bi bi-check-circle-fill text-success me-1"></i>{{ cursoName }}
+                    </span>
+                  } @empty {
+                    <span class="text-muted small">No hay cursos aprobados registrados en el sistema.</span>
+                  }
+                </div>
+              </div>
+
+              <!-- Historial de Asesorías -->
+              <div>
+                <h6 class="fw-bold mb-2 small text-muted text-uppercase tracking-wider">Historial de Sesiones programadas contigo</h6>
+                <div class="d-flex flex-column gap-2 overflow-auto" style="max-height: 160px; scrollbar-width: thin;">
+                  @for (asesoria of historialAsesoriasAlumno(); track asesoria.id_asesoria) {
+                    <div class="d-flex flex-column gap-2 p-2 rounded-2 bg-dark bg-opacity-30 border border-white border-opacity-5" style="font-size: 12px;">
+                      <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                          <strong class="text-white d-block">{{ asesoria.nombre_curso }}</strong>
+                          <span class="text-muted" style="font-size: 10px;">{{ asesoria.fecha_programada | date:'short' }}</span>
+                          <p class="m-0 text-muted italic" style="font-size: 10px;" *ngIf="asesoria.motivo">Motivo: "{{ asesoria.motivo }}"</p>
+                        </div>
+                        <div>
+                          <span class="badge shadow-sm" [class.bg-success]="asesoria.estado === 'confirmada' || asesoria.estado === 'completada'" [class.bg-warning]="asesoria.estado === 'pendiente'">
+                            {{ asesoria.estado | uppercase }}
+                          </span>
+                        </div>
+                      </div>
+                      
+                      <!-- Campo para adjuntar/editar enlace de Meet -->
+                      <div class="border-top border-white border-opacity-5 pt-2" *ngIf="asesoria.estado === 'confirmada' || asesoria.estado === 'pendiente'">
+                        <div class="d-flex gap-2 align-items-center">
+                          <div class="flex-grow-1 position-relative">
+                            <i class="bi bi-camera-video position-absolute start-0 top-50 translate-middle-y ms-2 text-muted" style="font-size: 11px;"></i>
+                            <input type="text" [(ngModel)]="asesoria.enlace_reunion" 
+                                   class="form-control form-control-sm text-white bg-black bg-opacity-40 border-white border-opacity-15 ps-4 pe-2 py-0.5 rounded" 
+                                   style="font-size: 10px; height: 26px;" 
+                                   placeholder="https://meet.google.com/abc-defg-hij">
+                          </div>
+                          <button (click)="guardarEnlaceMeet(asesoria)" 
+                                  class="btn btn-success btn-sm px-2 d-flex align-items-center justify-content-center" 
+                                  style="font-size: 10px; height: 26px; font-weight: bold;">
+                            <i class="bi bi-save me-1"></i> Guardar
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  } @empty {
+                    <span class="text-muted small">No hay sesiones registradas con este alumno.</span>
+                  }
+                </div>
+              </div>
+              
+              <!-- Botón de chat rápido -->
+              <button (click)="iniciarChatConAlumno(alumno.id_usuario)" class="btn btn-success w-100 mt-2 py-2 rounded-3 fw-bold d-flex align-items-center justify-content-center gap-2">
+                <i class="bi bi-chat-text-fill"></i> Enviar Mensaje / Chatear
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="dashboard-footer py-3 px-4 d-flex justify-content-between align-items-center flex-wrap gap-3">
+      <div class="d-flex align-items-center gap-2">
+        <span class="footer-logo fw-bold text-success fs-6">UNAMConnect</span>
+        <span class="text-muted fs-7">| Portal de Tutorías Académicas</span>
+      </div>
+      <div class="d-flex align-items-center gap-3 flex-wrap">
+        <span class="text-muted fs-7">© 2026 UNAMConnect. Todos los derechos reservados.</span>
+        <span class="badge bg-success bg-opacity-10 text-success rounded-pill px-2.5 py-1.5 fs-8 d-flex align-items-center gap-1">
+          <span class="led-dot bg-success rounded-circle"></span>
+          {{ cicloAcademicoActivo() }}
+        </span>
+      </div>
+    </footer>
+  </div>
+</div>

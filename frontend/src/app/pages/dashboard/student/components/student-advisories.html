@@ -1,0 +1,48 @@
+<div class="glass-panel p-4 text-start">
+  <h3 class="fs-5 fw-bold mb-4"><i class="bi bi-calendar-event-fill"></i> Todas mis Tutorías Académicas</h3>
+  <div class="table-responsive">
+    <table class="table align-middle">
+      <thead>
+        <tr class="text-muted" style="font-size: 12px;">
+          <th>CURSO</th>
+          <th>FECHA</th>
+          <th>HORA</th>
+          <th>TUTOR</th>
+          <th>ENLACE</th>
+          <th>ESTADO</th>
+          <th class="text-end">ACCIONES</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (asesoria of parent.filteredAsesorias(); track asesoria.id_asesoria) {
+          <tr class="text-white" style="font-size: 13px;">
+            <td class="fw-semibold text-success">{{ asesoria.nombre_curso }}</td>
+            <td>{{ asesoria.fecha_programada | date:'dd/MM/yyyy' }}</td>
+            <td>{{ asesoria.fecha_programada | date:'hh:mm a' }}</td>
+            <td>{{ asesoria.tutor_nombres }} {{ asesoria.tutor_apellidos }}</td>
+            <td>
+              @if (asesoria.estado === 'confirmada' && asesoria.enlace_reunion) {
+                <a [href]="asesoria.enlace_reunion" target="_blank" class="btn btn-sm btn-success rounded-pill px-3"><i class="bi bi-camera-video-fill me-1"></i> Meet</a>
+              } @else {
+                <span class="text-muted italic" style="font-size: 11px;">Pendiente</span>
+              }
+            </td>
+            <td>
+              <span class="badge" [class.bg-success]="asesoria.estado === 'confirmada' || asesoria.estado === 'completada'" [class.bg-warning]="asesoria.estado === 'pendiente'" [class.bg-danger]="asesoria.estado === 'cancelada' || asesoria.estado === 'rechazada'">{{ asesoria.estado | uppercase }}</span>
+            </td>
+            <td class="text-end">
+              <button *ngIf="asesoria.estado === 'pendiente'" (click)="parent.cancelarAsesoria(asesoria.id_asesoria)" class="btn btn-sm btn-outline-danger rounded-3"><i class="bi bi-x-lg me-1"></i> Cancelar</button>
+              <button *ngIf="asesoria.estado === 'completada' && !parent.haSidoValorada(asesoria.id_asesoria)" (click)="parent.abrirModalValorar(asesoria)" class="btn btn-sm btn-warning rounded-3 text-dark fw-semibold"><i class="bi bi-star-fill me-1"></i> Calificar</button>
+              <span *ngIf="asesoria.estado === 'completada' && parent.haSidoValorada(asesoria.id_asesoria)" class="badge bg-success bg-opacity-10 text-success rounded-pill px-3 py-1.5" style="font-size: 10px;">Calificado</span>
+              <span *ngIf="asesoria.estado !== 'pendiente' && asesoria.estado !== 'completada'" class="text-muted">-</span>
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="7" class="text-center text-muted py-4">No se encontraron registros de tutorías.</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</div>

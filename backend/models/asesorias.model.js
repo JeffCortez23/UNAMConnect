@@ -39,12 +39,12 @@ const Asesorias = {
   },
 
   create: async (asesoriaData) => {
-    const { id_alumno, id_tutor, id_curso, fecha_programada, estado, enlace_reunion } = asesoriaData;
+    const { id_alumno, id_tutor, id_curso, fecha_programada, estado, enlace_reunion, motivo } = asesoriaData;
     const { rows } = await db.query(`
-      INSERT INTO asesorias (id_alumno, id_tutor, id_curso, fecha_programada, estado, enlace_reunion)
-      VALUES ($1, $2, $3, $4, $5, $6)
+      INSERT INTO asesorias (id_alumno, id_tutor, id_curso, fecha_programada, estado, enlace_reunion, motivo)
+      VALUES ($1, $2, $3, $4, $5, $6, $7)
       RETURNING *
-    `, [id_alumno, id_tutor, id_curso, fecha_programada, estado || 'pendiente', enlace_reunion]);
+    `, [id_alumno, id_tutor, id_curso, fecha_programada, estado || 'pendiente', enlace_reunion, motivo]);
     return rows[0];
   },
 
@@ -54,7 +54,7 @@ const Asesorias = {
     let i = 1;
 
     // Solo permitir columnas reales de la tabla
-    const allowedColumns = ['id_alumno', 'id_tutor', 'id_curso', 'fecha_programada', 'estado', 'enlace_reunion'];
+    const allowedColumns = ['id_alumno', 'id_tutor', 'id_curso', 'fecha_programada', 'estado', 'enlace_reunion', 'motivo'];
 
     for (const [key, value] of Object.entries(asesoriaData)) {
       if (value !== undefined && allowedColumns.includes(key)) {

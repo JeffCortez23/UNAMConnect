@@ -1,0 +1,170 @@
+<div class="login-split-container">
+  <!-- Panel Izquierdo (Banner Informativo con partículas y carrusel premium) -->
+  <div class="banner-panel">
+    <!-- Floating Particles -->
+    <div class="particles-container">
+      <span class="particle p1"></span>
+      <span class="particle p2"></span>
+      <span class="particle p3"></span>
+      <span class="particle p4"></span>
+      <span class="particle p5"></span>
+      <span class="particle p6"></span>
+      <span class="particle p7"></span>
+    </div>
+
+    <div class="banner-content">
+      <div class="brand animate-slide-up delay-1" style="display: inline-flex; align-items: center; gap: 14px; background: rgba(255, 255, 255, 0.07); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.15); padding: 10px 24px; border-radius: 30px; box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2); transition: all 0.3s ease;">
+        <img src="favicon.png" alt="UNAMConnect Symbol" style="height: 56px; object-fit: contain; filter: drop-shadow(0 0 12px rgba(255, 255, 255, 0.6)) drop-shadow(0 0 4px rgba(0, 229, 255, 0.3));">
+        <div class="brand-text" style="text-align: left;">
+          <h3 class="mb-0 fw-bold text-white" style="font-size: 24px; letter-spacing: -0.5px; line-height: 1.1;">UNAMConnect</h3>
+          <p class="mb-0 text-uppercase small opacity-90" style="letter-spacing: 1.5px; font-size: 9.5px; color: #00e5ff; margin-top: 2px; font-weight: 600;">Portal de Tutorías</p>
+        </div>
+      </div>
+
+      <div class="illustration-container animate-scale-in delay-2">
+        <svg viewBox="0 0 200 200" class="abstract-svg animate-rotate-slow">
+          <circle cx="100" cy="100" r="80" fill="none" stroke="rgba(255,255,255,0.15)" stroke-width="2"/>
+          <circle cx="100" cy="100" r="50" fill="none" stroke="rgba(255,255,255,0.2)" stroke-dasharray="5 5"/>
+          <!-- Birrete / Graduation Cap -->
+          <polygon points="100,65 150,90 100,115 50,90" fill="none" stroke="var(--unam-secondary)" stroke-width="3" stroke-linejoin="round"/>
+          <path d="M 75,102.5 L 75,122 C 75,132 125,132 125,122 L 125,102.5" fill="none" stroke="var(--unam-secondary)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M 100,90 Q 125,93 140,110 L 140,128" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round"/>
+          <circle cx="100" cy="90" r="5" fill="#ffffff" />
+          <circle cx="140" cy="128" r="3.5" fill="#ffffff" />
+        </svg>
+      </div>
+
+      <!-- Standalone Carousel Component -->
+      <app-carousel></app-carousel>
+    </div>
+  </div>
+
+  <!-- Panel Derecho (Formulario) -->
+  <div class="form-panel">
+    <div class="glass-panel login-card p-4 p-md-5">
+      <!-- Login Form View -->
+      @if (!showForgotPassword()) {
+        <div class="login-form-view animate-fade-in">
+          <div class="form-header text-center mb-4 animate-slide-up delay-1">
+            <h2 class="fw-bold mb-1" style="font-size: 26px;">Inicia Sesión</h2>
+            <p class="small mb-0">Accede a tu cuenta institucional en {{ currentCycle() }}</p>
+          </div>
+
+          <!-- Alert de error -->
+          @if (errorMessage()) {
+            <div class="alert alert-danger-custom d-flex align-items-center gap-2 mb-4 animate-shake" role="alert" style="font-size: 13px;">
+              <i class="bi bi-exclamation-triangle-fill"></i>
+              <div>{{ errorMessage() }}</div>
+            </div>
+          }
+
+          <!-- Alert de Ciclo Inactivo/Periodo Vacacional -->
+          @if (!isCycleActive()) {
+            <div class="alert alert-warning-custom d-flex align-items-start gap-2 mb-4 animate-fade-in" role="alert" style="font-size: 12px; line-height: 1.4;">
+              <i class="bi bi-info-circle-fill mt-1" style="font-size: 14px;"></i>
+              <div>
+                <strong class="d-block mb-1">Periodo Vacacional</strong>
+                Las programaciones y tutorías regulares se reanudarán al inicio oficial de las clases de este ciclo.
+              </div>
+            </div>
+          }
+
+          <form (ngSubmit)="onSubmit()" class="animate-slide-up delay-2 d-flex flex-column gap-3">
+            <!-- Selector de Rol (Tabs Premium) -->
+            @if (!isModeratorMode()) {
+              <div class="form-group mb-2">
+                <label class="d-block text-uppercase small text-muted mb-2" style="font-size: 9px; letter-spacing: 1.2px;">Rol de Ingreso</label>
+                <div class="role-selector-tabs d-flex p-1 rounded-3">
+                  <button type="button" 
+                          class="role-tab flex-grow-1 border-0 py-2 rounded-2" 
+                          [class.active]="selectedRol() === 'alumno'"
+                          (click)="setRol('alumno')">
+                    <i class="bi bi-mortarboard-fill me-1"></i> Alumno
+                  </button>
+                  <button type="button" 
+                          class="role-tab flex-grow-1 border-0 py-2 rounded-2" 
+                          [class.active]="selectedRol() === 'tutor'"
+                          (click)="setRol('tutor')">
+                    <i class="bi bi-person-workspace me-1"></i> Tutor
+                  </button>
+                </div>
+              </div>
+            } @else {
+              <!-- Indicador de modo moderador -->
+              <div class="moderator-badge d-flex align-items-center gap-2 p-2 rounded-3 mb-2 animate-pulse">
+                <i class="bi bi-shield-fill text-info"></i>
+                <span class="small fw-semibold text-info text-uppercase" style="letter-spacing: 0.5px;">Modo Moderador</span>
+              </div>
+            }
+
+            <div class="form-group">
+              <label>{{ isModeratorMode() ? 'CORREO ELECTRÓNICO' : 'CORREO INSTITUCIONAL' }}</label>
+              <div class="input-wrapper">
+                <i class="bi bi-envelope icon-left"></i>
+                <input
+                  type="email"
+                  [ngModel]="correo()"
+                  (ngModelChange)="onCorreoChange($event)"
+                  [ngModelOptions]="{standalone: true}"
+                  [placeholder]="isModeratorMode() ? 'ejemplo@correo.com' : 'usuario@unam.edu.pe'"
+                  autocomplete="email"
+                  required>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <div class="d-flex justify-content-between align-items-center mb-1">
+                <label class="mb-0">CONTRASEÑA</label>
+                <a href="javascript:void(0)" class="forgot-link small" (click)="openForgotPassword()">¿La olvidaste?</a>
+              </div>
+              <div class="input-wrapper">
+                <i class="bi bi-lock icon-left"></i>
+                <input
+                  [type]="showPassword() ? 'text' : 'password'"
+                  [ngModel]="password()"
+                  (ngModelChange)="password.set($event)"
+                  [ngModelOptions]="{standalone: true}"
+                  placeholder="••••••••"
+                  autocomplete="current-password"
+                  required>
+                <button
+                  type="button"
+                  class="eye-toggle"
+                  (click)="togglePasswordVisibility()">
+                  <i class="bi" [class.bi-eye]="!showPassword()" [class.bi-eye-slash]="showPassword()"></i>
+                </button>
+              </div>
+            </div>
+
+            <button type="submit" class="btn-submit mt-2" [disabled]="isLoading()">
+              @if (isLoading()) {
+                <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                <span>Iniciando sesión...</span>
+              } @else {
+                <span>Ingresar al Portal</span>
+              }
+            </button>
+          </form>
+
+          <div class="card-footer text-center mt-4 animate-slide-up delay-8 d-flex flex-column gap-2">
+            @if (!isModeratorMode()) {
+              <p class="text-theme-muted mb-0 small">¿No tienes cuenta? <a routerLink="/register">Regístrate aquí</a></p>
+              <p class="mb-0 small"><a href="javascript:void(0)" (click)="toggleModeratorMode(true)" class="text-info fw-semibold"><i class="bi bi-shield-lock-fill me-1"></i>¿Eres Moderador? Accede aquí</a></p>
+            } @else {
+              <p class="mb-0 small"><a href="javascript:void(0)" (click)="toggleModeratorMode(false)" class="text-info fw-semibold"><i class="bi bi-arrow-left me-1"></i>Volver al portal principal</a></p>
+            }
+          </div>
+        </div>
+      }
+
+      <!-- Standalone Forgot Password Component -->
+      @if (showForgotPassword()) {
+        <app-forgot-password
+          [isModeratorMode]="isModeratorMode()"
+          [initialEmail]="correo()"
+          (close)="closeForgotPassword()">
+        </app-forgot-password>
+      }
+    </div>
+  </div>
+</div>

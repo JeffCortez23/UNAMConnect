@@ -1,0 +1,52 @@
+<div class="glass-panel p-4 text-start">
+  <h3 class="fs-5 fw-bold mb-1"><i class="bi bi-gear-fill"></i> Configuración del Perfil</h3>
+  <p class="text-muted mb-4" style="font-size: 13px;">Administra los detalles de tu cuenta de forma dinámica.</p>
+  <div class="row g-3" style="max-width: 500px;" *ngIf="parent.authService.currentUser() as user">
+    <div class="col-sm-6">
+      <label class="form-label text-muted text-uppercase fw-semibold mb-1" style="font-size: 11px;">Nombres</label>
+      <input type="text" class="form-control rounded-3" [ngModel]="parent.configNombres()" (ngModelChange)="parent.configNombres.set($event)">
+    </div>
+    <div class="col-sm-6">
+      <label class="form-label text-muted text-uppercase fw-semibold mb-1" style="font-size: 11px;">Apellidos</label>
+      <input type="text" class="form-control rounded-3" [ngModel]="parent.configApellidos()" (ngModelChange)="parent.configApellidos.set($event)">
+    </div>
+    <div class="col-12">
+      <label class="form-label text-muted text-uppercase fw-semibold mb-1" style="font-size: 11px;">Año de Ingreso</label>
+      <input type="number" class="form-control rounded-3" [ngModel]="parent.configAnoIngreso()" (ngModelChange)="parent.configAnoIngreso.set($event)">
+    </div>
+    <div class="col-12">
+      <label class="form-label text-muted text-uppercase fw-semibold mb-1" style="font-size: 11px;">Ciclo de Estudios</label>
+      <select class="form-select rounded-3" [ngModel]="parent.configCicloActual()" (ngModelChange)="parent.configCicloActual.set($event)">
+        <option [value]="c" *ngFor="let c of [1,2,3,4,5,6,7,8,9,10]">Ciclo {{ c }}</option>
+      </select>
+    </div>
+    <div class="col-12">
+      <label class="form-label text-muted text-uppercase fw-semibold mb-1" style="font-size: 11px;">Cursos Aprobados (Ciclos Anteriores)</label>
+      <div class="courses-checkbox-list border rounded-3 p-2 overflow-auto" style="max-height: 180px; background: rgba(0,0,0,0.1); border-color: rgba(255,255,255,0.06); scrollbar-width: thin;">
+        @for (c of parent.cursosPreviosConfig(); track c.id_curso) {
+          <div class="d-flex align-items-center justify-content-between p-2 mb-2 rounded-2 cursor-pointer transition-all hover-bg-light-opacity"
+               (click)="parent.toggleConfigCursoAprobado(c.id_curso)"
+               [style.background]="parent.configCursosAprobados().includes(c.id_curso) ? 'rgba(97, 198, 192, 0.1)' : 'transparent'">
+            <div class="d-flex align-items-center gap-2">
+              <input type="checkbox" 
+                     class="form-check-input text-success m-0" 
+                     [id]="'config-check-curso-' + c.id_curso"
+                     [checked]="parent.configCursosAprobados().includes(c.id_curso)"
+                     (click)="$event.stopPropagation(); parent.toggleConfigCursoAprobado(c.id_curso)">
+              <label class="form-check-label small text-white cursor-pointer" [for]="'config-check-curso-' + c.id_curso" (click)="$event.stopPropagation()">
+                {{ c.nombre_curso }}
+              </label>
+            </div>
+            <span class="badge bg-secondary bg-opacity-20 text-muted" style="font-size: 10px;">Ciclo {{ c.ciclo }}</span>
+          </div>
+        } @empty {
+          <div class="text-center py-4 text-muted small">No hay materias disponibles para habilitar en ciclos anteriores.</div>
+        }
+      </div>
+    </div>
+    <div class="col-12 d-flex gap-3 mt-3 flex-wrap">
+      <button (click)="parent.guardarConfiguracion()" class="btn btn-success px-4 rounded-3">Guardar Cambios</button>
+      <button (click)="parent.restablecerPasswordConfig()" class="btn btn-outline-danger px-4 rounded-3">Cambiar Contraseña</button>
+    </div>
+  </div>
+</div>

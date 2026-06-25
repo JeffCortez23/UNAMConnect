@@ -1,0 +1,309 @@
+<div class="register-split-container">
+  <!-- Panel Izquierdo (Steppers Informativos) -->
+  <div class="banner-panel">
+    <!-- Partículas flotantes de fondo premium -->
+    <div class="particles-container">
+      <div class="particle p1"></div>
+      <div class="particle p2"></div>
+      <div class="particle p3"></div>
+      <div class="particle p4"></div>
+      <div class="particle p5"></div>
+      <div class="particle p6"></div>
+      <div class="particle p7"></div>
+    </div>
+
+    <div class="banner-content">
+      <div class="brand" style="display: inline-flex; align-items: center; gap: 14px; background: rgba(255, 255, 255, 0.07); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.15); padding: 10px 24px; border-radius: 30px; box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2); transition: all 0.3s ease; position: relative; z-index: 1;">
+        <img src="favicon.png" alt="UNAMConnect Symbol" style="height: 56px; object-fit: contain; filter: drop-shadow(0 0 12px rgba(255, 255, 255, 0.6)) drop-shadow(0 0 4px rgba(0, 229, 255, 0.3));">
+        <div class="brand-text" style="text-align: left;">
+          <h3 class="mb-0 fw-bold text-white" style="font-size: 24px; letter-spacing: -0.5px; line-height: 1.1;">UNAMConnect</h3>
+          <p class="mb-0 text-uppercase small opacity-90" style="letter-spacing: 1.5px; font-size: 9.5px; color: #00e5ff; margin-top: 2px; font-weight: 600;">Portal de Tutorías</p>
+        </div>
+      </div>
+
+      <div class="banner-text-footer">
+        <h1 [innerHTML]="slides[currentSlideIndex()].title"></h1>
+        <p>{{ slides[currentSlideIndex()].desc }}</p>
+        
+        <!-- Barra de progreso global del flujo de registro -->
+        <div class="progress-bar-track mt-3 mb-2" style="width: 100%; height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; overflow: hidden;">
+          <div class="progress-bar-fill" [style.width.%]="showVerification() ? (successMessage() ? 100 : 75) : (formProgressPercent() * 0.5)" style="height: 100%; background: var(--unam-secondary); transition: width 0.4s ease-in-out;"></div>
+        </div>
+
+        <div class="stepper-list">
+          <div class="step-item" [class.active]="!showVerification()" [class.completed]="showVerification()">
+            <span class="step-badge">
+              @if (showVerification()) { ✓ } @else { 1 }
+            </span>
+            <div class="step-info">
+              <h4>Completar perfil académico</h4>
+              <p class="mb-0 text-sm opacity-75">
+                @if (showVerification()) { Completado } @else { Progreso: {{ formProgressPercent() }}% }
+              </p>
+            </div>
+          </div>
+          <div class="step-item" [class.active]="showVerification() && !successMessage()" [class.completed]="successMessage()">
+            <span class="step-badge">
+              @if (successMessage()) { ✓ } @else { 2 }
+            </span>
+            <div class="step-info">
+              <h4>Verificación de correo</h4>
+              <p class="mb-0 text-sm opacity-75">
+                @if (successMessage()) { Verificado } @else if (showVerification()) { Ingrese código OTP } @else { Pendiente }
+              </p>
+            </div>
+          </div>
+          <div class="step-item" [class.active]="successMessage()">
+            <span class="step-badge">3</span>
+            <div class="step-info">
+              <h4>Acceder al portal de tutorías</h4>
+              <p class="mb-0 text-sm opacity-75">@if (successMessage()) { ¡Listo! } @else { Pendiente }</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Panel Derecho (Formulario de Registro) -->
+  <div class="form-panel">
+    <div class="glass-panel register-card">
+      <div class="form-header">
+        <h2>Crear cuenta</h2>
+        <p>Completa todos los campos para registrarte</p>
+      </div>
+
+      @if (errorMessage()) {
+        <div class="error-banner">
+          <span>⚠️</span> {{ errorMessage() }}
+        </div>
+      }
+
+      @if (successMessage()) {
+        <div class="success-banner">
+          <span>✅</span> {{ successMessage() }}
+        </div>
+      }
+
+      @if (!showVerification()) {
+        <form (ngSubmit)="onSubmit()" class="auth-form">
+          <div class="form-row">
+            <div class="form-group">
+              <label>NOMBRES</label>
+              <input 
+                type="text" 
+                [ngModel]="nombres()" 
+                (ngModelChange)="nombres.set($event)"
+                [ngModelOptions]="{standalone: true}"
+                placeholder="Ej. María Lucía" 
+                required>
+              <span *ngIf="nombres() && !isNombresValid()" class="validation-err">Campo requerido</span>
+            </div>
+
+            <div class="form-group">
+              <label>APELLIDOS</label>
+              <input 
+                type="text" 
+                [ngModel]="apellidos()" 
+                (ngModelChange)="apellidos.set($event)"
+                [ngModelOptions]="{standalone: true}"
+                placeholder="Ej. García Torres" 
+                required>
+              <span *ngIf="apellidos() && !isApellidosValid()" class="validation-err">Campo requerido</span>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>CÓDIGO UNIVERSITARIO</label>
+              <input 
+                type="text" 
+                [ngModel]="codigo_univ()" 
+                (ngModelChange)="codigo_univ.set($event)"
+                [ngModelOptions]="{standalone: true}"
+                placeholder="2023123456" 
+                required>
+              <span *ngIf="codigo_univ() && !isCodigoValid()" class="validation-err">Debe ser de 10 dígitos numéricos</span>
+              <span *ngIf="isCodigoValid()" class="validation-ok">✓ Código válido</span>
+            </div>
+
+            <div class="form-group">
+              <label>FACULTAD / CARRERA</label>
+              <select 
+                [ngModel]="id_carrera()" 
+                (ngModelChange)="onCarreraChange($event)"
+                [ngModelOptions]="{standalone: true}"
+                required>
+                <option [value]="null" disabled selected>Seleccionar carrera</option>
+                @for (carrera of carreras(); track carrera.id_carrera) {
+                  <option [value]="carrera.id_carrera">{{ carrera.nombre_carrera }}</option>
+                }
+              </select>
+              <span *ngIf="id_carrera() !== null && !isCarreraValid()" class="validation-err">Seleccione una carrera</span>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>AÑO DE INGRESO</label>
+              <input 
+                type="number" 
+                min="2018" 
+                max="2026"
+                [ngModel]="ano_ingreso()" 
+                (ngModelChange)="ano_ingreso.set($event)"
+                [ngModelOptions]="{standalone: true}"
+                placeholder="Ej. 2023" 
+                required>
+              <span *ngIf="ano_ingreso() !== null && !isAnoIngresoValid()" class="validation-err">Año inválido (2018 - 2026)</span>
+            </div>
+
+            <div class="form-group">
+              <label>CICLO DE ESTUDIO ACTUAL</label>
+              <select 
+                [ngModel]="ciclo_actual()" 
+                (ngModelChange)="ciclo_actual.set($event)"
+                [ngModelOptions]="{standalone: true}"
+                required>
+                <option [value]="null" disabled selected>Seleccionar ciclo</option>
+                <option [value]="1">I Ciclo</option>
+                <option [value]="2">II Ciclo</option>
+                <option [value]="3">III Ciclo</option>
+                <option [value]="4">IV Ciclo</option>
+                <option [value]="5">V Ciclo</option>
+                <option [value]="6">VI Ciclo</option>
+                <option [value]="7">VII Ciclo</option>
+                <option [value]="8">VIII Ciclo</option>
+                <option [value]="9">IX Ciclo</option>
+                <option [value]="10">X Ciclo</option>
+              </select>
+              <span *ngIf="ciclo_actual() !== null && !isCicloActualValid()" class="validation-err">Seleccione ciclo</span>
+            </div>
+          </div>
+
+          <!-- Passed Courses checklist (Only shown if career is selected and ciclo_actual > 1) -->
+          <div *ngIf="isCarreraValid() && ciclo_actual() !== null && ciclo_actual()! > 1" class="form-group mt-3">
+            <label class="text-muted small fw-semibold">CURSOS APROBADOS DE CICLOS ANTERIORES</label>
+            <div class="courses-checkbox-list border rounded-3 p-2 overflow-auto mb-2" style="max-height: 180px; background: rgba(0, 0, 0, 0.25); border-color: rgba(255, 255, 255, 0.08); scrollbar-width: thin;">
+              @for (c of cursosPrevios(); track c.id_curso) {
+                <div class="course-card-item p-2 mb-1 rounded-2 d-flex align-items-center justify-content-between cursor-pointer"
+                     [class.selected]="cursosAprobadosSeleccionados().includes(c.id_curso)"
+                     (click)="toggleCursoAprobado(c.id_curso)">
+                  <div class="d-flex align-items-center gap-2">
+                    <input type="checkbox" 
+                           class="form-check-input text-success m-0"
+                           [id]="'register-check-curso-' + c.id_curso"
+                           [checked]="cursosAprobadosSeleccionados().includes(c.id_curso)"
+                           (click)="$event.stopPropagation(); toggleCursoAprobado(c.id_curso)">
+                    <label class="form-check-label small text-white cursor-pointer" [for]="'register-check-curso-' + c.id_curso" (click)="$event.stopPropagation()">
+                      {{ c.nombre_curso }}
+                    </label>
+                  </div>
+                  <span class="badge bg-secondary bg-opacity-20 text-muted" style="font-size: 10px;">Ciclo {{ c.ciclo }}</span>
+                </div>
+              }
+            </div>
+          </div>
+
+          <!-- Prerequisite conflict warning panel -->
+          <div *ngIf="cursosBloqueadosPrerequisito().length > 0" class="form-group alert alert-warning bg-warning bg-opacity-10 border-warning border-opacity-20 rounded-3 p-3 mt-2">
+            <div class="d-flex align-items-center gap-2 text-warning mb-2 fw-semibold" style="font-size: 12px;">
+              <i class="bi bi-exclamation-triangle-fill text-warning"></i> Cursos restringidos por prerrequisito:
+            </div>
+            <div class="overflow-auto" style="max-height: 120px;">
+              @for (b of cursosBloqueadosPrerequisito(); track b.curso + '-' + b.prerequisitoFaltante) {
+                <div class="text-warning small mb-1" style="font-size: 11px; color: #ffb703 !important;">
+                  • <strong>{{ b.curso }}</strong> no habilitado (requiere aprobar <strong>{{ b.prerequisitoFaltante }}</strong>)
+                </div>
+              }
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>CORREO INSTITUCIONAL</label>
+            <input 
+              type="email" 
+              [ngModel]="correo()" 
+              (ngModelChange)="correo.set($event)"
+              [ngModelOptions]="{standalone: true}"
+              placeholder="usuario@unam.edu.pe" 
+              required>
+            <span *ngIf="correo() && !isCorreoValid()" class="validation-err">Solo se acepta correo @unam.edu.pe o correo de moderador autorizado</span>
+            <span *ngIf="isCorreoValid()" class="validation-ok">✓ Correo válido</span>
+          </div>
+
+          <div class="form-group password-group">
+            <label>CONTRASEÑA</label>
+            <div class="input-wrapper">
+              <input 
+                [type]="showPassword() ? 'text' : 'password'" 
+                [ngModel]="password()" 
+                (ngModelChange)="password.set($event)"
+                [ngModelOptions]="{standalone: true}"
+                placeholder="Mínimo 8 caracteres" 
+                required>
+              <button type="button" class="eye-toggle" (click)="togglePasswordVisibility()" title="Mostrar/Ocultar contraseña">
+                <i class="bi" [class.bi-eye]="!showPassword()" [class.bi-eye-fill]="showPassword()"></i>
+              </button>
+            </div>
+            <span *ngIf="password() && !isPasswordValid()" class="validation-err">Mínimo 8 caracteres requeridos</span>
+            <span *ngIf="isPasswordValid()" class="validation-ok">✓ Contraseña segura</span>
+          </div>
+
+          <button type="submit" class="btn-submit" [disabled]="isLoading() || !isFormValid()">
+            @if (isLoading()) {
+              <span>Enviando código...</span>
+            } @else {
+              <span>Verificar correo</span>
+            }
+          </button>
+        </form>
+      } @else {
+        <div class="verification-step animate-fade-in text-left">
+          <div class="step-indicator mb-4">
+            <span class="step-pill">Código OTP enviado a {{ correo() }}</span>
+          </div>
+          
+          <div class="verification-instructions mb-4 text-center">
+            <span style="font-size: 48px; display: block; margin-bottom: 15px;">🎓</span>
+            <p style="font-size: 15px; color: var(--color-text-primary); line-height: 1.6; margin-bottom: 10px;">
+              Ingresa el código de verificación de 6 dígitos enviado a tu correo institucional.
+            </p>
+            
+            <div class="form-group mb-4" style="max-width: 250px; margin: 0 auto;">
+              <input 
+                type="text" 
+                [ngModel]="verificationCode()"
+                (ngModelChange)="verificationCode.set($event)"
+                [ngModelOptions]="{standalone: true}"
+                placeholder="123456" 
+                maxlength="6"
+                class="otp-input-field"
+                required>
+            </div>
+          </div>
+
+          <div class="flex flex-col gap-3">
+            <button type="button" class="btn-submit w-full" [disabled]="verificationLoading() || verificationCode().length !== 6" (click)="verifyAndRegister()">
+              @if (verificationLoading()) {
+                <span>Verificando y registrando...</span>
+              } @else {
+                <span>Completar Registro</span>
+              }
+            </button>
+            <button type="button" class="btn-resend w-full text-center py-2" (click)="resendVerificationCode()">
+              Reenviar código de verificación
+            </button>
+            <button type="button" class="btn-back-link" (click)="showVerification.set(false)">
+              Volver al formulario
+            </button>
+          </div>
+        </div>
+      }
+
+      <div class="card-footer">
+        <p>¿Ya tienes cuenta? <a routerLink="/login">Inicia sesión</a></p>
+      </div>
+    </div>
+  </div>
+</div>

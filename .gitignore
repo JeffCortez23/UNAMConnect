@@ -16,3 +16,15 @@ Thumbs.db
 **/.cursor/
 **/.copilot/
 **/.aider/
+.agents/
+**/.agents/
+
+# Logs and local server backups
+*.log
+**/uploads/
+**/usuarios_migrados.json
+scratch/
+*skills-lock.json
+**/firebase-service-account.json
+backend/scripts/
+

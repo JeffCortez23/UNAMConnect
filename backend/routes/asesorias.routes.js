@@ -1,5 +1,9 @@
 const router = require('express').Router();
 const controller = require('../controllers/asesorias.controller');
+const { requireAuth } = require('../middlewares/auth.middleware');
+
+// Todas las rutas de asesorías requieren estar autenticado
+router.use(requireAuth);
 
 // Endpoints especiales (deben ir ANTES de /:id para evitar conflicto)
 router.get('/alumno/:id', controller.obtenerAsesoriasPorAlumno);

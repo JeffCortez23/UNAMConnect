@@ -1,14 +1,18 @@
 const db = require('../config/db');
 
 const Cursos = {
-  getAll: async () => {
-    const { rows } = await db.query(
-      `SELECT c.id_curso, c.id_carrera, c.nombre_curso, c.ciclo,
+  getAll: async (id_carrera) => {
+    let query = `SELECT c.id_curso, c.id_carrera, c.nombre_curso, c.ciclo,
               ca.nombre_carrera, ca.facultad
        FROM cursos c
-       INNER JOIN carreras ca ON c.id_carrera = ca.id_carrera
-       ORDER BY c.id_curso`
-    );
+       INNER JOIN carreras ca ON c.id_carrera = ca.id_carrera`;
+    const params = [];
+    if (id_carrera) {
+      query += ` WHERE c.id_carrera = $1`;
+      params.push(id_carrera);
+    }
+    query += ` ORDER BY c.id_curso`;
+    const { rows } = await db.query(query, params);
     return rows;
   },
 
