@@ -1,10 +1,22 @@
-# Componentes Compartidos (Frontend) 🧩
+# Componentes Compartidos Globales (Frontend) 🧩
 
-Este directorio contiene componentes reutilizables que son inyectados en múltiples vistas y páginas de la aplicación.
+Este directorio contiene los componentes reutilizables independientes de la interfaz de usuario de UNAMConnect.
 
-## 📁 Estructura
+## 📂 Componentes Globales Disponibles
 
-- **Componentes de UI Comunes**: Elementos visuales reutilizables, modales y barras de carga transversales.
+### 1. [**LoaderComponent**](./loader/loader.component.ts)
+- **Selector**: `app-loader`
+- **Propósito**: Pantalla de carga superpuesta (overlay fullscreen) con estética glassmorphic y animación de anillo de luz neon.
+- **Servicio Asociado**: [**LoaderService**](../../services/loader.service.ts)
+  - Provee los métodos inyectables `.show()` y `.hide()` para activar o desactivar la animación de carga desde cualquier lugar de la aplicación (ej. durante el inicio de sesión, llamadas a APIs o carga de boletas de notas).
 
-## 🛠️ Cómo Utilizarlos
-Al ser declarados como componentes independientes (`standalone: true` en Angular 17+), se pueden importar de forma individual en cualquier otra página o componente agregándolos a la propiedad `imports` de su decorador `@Component`.
+### 2. [**ConfirmDialogComponent**](./confirm-dialog/confirm-dialog.component.ts)
+- **Selector**: `app-confirm-dialog`
+- **Propósito**: Modal genérica flotante de confirmación para acciones críticas del usuario (ej. cancelar reservas, confirmar postulaciones de tutorías, cierre de sesión, etc.).
+- **Parámetros**:
+  - `isOpen` (Signal Input): Booleano que controla la visibilidad.
+  - `title`, `message`: Textos a desplegar.
+  - `confirmText`, `cancelText`: Etiquetas de los botones de acción.
+- **Eventos**:
+  - `onConfirm` (Output): Se emite al presionar "Confirmar".
+  - `onCancel` (Output): Se emite al presionar "Cancelar".

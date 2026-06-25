@@ -1,0 +1,92 @@
+.dialog-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(10, 8, 26, 0.5);
+  backdrop-filter: blur(8px);
+  z-index: 99990;
+  animation: fadeIn 0.2s ease-out;
+}
+
+.glass-dialog-card {
+  background: rgba(25, 20, 56, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  max-width: 440px;
+  width: 90%;
+  transform: scale(0.95);
+  animation: popIn 0.25s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.dialog-title {
+  color: #ffffff;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+.warning-icon {
+  color: #ffc107;
+  font-size: 1.3rem;
+}
+
+.dialog-message {
+  color: #ccd4e0;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  margin: 0;
+}
+
+// Botones Premium Glass
+.btn-glass-cancel {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #e0e6ed;
+  border-radius: 10px;
+  padding: 8px 18px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #ffffff;
+  }
+}
+
+.btn-glass-confirm {
+  background: var(--unam-secondary, #00e5ff);
+  border: 1px solid rgba(0, 229, 255, 0.2);
+  color: #191438;
+  border-radius: 10px;
+  padding: 8px 18px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 15px rgba(0, 229, 255, 0.25);
+
+  &:hover {
+    background: #00b8cc;
+    box-shadow: 0 6px 20px rgba(0, 229, 255, 0.4);
+    transform: translateY(-1px);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes popIn {
+  to {
+    transform: scale(1);
+  }
+}
