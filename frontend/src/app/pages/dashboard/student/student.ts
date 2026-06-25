@@ -844,7 +844,11 @@ export class StudentDashboardComponent implements OnInit, OnDestroy {
       title: 'Confirmar Solicitud de Asesoría',
       message: '¿Estás seguro de que deseas solicitar esta asesoría con el tutor seleccionado?',
       onConfirm: () => {
-        const fechaHora = `${this.nuevaFecha()}T${this.nuevaHora()}:00`;
+        let timeStr = this.nuevaHora();
+        if (timeStr.split(':').length === 2) {
+          timeStr += ':00';
+        }
+        const fechaHora = `${this.nuevaFecha()}T${timeStr}`;
 
         const payload = {
           id_alumno: user.id,
@@ -865,7 +869,8 @@ export class StudentDashboardComponent implements OnInit, OnDestroy {
           },
           error: (err) => {
             console.error('Error al crear asesoría:', err);
-            this.notificationService.showToast('Ocurrió un error al solicitar la asesoría.', 'error');
+            const errorMsg = err.error?.error || 'Ocurrió un error al solicitar la asesoría.';
+            this.notificationService.showToast(errorMsg, 'error');
           }
         });
       }
