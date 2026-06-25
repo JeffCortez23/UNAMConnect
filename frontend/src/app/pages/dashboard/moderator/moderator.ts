@@ -144,13 +144,31 @@ export class ModeratorDashboardComponent implements OnInit {
   }
 
   marcarLeida(n: any): void {
-    if (n.leido) return;
+    const action = () => {
+      this.redirigirNotificacion(n.mensaje);
+    };
+
+    if (n.leido) {
+      action();
+      return;
+    }
+
     this.http.put(`${environment.apiUrl}/notificaciones/marcar-leida/${n.id_notificacion}`, {}).subscribe({
       next: () => {
         this.cargarNotificaciones();
+        action();
       },
       error: (err) => console.error('Error al marcar notificación como leída:', err)
     });
+  }
+
+  redirigirNotificacion(mensaje: string): void {
+    const msg = mensaje.toLowerCase();
+    if (msg.includes('postulación') || msg.includes('tutor') || msg.includes('solicitud')) {
+      this.activeTab.set('validar');
+    } else if (msg.includes('valoración') || msg.includes('calificado') || msg.includes('estrella') || msg.includes('reporte')) {
+      this.activeTab.set('principal');
+    }
   }
 
   marcarTodasLeidas(): void {
