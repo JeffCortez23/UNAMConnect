@@ -553,6 +553,8 @@ body.light-theme .hover-bg-light-opacity:hover {
 .metric-card,
 .glass-panel:not(.sidebar),
 .glass-panel:not(.sidebar) .card {
+  color: #0f172a !important;
+
   /* Headings, main texts and numbers */
   h1, h2, h3, h4, h5, .h1, .h2, .h3, .h4, .h5, .card-header, .fs-6, td, th {
     color: #0f172a !important;
@@ -570,6 +572,8 @@ body.dark-theme {
   .metric-card,
   .glass-panel:not(.sidebar),
   .glass-panel:not(.sidebar) .card {
+    color: #ffffff !important;
+
     /* Headings, main texts and numbers */
     h1, h2, h3, h4, h5, .h1, .h2, .h3, .h4, .h5, .card-header, .fs-6, td, th {
       color: #ffffff !important;
