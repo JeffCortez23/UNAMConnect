@@ -695,11 +695,29 @@ body.light-theme {
       color: #475569 !important;
     }
 
-    label {
+    label:not(.form-check-label) {
       color: #334155 !important;
     }
 
-    input, select {
+    /* Keep checkboxes small and correctly sized */
+    input[type="checkbox"] {
+      width: 18px !important;
+      height: 18px !important;
+      padding: 0 !important;
+      margin: 0 !important;
+      background-color: #ffffff !important;
+      border: 1px solid rgba(15, 23, 42, 0.2) !important;
+      border-radius: 4px !important;
+      cursor: pointer !important;
+      display: inline-block !important;
+      
+      &:checked {
+        background-color: var(--unam-secondary) !important;
+        border-color: var(--unam-secondary) !important;
+      }
+    }
+
+    input:not([type="checkbox"]), select {
       background-color: rgba(15, 23, 42, 0.04) !important;
       border: 1px solid rgba(15, 23, 42, 0.1) !important;
       color: #0f172a !important;
@@ -760,5 +778,21 @@ body.light-theme {
       color: #0f172a !important;
     }
   }
+}
+
+/* Checkbox specific overrides to prevent layout distortion in login and register forms */
+.login-card input[type="checkbox"], .register-card input[type="checkbox"] {
+  width: 18px !important;
+  height: 18px !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  cursor: pointer !important;
+  display: inline-block !important;
+  background-color: rgba(255, 255, 255, 0.05) !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  border-radius: 4px !important;
+  -webkit-appearance: checkbox !important;
+  appearance: checkbox !important;
+  aspect-ratio: 1/1 !important;
 }
 

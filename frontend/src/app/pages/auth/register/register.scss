@@ -358,7 +358,7 @@
     color: #cbd5e1;
   }
 
-  input, select {
+  input:not([type="checkbox"]), select {
     width: 100%;
     padding: 12px 14px;
     border-radius: 10px;
