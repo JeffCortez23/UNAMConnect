@@ -31,3 +31,7 @@ backend/scripts/
 .specify/
 AGENTS.md
 **/init_db.sql
+**/.vscode/
+**/.firebase/
+.vscode/
+.firebase/
