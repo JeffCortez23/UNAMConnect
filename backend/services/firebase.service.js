@@ -1,5 +1,6 @@
 const jwt = require('jsonwebtoken');
 const admin = require('firebase-admin');
+const { credential } = require('firebase-admin');
 const { getAuth } = require('firebase-admin/auth');
 const path = require('path');
 
@@ -8,7 +9,7 @@ try {
   if (process.env.FIREBASE_PROJECT_ID && process.env.FIREBASE_CLIENT_EMAIL && process.env.FIREBASE_PRIVATE_KEY) {
     // Producción (Render): usar variables de entorno
     admin.initializeApp({
-      credential: admin.credential.cert({
+      credential: credential.cert({
         projectId: process.env.FIREBASE_PROJECT_ID,
         clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
         privateKey: process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n')
@@ -19,7 +20,7 @@ try {
     // Desarrollo local: usar archivo JSON
     const serviceAccountPath = path.join(__dirname, '../config/firebase-service-account.json');
     admin.initializeApp({
-      credential: admin.cert(require(serviceAccountPath))
+      credential: credential.cert(require(serviceAccountPath))
     });
     console.log('[Firebase Admin] Inicializado exitosamente en desarrollo local.');
   }

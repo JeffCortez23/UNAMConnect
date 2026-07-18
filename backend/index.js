@@ -18,12 +18,12 @@ const allowedOrigins = [
   'http://127.0.0.1:4200',
   'http://localhost:3000',     // Backend sirve frontend compilado
   'http://127.0.0.1:3000',
-  // En producción agregar: 'https://www.unamconnect.xyz'
+  'https://unamconnect.onrender.com'
 ];
 app.use(cors({
   origin: (origin, callback) => {
-    // Permitir requests sin origin (Postman, curl, mismo servidor) o desde túneles de localtunnel (*.loca.lt)
-    if (!origin || allowedOrigins.includes(origin) || origin.endsWith('.loca.lt')) {
+    // Permitir requests sin origin (mismo servidor), desde locales, túneles (*.loca.lt) o subdominios de Render (*.onrender.com)
+    if (!origin || allowedOrigins.includes(origin) || origin.endsWith('.loca.lt') || origin.endsWith('.onrender.com')) {
       callback(null, true);
     } else {
       callback(new Error(`Origen no permitido por CORS: ${origin}`));
