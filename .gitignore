@@ -1,0 +1,30 @@
+# Node & Angular dependencies
+**/node_modules/
+**/dist/
+**/.angular/
+
+# Environment variables
+.env
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# AI agents
+**/.gemini/
+**/.claude/
+**/.cursor/
+**/.copilot/
+**/.aider/
+.agents/
+**/.agents/
+
+# Logs and local server backups
+*.log
+**/uploads/
+**/usuarios_migrados.json
+scratch/
+*skills-lock.json
+**/firebase-service-account.json
+backend/scripts/
+
