@@ -35,3 +35,18 @@ AGENTS.md
 **/.firebase/
 .vscode/
 .firebase/
+
+# Keys, Credentials & Sensitive files
+*.pem
+*.key
+*.pfx
+*.cert
+*credentials*
+*serviceAccount*
+*service-account*
+*secret*
+*private*
+**/*serviceAccountKey.json
+**/*service-account*.json
+**/credentials*.json
+**/secrets*.json
