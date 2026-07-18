@@ -28,3 +28,11 @@ scratch/
 **/firebase-service-account.json
 backend/scripts/
 
+# Antigravity & Specify systems
+.specify/
+AGENTS.md
+**/init_db.sql
+**/.vscode/
+**/.firebase/
+.vscode/
+.firebase/
