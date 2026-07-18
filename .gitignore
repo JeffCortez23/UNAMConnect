@@ -27,4 +27,6 @@ scratch/
 *skills-lock.json
 **/firebase-service-account.json
 backend/scripts/
-
+# Antigravity & Specify systems
+.specify/
+AGENTS.md
