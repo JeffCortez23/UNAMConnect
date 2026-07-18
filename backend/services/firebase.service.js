@@ -3,13 +3,26 @@ const admin = require('firebase-admin');
 const { getAuth } = require('firebase-admin/auth');
 const path = require('path');
 
-// Inicializar Firebase Admin SDK con la cuenta de servicio local
-const serviceAccountPath = path.join(__dirname, '../config/firebase-service-account.json');
+// Inicializar Firebase Admin SDK
 try {
-  admin.initializeApp({
-    credential: admin.cert(require(serviceAccountPath))
-  });
-  console.log('[Firebase Admin] Inicializado exitosamente.');
+  if (process.env.FIREBASE_PROJECT_ID && process.env.FIREBASE_CLIENT_EMAIL && process.env.FIREBASE_PRIVATE_KEY) {
+    // Producción (Render): usar variables de entorno
+    admin.initializeApp({
+      credential: admin.credential.cert({
+        projectId: process.env.FIREBASE_PROJECT_ID,
+        clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+        privateKey: process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n')
+      })
+    });
+    console.log('[Firebase Admin] Inicializado exitosamente en producción (variables de entorno).');
+  } else {
+    // Desarrollo local: usar archivo JSON
+    const serviceAccountPath = path.join(__dirname, '../config/firebase-service-account.json');
+    admin.initializeApp({
+      credential: admin.cert(require(serviceAccountPath))
+    });
+    console.log('[Firebase Admin] Inicializado exitosamente en desarrollo local.');
+  }
 } catch (error) {
   console.error('[Firebase Admin] Error al inicializar:', error);
 }
