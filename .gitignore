@@ -30,3 +30,4 @@ backend/scripts/
 # Antigravity & Specify systems
 .specify/
 AGENTS.md
+**/init_db.sql
