@@ -8,7 +8,7 @@ echo "📦 Iniciando construcción de UNAMConnect..."
 # 1. Construir el Frontend
 echo "🔹 Construyendo el Frontend de Angular..."
 cd frontend
-npm install
+npm install --include=dev
 npm run build
 cd ..
 
