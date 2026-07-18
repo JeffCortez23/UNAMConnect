@@ -5,8 +5,8 @@ const nodemailer = require('nodemailer');
 const transporter = nodemailer.createTransport({
   service: process.env.EMAIL_SERVICE || 'gmail',
   auth: {
-    user: process.env.EMAIL_USER || 'unamconnect.otp@gmail.com',
-    pass: process.env.EMAIL_PASS || 'ylvj wdtz jvga lsgz' // Credencial temporal de aplicación
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS
   }
 });
 
@@ -60,7 +60,7 @@ const enviarCorreoCodigo = async (destinatario, asunto, codigo, type = 'verifica
   `;
 
   const mailOptions = {
-    from: `"UNAMConnect Portal" <${process.env.EMAIL_USER || 'unamconnect.otp@gmail.com'}>`,
+    from: `"UNAMConnect Portal" <${process.env.EMAIL_USER}>`,
     to: destinatario,
     subject: asunto,
     html: htmlContent

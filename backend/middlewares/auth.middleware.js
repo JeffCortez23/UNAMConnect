@@ -11,7 +11,7 @@ const requireAuth = (req, res, next) => {
   }
 
   const token = authHeader.split(' ')[1];
-  const secret = process.env.JWT_SECRET || 'unamconnect_secret_key_2026';
+  const secret = process.env.JWT_SECRET;
 
   try {
     const decoded = jwt.verify(token, secret);

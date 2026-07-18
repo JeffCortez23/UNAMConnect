@@ -41,17 +41,31 @@ const getByUsuario = async (req, res) => {
 
 // Crear una nueva solicitud
 const create = async (req, res) => {
+  const db = require('../config/db');
   try {
+    const { id_usuario, id_curso } = req.body;
+
+    // Validar que el usuario tiene el curso marcado como aprobado
+    const { rows: userRows } = await db.query(
+      'SELECT cursos_aprobados FROM usuarios WHERE id_usuario = $1',
+      [id_usuario]
+    );
+    const cursosAprobados = userRows[0]?.cursos_aprobados || [];
+    if (!cursosAprobados.includes(Number(id_curso))) {
+      return res.status(400).json({
+        error: 'No puedes postularte como tutor de un curso que no has aprobado.'
+      });
+    }
+
     const solicitud = await Solicitudes.create(req.body);
     
     // Notificar a los moderadores
     try {
-      const db = require('../config/db');
       const Notificaciones = require('../models/notificaciones.model');
       const { rows: modRows } = await db.query(
         'SELECT id_usuario FROM usuario_roles WHERE id_rol = 3'
       );
-      const { rows: userRows } = await db.query(
+      const { rows: solicitanteRows } = await db.query(
         'SELECT nombres, apellidos FROM usuarios WHERE id_usuario = $1',
         [solicitud.id_usuario]
       );
@@ -59,7 +73,7 @@ const create = async (req, res) => {
         'SELECT nombre_curso FROM cursos WHERE id_curso = $1',
         [solicitud.id_curso]
       );
-      const nombreEstudiante = userRows[0] ? `${userRows[0].nombres} ${userRows[0].apellidos}` : 'Un estudiante';
+      const nombreEstudiante = solicitanteRows[0] ? `${solicitanteRows[0].nombres} ${solicitanteRows[0].apellidos}` : 'Un estudiante';
       const nombreCurso = cursoRows[0] ? cursoRows[0].nombre_curso : 'un curso';
 
       for (const mod of modRows) {

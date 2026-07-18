@@ -3,13 +3,13 @@ const db = require('../config/db');
 const Usuarios = {
   getAll: async () => {
     const { rows } = await db.query(
-      `SELECT u.id_usuario, u.id_carrera, u.codigo_univ, u.nombres, u.apellidos, u.correo, u.ano_ingreso, u.ciclo_actual, c.nombre_carrera,
+      `SELECT u.id_usuario, u.id_carrera, u.codigo_univ, u.nombres, u.apellidos, u.correo, u.ano_ingreso, u.ciclo_actual, u.url_historial_academico, c.nombre_carrera,
               COALESCE(json_agg(json_build_object('id_rol', r.id_rol, 'nombre_rol', r.nombre_rol)) FILTER (WHERE r.id_rol IS NOT NULL), '[]') AS roles
        FROM usuarios u
        LEFT JOIN carreras c ON u.id_carrera = c.id_carrera
        LEFT JOIN usuario_roles ur ON u.id_usuario = ur.id_usuario
        LEFT JOIN roles r ON ur.id_rol = r.id_rol
-       GROUP BY u.id_usuario, c.nombre_carrera, u.ano_ingreso, u.ciclo_actual
+       GROUP BY u.id_usuario, c.nombre_carrera, u.ano_ingreso, u.ciclo_actual, u.url_historial_academico
        ORDER BY u.id_usuario`
     );
     return rows;
@@ -17,7 +17,7 @@ const Usuarios = {
 
   getById: async (id) => {
     const { rows } = await db.query(
-      `SELECT u.id_usuario, u.id_carrera, u.codigo_univ, u.nombres, u.apellidos, u.correo, u.ano_ingreso, u.ciclo_actual, c.nombre_carrera, u.cursos_aprobados
+      `SELECT u.id_usuario, u.id_carrera, u.codigo_univ, u.nombres, u.apellidos, u.correo, u.ano_ingreso, u.ciclo_actual, u.url_historial_academico, c.nombre_carrera, u.cursos_aprobados
        FROM usuarios u
        LEFT JOIN carreras c ON u.id_carrera = c.id_carrera
        WHERE u.id_usuario = $1`,
@@ -35,11 +35,11 @@ const Usuarios = {
   },
 
   create: async (usuarioData) => {
-    const { id_carrera, codigo_univ, nombres, apellidos, correo, password, ano_ingreso, ciclo_actual } = usuarioData;
+    const { id_carrera, codigo_univ, nombres, apellidos, correo, password, ano_ingreso, ciclo_actual, url_historial_academico } = usuarioData;
     const { rows } = await db.query(
-      `INSERT INTO usuarios (id_carrera, codigo_univ, nombres, apellidos, correo, password, ano_ingreso, ciclo_actual)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id_usuario, id_carrera, codigo_univ, nombres, apellidos, correo, ano_ingreso, ciclo_actual`,
-      [id_carrera, codigo_univ, nombres, apellidos, correo, password, ano_ingreso, ciclo_actual]
+      `INSERT INTO usuarios (id_carrera, codigo_univ, nombres, apellidos, correo, password, ano_ingreso, ciclo_actual, url_historial_academico)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING id_usuario, id_carrera, codigo_univ, nombres, apellidos, correo, ano_ingreso, ciclo_actual, url_historial_academico`,
+      [id_carrera, codigo_univ, nombres, apellidos, correo, password, ano_ingreso, ciclo_actual, url_historial_academico || null]
     );
     return rows[0];
   },
@@ -50,7 +50,7 @@ const Usuarios = {
     let i = 1;
 
     // Solo permitir columnas reales de la tabla
-    const allowedColumns = ['id_carrera', 'codigo_univ', 'nombres', 'apellidos', 'correo', 'password', 'ano_ingreso', 'ciclo_actual', 'cursos_aprobados'];
+    const allowedColumns = ['id_carrera', 'codigo_univ', 'nombres', 'apellidos', 'correo', 'password', 'ano_ingreso', 'ciclo_actual', 'cursos_aprobados', 'url_historial_academico'];
 
     for (const [key, value] of Object.entries(usuarioData)) {
       if (value !== undefined && allowedColumns.includes(key)) {
@@ -67,7 +67,7 @@ const Usuarios = {
       UPDATE usuarios 
       SET ${fields.join(', ')} 
       WHERE id_usuario = $${i} 
-      RETURNING id_usuario, id_carrera, codigo_univ, nombres, apellidos, correo, ano_ingreso, ciclo_actual, cursos_aprobados
+      RETURNING id_usuario, id_carrera, codigo_univ, nombres, apellidos, correo, ano_ingreso, ciclo_actual, cursos_aprobados, url_historial_academico
     `;
 
     const { rows } = await db.query(query, values);

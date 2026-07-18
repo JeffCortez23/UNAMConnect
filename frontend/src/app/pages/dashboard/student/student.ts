@@ -199,8 +199,13 @@ export class StudentDashboardComponent implements OnInit, OnDestroy {
     });
   }
 
+  private dataSubscription: Subscription | null = null;
+
   ngOnInit(): void {
-    this.cargarDatos();
+    // Polling reactivo cada 12 segundos para sincronizar el estado automáticamente
+    this.dataSubscription = timer(0, 12000).subscribe(() => {
+      this.cargarDatos();
+    });
     this.startChatPolling();
     this.startNotificationPolling();
   }
@@ -345,12 +350,40 @@ export class StudentDashboardComponent implements OnInit, OnDestroy {
   configAnoIngreso = signal<number | null>(null);
   configCicloActual = signal<number>(10);
   configCursosAprobados = signal<number[]>([]);
+  todasSolicitudesTutor = signal<any[]>([]);
+  selectedFileProfile = signal<File | null>(null);
+
+  onFileSelectedProfile(event: any): void {
+    const file = event.target.files?.[0];
+    if (file) {
+      this.selectedFileProfile.set(file);
+    } else {
+      this.selectedFileProfile.set(null);
+    }
+  }
+
+  documentoFaltante = computed(() => {
+    const ciclo = Number(this.configCicloActual());
+    if (ciclo > 1) {
+      const user = this.authService.currentUser();
+      const hasUploaded = user && user.url_historial_academico;
+      const hasSelected = this.selectedFileProfile() !== null;
+      return !hasUploaded && !hasSelected;
+    }
+    return false;
+  });
   
   configCursosPrevios = computed(() => {
     const ciclo = Number(this.configCicloActual());
     if (!ciclo || ciclo <= 1) return [];
     return this.todosLosCursos().filter(c => c.ciclo < ciclo);
   });
+
+  /** Ciclo máximo que el alumno puede declarar según sus cursos aprobados */
+  maxCicloPermitido = computed(() => 10);
+
+  /** True si el ciclo declarado supera el máximo permitido */
+  cicloInvalido = computed(() => false);
 
   toggleConfigCursoAprobado(id: number): void {
     const current = this.configCursosAprobados();
@@ -366,8 +399,14 @@ export class StudentDashboardComponent implements OnInit, OnDestroy {
 
   cursosTutorFiltrados = computed(() => {
     const query = this.filtroCursoPostulacion().toLowerCase().trim();
-    if (!query) return this.cursos();
-    return this.cursos().filter(c => c.nombre_curso.toLowerCase().includes(query));
+    // IDs con solicitud ya enviada (cualquier estado)
+    const solicitadosIds = new Set(this.todasSolicitudesTutor().map((s: any) => s.id_curso));
+    const availableCourses = this.todosLosCursos().filter(c =>
+      this.isCursoAprobado(c.id_curso) &&
+      !solicitadosIds.has(c.id_curso)
+    );
+    if (!query) return availableCourses;
+    return availableCourses.filter(c => c.nombre_curso.toLowerCase().includes(query));
   });
 
   onDragOver(event: DragEvent): void {
@@ -598,6 +637,9 @@ export class StudentDashboardComponent implements OnInit, OnDestroy {
   });
 
   ngOnDestroy(): void {
+    if (this.dataSubscription) {
+      this.dataSubscription.unsubscribe();
+    }
     this.destroyChatPolling();
     this.destroyNotificationPolling();
   }
@@ -678,6 +720,12 @@ export class StudentDashboardComponent implements OnInit, OnDestroy {
     this.http.get<Curso[]>(`${environment.apiUrl}/cursos?id_carrera=${carreraId}`).subscribe({
       next: (data) => this.todosLosCursos.set(data),
       error: (err) => console.error('Error al cargar cursos:', err)
+    });
+
+    // Cargar solicitudes de tutor propias para excluir del modal de postulación
+    this.http.get<any[]>(`${environment.apiUrl}/solicitudes-tutor/usuario/${user.id}`).subscribe({
+      next: (data) => this.todasSolicitudesTutor.set(data),
+      error: (err) => console.error('Error al cargar solicitudes tutor:', err)
     });
 
     // Obtener catálogo de tutores
@@ -918,34 +966,41 @@ export class StudentDashboardComponent implements OnInit, OnDestroy {
             };
             return this.http.post(`${environment.apiUrl}/solicitudes-tutor`, payload).pipe(
               catchError((err) => {
-                console.error('Error al enviar postulación:', err);
+                const msg = err?.error?.error || 'Error al enviar postulación';
+                console.error('Error al enviar postulación:', msg);
                 errors++;
-                return of(null);
+                return of({ _error: msg });
               })
             );
           });
 
           forkJoin(requests).subscribe({
-            next: () => {
-              this.onPostulacionFinished(errors);
+            next: (results: any[]) => {
+              const firstError = results.find(r => r && r._error)?._error;
+              this.onPostulacionFinished(errors, firstError);
             }
           });
         }).catch((err) => {
           console.error('Error al subir a Firebase Storage via Service:', err);
+          this.mostrarModalPostulacion.set(false);
+          this.selectedFilePostulacion = null;
+          this.nombreArchivoPostulacion.set('');
+          this.cursosSeleccionadosPostulacion.set([]);
           this.notificationService.showToast('Error al subir archivo a Firebase Storage.', 'error');
         });
       }
     });
   }
 
-  private onPostulacionFinished(errorsCount: number): void {
+  private onPostulacionFinished(errorsCount: number, errorMsg?: string): void {
     this.mostrarModalPostulacion.set(false);
     this.selectedFilePostulacion = null;
     this.nombreArchivoPostulacion.set('');
     this.cursosSeleccionadosPostulacion.set([]);
     
     if (errorsCount > 0) {
-      this.notificationService.showToast('Se enviaron las postulaciones, pero algunas fallaron.', 'error');
+      const msg = errorMsg || 'Se enviaron las postulaciones, pero algunas fallaron.';
+      this.notificationService.showToast(msg, 'error');
     } else {
       this.notificationService.showToast('¡Todas las postulaciones han sido enviadas exitosamente!', 'success');
     }
@@ -1035,30 +1090,53 @@ export class StudentDashboardComponent implements OnInit, OnDestroy {
       return;
     }
 
-    const payload = {
-      nombres: this.configNombres().trim(),
-      apellidos: this.configApellidos().trim(),
-      ano_ingreso: this.configAnoIngreso() ? Number(this.configAnoIngreso()) : null,
-      ciclo_actual: Number(this.configCicloActual()),
-      cursos_aprobados: this.configCursosAprobados()
-    };
 
-    this.http.put<any>(`${environment.apiUrl}/usuarios/${user.id}`, payload).subscribe({
-      next: (res) => {
-        this.authService.updateCurrentUser({ 
-          nombres: res.nombres, 
-          apellidos: res.apellidos,
-          ano_ingreso: res.ano_ingreso,
-          ciclo_actual: res.ciclo_actual,
-          cursos_aprobados: res.cursos_aprobados
-        });
-        this.cicloActualEstudiante.set(res.ciclo_actual);
-        this.notificationService.showToast('Perfil actualizado correctamente.', 'success');
-      },
-      error: (err) => {
-        console.error('Error al guardar configuración:', err);
-        this.notificationService.showToast('Error al actualizar el perfil.', 'error');
-      }
+
+    if (this.documentoFaltante()) {
+      this.notificationService.showToast('Es obligatorio adjuntar tu boleta de notas o historial académico.', 'error');
+      return;
+    }
+
+    // Subir archivo a Firebase Storage si se seleccionó uno nuevo
+    let uploadPromise = Promise.resolve(user.url_historial_academico || null);
+    if (this.selectedFileProfile()) {
+      const filePath = `historiales/${Date.now()}_${this.selectedFileProfile()!.name}`;
+      uploadPromise = this.firebaseService.uploadFile(filePath, this.selectedFileProfile()!);
+    }
+
+    uploadPromise.then((fileUrl) => {
+      const payload = {
+        nombres: this.configNombres().trim(),
+        apellidos: this.configApellidos().trim(),
+        ano_ingreso: this.configAnoIngreso() ? Number(this.configAnoIngreso()) : null,
+        ciclo_actual: Number(this.configCicloActual()),
+        cursos_aprobados: this.configCursosAprobados(),
+        url_historial_academico: fileUrl
+      };
+
+      this.http.put<any>(`${environment.apiUrl}/usuarios/${user.id}`, payload).subscribe({
+        next: (res) => {
+          this.authService.updateCurrentUser({ 
+            nombres: res.nombres, 
+            apellidos: res.apellidos,
+            ano_ingreso: res.ano_ingreso,
+            ciclo_actual: res.ciclo_actual,
+            cursos_aprobados: res.cursos_aprobados,
+            url_historial_academico: res.url_historial_academico
+          });
+          this.cicloActualEstudiante.set(res.ciclo_actual);
+          this.selectedFileProfile.set(null);
+          this.notificationService.showToast('Perfil actualizado correctamente.', 'success');
+        },
+        error: (err) => {
+          console.error('Error al guardar configuración:', err);
+          const msg = err?.error?.error || 'Error al actualizar el perfil.';
+          this.notificationService.showToast(msg, 'error');
+        }
+      });
+    }).catch(uploadErr => {
+      console.error('Error al subir historial académico:', uploadErr);
+      this.notificationService.showToast('Error al subir el historial académico.', 'error');
     });
   }
 

@@ -12,4 +12,5 @@ export interface Usuario {
   roles?: any[];
   cursos_aprobados?: number[];
   ano_ingreso?: number;
+  url_historial_academico?: string;
 }

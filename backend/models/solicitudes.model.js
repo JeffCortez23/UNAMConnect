@@ -29,12 +29,13 @@ const Solicitudes = {
 
   getByUsuario: async (id_usuario) => {
     const userRes = await db.query(
-      'SELECT id_carrera, ciclo_actual FROM usuarios WHERE id_usuario = $1',
+      'SELECT id_carrera, ciclo_actual, cursos_aprobados FROM usuarios WHERE id_usuario = $1',
       [id_usuario]
     );
     const user = userRes.rows[0];
     const careerId = user ? user.id_carrera : 1;
     const cicloActual = user ? (user.ciclo_actual || 10) : 10;
+    const cursosAprobados = user ? (user.cursos_aprobados || []) : [];
 
     const query = `
       SELECT s.id_solicitud, s.id_usuario, s.id_curso, s.nota_obtenida, s.url_boleta_notas, s.estado_solicitud, s.fecha_postulacion,
@@ -61,10 +62,11 @@ const Solicitudes = {
        JOIN usuarios u ON u.id_usuario = $1
        WHERE c.id_carrera = $2 AND c.ciclo < $3
          AND c.id_curso NOT IN (SELECT id_curso FROM solicitudes_tutor WHERE id_usuario = $1)
+         AND c.id_curso = ANY($4::int[])
          
        ORDER BY fecha_postulacion DESC
     `;
-    const { rows } = await db.query(query, [id_usuario, careerId, cicloActual]);
+    const { rows } = await db.query(query, [id_usuario, careerId, cicloActual, cursosAprobados]);
     return rows;
   },
 

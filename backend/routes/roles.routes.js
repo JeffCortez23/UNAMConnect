@@ -7,20 +7,21 @@ const {
   actualizarRol,
   eliminarRol,
 } = require('../controllers/roles.controller');
+const { requireAuth, requireRole } = require('../middlewares/auth.middleware');
 
 // GET    /api/roles      → Obtener todos los roles
-router.get('/', obtenerRoles);
+router.get('/', requireAuth, obtenerRoles);
 
 // GET    /api/roles/:id  → Obtener un rol por ID
-router.get('/:id', obtenerRolPorId);
+router.get('/:id', requireAuth, obtenerRolPorId);
 
-// POST   /api/roles      → Crear un nuevo rol
-router.post('/', crearRol);
+// POST   /api/roles      → Crear un nuevo rol (solo moderadores)
+router.post('/', requireAuth, requireRole(['moderador']), crearRol);
 
-// PUT    /api/roles/:id  → Actualizar un rol existente
-router.put('/:id', actualizarRol);
+// PUT    /api/roles/:id  → Actualizar un rol existente (solo moderadores)
+router.put('/:id', requireAuth, requireRole(['moderador']), actualizarRol);
 
-// DELETE /api/roles/:id  → Eliminar un rol
-router.delete('/:id', eliminarRol);
+// DELETE /api/roles/:id  → Eliminar un rol (solo moderadores)
+router.delete('/:id', requireAuth, requireRole(['moderador']), eliminarRol);
 
 module.exports = router;

@@ -9,6 +9,9 @@ const {
   marcarComoLeida,
   eliminarNotificacion,
 } = require('../controllers/notificaciones.controller');
+const { requireAuth, requireRole } = require('../middlewares/auth.middleware');
+
+router.use(requireAuth);
 
 // Endpoint especial: notificaciones de un usuario (debe ir antes de /:id)
 router.get('/usuario/:id', obtenerNotificacionesPorUsuario);
@@ -16,9 +19,9 @@ router.get('/usuario/:id', obtenerNotificacionesPorUsuario);
 // CRUD estándar
 router.get('/', obtenerNotificaciones);
 router.get('/:id', obtenerNotificacionPorId);
-router.post('/', crearNotificacion);
+router.post('/', requireRole(['moderador']), crearNotificacion);
 router.put('/:id', actualizarNotificacion);
-router.delete('/:id', eliminarNotificacion);
+router.delete('/:id', requireRole(['moderador']), eliminarNotificacion);
 
 // Endpoint especial: marcar notificación como leída
 router.patch('/:id/leer', marcarComoLeida);

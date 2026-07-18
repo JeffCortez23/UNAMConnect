@@ -1,4 +1,4 @@
-import { Component, signal, inject, OnInit, computed, OnDestroy } from '@angular/core';
+import { Component, signal, inject, OnInit, computed, OnDestroy, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
@@ -8,6 +8,7 @@ import { NotificationService } from '../../../services/notification.service';
 import { auth } from '../../../config/firebase.config';
 import { createUserWithEmailAndPassword, sendEmailVerification } from 'firebase/auth';
 import { environment } from '../../../../environments/environment';
+import { FirebaseService } from '../../../services/firebase.service';
 
 import { ThemeService } from '../../../services/theme.service';
 
@@ -28,6 +29,7 @@ export class RegisterComponent implements OnInit, OnDestroy {
   private readonly authService = inject(AuthService);
   private readonly http = inject(HttpClient);
   private readonly router = inject(Router);
+  private readonly firebaseService = inject(FirebaseService);
 
   id_carrera = signal<number | null>(null);
   codigo_univ = signal('');
@@ -37,6 +39,7 @@ export class RegisterComponent implements OnInit, OnDestroy {
   password = signal('');
   ano_ingreso = signal<number | null>(null);
   ciclo_actual = signal<number | null>(null);
+  selectedFileAcademicHistory = signal<File | null>(null);
   
   carreras = signal<Carrera[]>([]);
   todosLosCursos = signal<any[]>([]);
@@ -139,7 +142,7 @@ export class RegisterComponent implements OnInit, OnDestroy {
   slides = [
     {
       title: 'Crea tu cuenta <br><span class="accent">universitaria</span>',
-      desc: 'Únete a más de 12,000 estudiantes que mejoran su rendimiento académico con tutores de su propia universidad.'
+      desc: 'Únete a la comunidad de la UNAM que mejora su rendimiento académico con tutores de su propia universidad.'
     },
     {
       title: 'Encuentra el <br><span class="accent">tutor ideal</span> para <br>tus cursos',
@@ -151,33 +154,104 @@ export class RegisterComponent implements OnInit, OnDestroy {
     }
   ];
 
+  correoEnUso = signal(false);
+  codigoEnUso = signal(false);
+
+  constructor() {
+    let emailTimeout: any;
+    effect(() => {
+      const email = this.correo().trim();
+      if (emailTimeout) clearTimeout(emailTimeout);
+      if (!email || !this.isCorreoValid()) {
+        this.correoEnUso.set(false);
+        return;
+      }
+      emailTimeout = setTimeout(() => {
+        this.http.get<any>(`${environment.apiUrl}/auth/check-availability?email=${email}`).subscribe({
+          next: (res) => this.correoEnUso.set(res.emailExists),
+          error: (err) => console.error(err)
+        });
+      }, 500);
+    });
+
+    let codeTimeout: any;
+    effect(() => {
+      const code = this.codigo_univ().trim();
+      if (codeTimeout) clearTimeout(codeTimeout);
+      if (!code || !this.isCodigoValid()) {
+        this.codigoEnUso.set(false);
+        return;
+      }
+      codeTimeout = setTimeout(() => {
+        this.http.get<any>(`${environment.apiUrl}/auth/check-availability?code=${code}`).subscribe({
+          next: (res) => this.codigoEnUso.set(res.codeExists),
+          error: (err) => console.error(err)
+        });
+      }, 500);
+    });
+  }
+
   // Validaciones dinámicas (Signals computadas)
-  isNombresValid = computed(() => this.nombres().trim().length > 0);
-  isApellidosValid = computed(() => this.apellidos().trim().length > 0);
+  isNombresValid = computed(() => {
+    const val = this.nombres().trim();
+    return val.length >= 2 && /^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s]+$/.test(val);
+  });
+  isApellidosValid = computed(() => {
+    const val = this.apellidos().trim();
+    return val.length >= 2 && /^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s]+$/.test(val);
+  });
   isCodigoValid = computed(() => /^\d{10}$/.test(this.codigo_univ()));
   isCarreraValid = computed(() => this.id_carrera() !== null && Number(this.id_carrera()) > 0);
   isCorreoValid = computed(() => {
     const email = this.correo().toLowerCase().trim();
-    const allowedModerators = ['jeffcortez2305@gmail.com', 'jimenacollao16@gmail.com', 'victrres60@gmail.com'];
-    return /^[a-zA-Z0-9._%+-]+@unam\.edu\.pe$/.test(email) || allowedModerators.includes(email);
+    return /^[a-zA-Z0-9._%+-]+@unam\.edu\.pe$/.test(email);
   });
-  isPasswordValid = computed(() => this.password().length >= 8);
+  isPasswordValid = computed(() => {
+    const pass = this.password();
+    // Mínimo 8 caracteres, al menos una mayúscula, una minúscula y un número
+    return pass.length >= 8 && /[A-Z]/.test(pass) && /[a-z]/.test(pass) && /[0-9]/.test(pass);
+  });
   isAnoIngresoValid = computed(() => {
     const currentYear = new Date().getFullYear();
     return this.ano_ingreso() !== null && Number(this.ano_ingreso()) >= 2018 && Number(this.ano_ingreso()) <= currentYear;
   });
   isCicloActualValid = computed(() => this.ciclo_actual() !== null && Number(this.ciclo_actual()) >= 1 && Number(this.ciclo_actual()) <= 10);
 
-  isFormValid = computed(() => 
-    this.isNombresValid() && 
-    this.isApellidosValid() && 
-    this.isCodigoValid() && 
-    this.isCarreraValid() && 
-    this.isCorreoValid() && 
-    this.isPasswordValid() &&
-    this.isAnoIngresoValid() &&
-    this.isCicloActualValid()
-  );
+  isCodigoCoherente = computed(() => {
+    const cod = this.codigo_univ().trim();
+    const ano = this.ano_ingreso();
+    if (!cod || cod.length < 4 || !ano) return true; // solo validar coherencia si hay datos suficientes
+    return cod.substring(0, 4) === ano.toString();
+  });
+
+  isFormValid = computed(() => {
+    const basicValid = this.isNombresValid() && 
+      this.isApellidosValid() && 
+      this.isCodigoValid() && 
+      this.isCarreraValid() && 
+      this.isCorreoValid() && 
+      this.isPasswordValid() &&
+      this.isAnoIngresoValid() &&
+      this.isCicloActualValid() &&
+      this.isCodigoCoherente() &&
+      !this.correoEnUso() &&
+      !this.codigoEnUso();
+    
+    const cicloVal = Number(this.ciclo_actual());
+    if (cicloVal > 1 && !this.selectedFileAcademicHistory()) {
+      return false;
+    }
+    return basicValid;
+  });
+
+  onFileSelected(event: any): void {
+    const file = event.target.files?.[0];
+    if (file) {
+      this.selectedFileAcademicHistory.set(file);
+    } else {
+      this.selectedFileAcademicHistory.set(null);
+    }
+  }
 
   formProgressPercent = computed(() => {
     let validCount = 0;
@@ -189,7 +263,14 @@ export class RegisterComponent implements OnInit, OnDestroy {
     if (this.isCicloActualValid()) validCount++;
     if (this.isCorreoValid()) validCount++;
     if (this.isPasswordValid()) validCount++;
-    return Math.round((validCount / 8) * 100);
+    // Si ciclo > 1, también cuenta el archivo
+    const cicloVal = Number(this.ciclo_actual());
+    let total = 8;
+    if (cicloVal > 1) {
+      total = 9;
+      if (this.selectedFileAcademicHistory()) validCount++;
+    }
+    return Math.round((validCount / total) * 100);
   });
 
   showPassword = signal(false);
@@ -232,9 +313,12 @@ export class RegisterComponent implements OnInit, OnDestroy {
     });
   }
 
+  formSubmitted = signal(false);
+
   onSubmit(): void {
+    this.formSubmitted.set(true);
     if (!this.isFormValid()) {
-      this.errorMessage.set('Por favor, rellene todos los campos correctamente.');
+      this.errorMessage.set('Por favor, rellene todos los campos requeridos correctamente.');
       return;
     }
 
@@ -295,8 +379,6 @@ export class RegisterComponent implements OnInit, OnDestroy {
       return;
     }
 
-    this.verificationLoading.set(true);
-
     // 1. Verificar el código OTP en nuestro backend (que a su vez marcará el correo como verificado en Firebase)
     this.authService.verifyEmail(email, code).subscribe({
       next: async (verifyRes) => {
@@ -307,34 +389,48 @@ export class RegisterComponent implements OnInit, OnDestroy {
           // 3. Obtener el ID Token verificado de Firebase
           const idToken = await user.getIdToken(true); // force refresh
 
-          const payload = {
-            idToken,
-            id_carrera: Number(this.id_carrera()),
-            codigo_univ: this.codigo_univ(),
-            nombres: this.nombres(),
-            apellidos: this.apellidos(),
-            correo: email,
-            ano_ingreso: Number(this.ano_ingreso()),
-            ciclo_actual: Number(this.ciclo_actual()),
-            cursos_aprobados: this.cursosAprobadosSeleccionados()
-          };
+          // Subir archivo a Firebase Storage si se seleccionó
+          let uploadPromise = Promise.resolve('');
+          if (this.selectedFileAcademicHistory()) {
+            const filePath = `historiales/${Date.now()}_${this.selectedFileAcademicHistory()!.name}`;
+            uploadPromise = this.firebaseService.uploadFile(filePath, this.selectedFileAcademicHistory()!);
+          }
 
-          // 4. Registrar/sincronizar en base de datos local
-          this.http.post<any>(`${environment.apiUrl}/auth/register`, payload).subscribe({
-            next: (res) => {
-              this.verificationLoading.set(false);
-              this.showVerification.set(false);
-              this.toast.showToast('¡Registro y verificación exitosos!', 'success');
-              this.successMessage.set('¡Registro exitoso! Redirigiendo al inicio de sesión...');
-              auth.signOut();
-              setTimeout(() => {
-                this.router.navigate(['/login']);
-              }, 2000);
-            },
-            error: (err) => {
-              this.verificationLoading.set(false);
-              this.toast.showToast(err.error?.error || 'Error al completar el registro en el servidor.', 'error');
-            }
+          uploadPromise.then((fileUrl) => {
+            const payload = {
+              idToken,
+              id_carrera: Number(this.id_carrera()),
+              codigo_univ: this.codigo_univ(),
+              nombres: this.nombres(),
+              apellidos: this.apellidos(),
+              correo: email,
+              ano_ingreso: Number(this.ano_ingreso()),
+              ciclo_actual: Number(this.ciclo_actual()),
+              cursos_aprobados: this.cursosAprobadosSeleccionados(),
+              url_historial_academico: fileUrl || null
+            };
+
+            // 4. Registrar/sincronizar en base de datos local
+            this.http.post<any>(`${environment.apiUrl}/auth/register`, payload).subscribe({
+              next: (res) => {
+                this.verificationLoading.set(false);
+                this.showVerification.set(false);
+                this.toast.showToast('¡Registro y verificación exitosos!', 'success');
+                this.successMessage.set('¡Registro exitoso! Redirigiendo al inicio de sesión...');
+                auth.signOut();
+                setTimeout(() => {
+                  this.router.navigate(['/login']);
+                }, 2000);
+              },
+              error: (err) => {
+                this.verificationLoading.set(false);
+                this.toast.showToast(err.error?.error || 'Error al completar el registro en el servidor.', 'error');
+              }
+            });
+          }).catch(uploadErr => {
+            this.verificationLoading.set(false);
+            console.error('Error al subir historial académico:', uploadErr);
+            this.toast.showToast('Error al subir el historial académico.', 'error');
           });
         } catch (reloadErr) {
           this.verificationLoading.set(false);

@@ -453,7 +453,7 @@
     align-items: center;
   }
 
-  input {
+  input:not([type="checkbox"]) {
     padding-left: 44px;
     padding-right: 48px;
   }

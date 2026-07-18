@@ -9,6 +9,21 @@ const { verifyFirebaseIdToken, updateUserPassword, setUserEmailVerified } = requ
 const resetCodes = new Map();
 const verificationCodes = new Map();
 
+// Limpieza periódica automática de códigos expirados para evitar fugas de memoria
+setInterval(() => {
+  const now = Date.now();
+  for (const [key, value] of resetCodes.entries()) {
+    if (value.expiresAt < now) {
+      resetCodes.delete(key);
+    }
+  }
+  for (const [key, value] of verificationCodes.entries()) {
+    if (value.expiresAt < now) {
+      verificationCodes.delete(key);
+    }
+  }
+}, 5 * 60 * 1000); // Cada 5 minutos
+
 // Genera un código numérico de 6 dígitos
 const generateCode = () => Math.floor(100000 + Math.random() * 900000).toString();
 
@@ -33,7 +48,7 @@ const login = async (req, res) => {
     }
 
     // Generar Token JWT
-    const secret = process.env.JWT_SECRET || 'unamconnect_secret_key_2026';
+    const secret = process.env.JWT_SECRET;
     const token = jwt.sign(
       { id: usuario.id_usuario, correo: usuario.correo },
       secret,
@@ -62,7 +77,7 @@ const login = async (req, res) => {
 };
 
 const registro = async (req, res) => {
-  const { idToken, id_carrera, codigo_univ, nombres, apellidos, correo, ano_ingreso, ciclo_actual, cursos_aprobados } = req.body;
+  const { idToken, id_carrera, codigo_univ, nombres, apellidos, correo, ano_ingreso, ciclo_actual, cursos_aprobados, url_historial_academico } = req.body;
 
   if (!idToken) {
     return res.status(400).json({ error: 'ID Token de Firebase es requerido.' });
@@ -96,7 +111,8 @@ const registro = async (req, res) => {
       password: hashedPassword,
       ano_ingreso,
       ciclo_actual,
-      cursos_aprobados
+      cursos_aprobados,
+      url_historial_academico
     });
 
     // Asignar el rol de 'alumno' (id_rol = 1) de forma predeterminada
@@ -132,7 +148,7 @@ const forgotPassword = async (req, res) => {
     const code = generateCode();
     resetCodes.set(correo, { code, expiresAt: Date.now() + CODE_TTL_MS });
 
-    console.log(`[UNAM Connect] Código de recuperación para ${correo}: ${code}`);
+    console.log(`[UNAM Connect] Código de recuperación enviado a ${correo}`);
 
     // Enviar correo electrónico real usando Nodemailer
     await enviarCorreoCodigo(correo, 'Recuperación de Contraseña - UNAMConnect', code, 'recovery');
@@ -229,7 +245,7 @@ const sendVerification = async (req, res) => {
     const code = generateCode();
     verificationCodes.set(correo, { code, expiresAt: Date.now() + CODE_TTL_MS });
 
-    console.log(`[UNAM Connect] Código de verificación para ${correo}: ${code}`);
+    console.log(`[UNAM Connect] Código de verificación enviado a ${correo}`);
 
     // Enviar correo electrónico real usando Nodemailer
     await enviarCorreoCodigo(correo, 'Verificación de Correo - UNAMConnect', code, 'verification');
@@ -295,7 +311,7 @@ const loginFirebase = async (req, res) => {
     }
 
     // Generar nuestro propio Token JWT local para el resto de peticiones del backend
-    const secret = process.env.JWT_SECRET || 'unamconnect_secret_key_2026';
+    const secret = process.env.JWT_SECRET;
     const token = jwt.sign(
       { id: usuario.id_usuario, correo: usuario.correo },
       secret,
@@ -333,6 +349,29 @@ const loginFirebase = async (req, res) => {
   }
 };
 
+const checkAvailability = async (req, res) => {
+  const { email, code } = req.query;
+  try {
+    let emailExists = false;
+    let codeExists = false;
+
+    if (email) {
+      const emailResult = await db.query('SELECT 1 FROM usuarios WHERE LOWER(correo) = LOWER($1)', [email.trim()]);
+      emailExists = emailResult.rows.length > 0;
+    }
+
+    if (code) {
+      const codeResult = await db.query('SELECT 1 FROM usuarios WHERE codigo_univ = $1', [code.trim()]);
+      codeExists = codeResult.rows.length > 0;
+    }
+
+    res.json({ emailExists, codeExists });
+  } catch (error) {
+    console.error('Error en checkAvailability:', error);
+    res.status(500).json({ error: 'Error al verificar disponibilidad' });
+  }
+};
+
 module.exports = {
   login,
   registro,
@@ -341,5 +380,6 @@ module.exports = {
   verifyResetCode,
   resetPassword,
   sendVerification,
-  verifyEmail
+  verifyEmail,
+  checkAvailability
 };

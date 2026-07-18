@@ -16,7 +16,9 @@
     </div>
     <div class="col-12">
       <label class="form-label text-muted text-uppercase fw-semibold mb-1" style="font-size: 11px;">Ciclo de Estudios</label>
-      <select class="form-select rounded-3" [ngModel]="parent.configCicloActual()" (ngModelChange)="parent.configCicloActual.set($event)">
+      <select class="form-select rounded-3"
+              [ngModel]="parent.configCicloActual()"
+              (ngModelChange)="parent.configCicloActual.set($event)">
         <option [value]="c" *ngFor="let c of [1,2,3,4,5,6,7,8,9,10]">Ciclo {{ c }}</option>
       </select>
     </div>
@@ -44,9 +46,46 @@
         }
       </div>
     </div>
+    
+    <!-- Historial Académico (Boleta de Notas) - Obligatorio si ciclo_actual > 1 -->
+    <div class="col-12" *ngIf="parent.configCicloActual() > 1">
+      <label class="form-label text-muted text-uppercase fw-semibold mb-1" style="font-size: 11px;">
+        Boleta de Notas / Historial Académico <span class="text-danger">*</span>
+      </label>
+      
+      <!-- Si ya existe un documento subido, mostrar enlace -->
+      <div *ngIf="user.url_historial_academico" class="mb-2">
+        <a [href]="user.url_historial_academico" target="_blank" class="text-info text-decoration-underline fw-bold" style="font-size: 13px;">
+          <i class="bi bi-file-earmark-pdf"></i> Ver boleta / historial actual
+        </a>
+      </div>
+      
+      <input type="file" 
+             class="form-control rounded-3" 
+             accept=".pdf,.png,.jpg,.jpeg" 
+             (change)="parent.onFileSelectedProfile($event)"
+             style="padding: 8px 12px; background: rgba(255, 255, 255, 0.05); color: #fff; border: 1px solid rgba(255, 255, 255, 0.1);">
+      
+      <!-- Advertencia de documento faltante -->
+      <div *ngIf="parent.documentoFaltante()"
+           class="d-flex align-items-start gap-2 mt-2 p-2 rounded-3"
+           style="background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3);">
+        <i class="bi bi-exclamation-triangle-fill text-danger mt-1" style="font-size: 13px; flex-shrink: 0;"></i>
+        <span style="font-size: 12px; color: #f87171; line-height: 1.4;">
+          Es obligatorio subir tu boleta de notas o historial académico para certificar tu ciclo.
+        </span>
+      </div>
+    </div>
+
     <div class="col-12 d-flex gap-3 mt-3 flex-wrap">
-      <button (click)="parent.guardarConfiguracion()" class="btn btn-success px-4 rounded-3">Guardar Cambios</button>
+      <button (click)="parent.guardarConfiguracion()"
+              class="btn btn-success px-4 rounded-3"
+              [disabled]="parent.documentoFaltante()"
+              [title]="parent.documentoFaltante() ? 'Sube tu boleta de notas' : ''">
+        Guardar Cambios
+      </button>
       <button (click)="parent.restablecerPasswordConfig()" class="btn btn-outline-danger px-4 rounded-3">Cambiar Contraseña</button>
     </div>
   </div>
 </div>
+

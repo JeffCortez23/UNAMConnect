@@ -13,10 +13,10 @@ const Auth = {
   },
 
   register: async (userData) => {
-    const { id_carrera, codigo_univ, nombres, apellidos, correo, password, ano_ingreso, ciclo_actual, cursos_aprobados } = userData;
+    const { id_carrera, codigo_univ, nombres, apellidos, correo, password, ano_ingreso, ciclo_actual, cursos_aprobados, url_historial_academico } = userData;
     const { rows } = await db.query(
-      'INSERT INTO usuarios (id_carrera, codigo_univ, nombres, apellidos, correo, password, ano_ingreso, ciclo_actual, cursos_aprobados) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING id_usuario, correo, ano_ingreso, ciclo_actual, cursos_aprobados',
-      [id_carrera, codigo_univ, nombres, apellidos, correo, password, ano_ingreso, ciclo_actual, JSON.stringify(cursos_aprobados || [])]
+      'INSERT INTO usuarios (id_carrera, codigo_univ, nombres, apellidos, correo, password, ano_ingreso, ciclo_actual, cursos_aprobados, url_historial_academico) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING id_usuario, correo, ano_ingreso, ciclo_actual, cursos_aprobados, url_historial_academico',
+      [id_carrera, codigo_univ, nombres, apellidos, correo, password, ano_ingreso, ciclo_actual, JSON.stringify(cursos_aprobados || []), url_historial_academico || null]
     );
     return rows[0];
   }

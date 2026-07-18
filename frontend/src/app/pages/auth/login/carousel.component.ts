@@ -39,7 +39,7 @@ export class CarouselComponent implements OnInit, OnDestroy {
   slides = [
     {
       title: 'Conecta con el <br><span class="accent">conocimiento</span> de <br>tu universidad',
-      desc: 'Tutorías universitarias para todo el Perú. Agenda sesiones, mejora tus notas y avanza con los mejores de tu facultad.'
+      desc: 'Tutorías universitarias exclusivas para estudiantes de la UNAM. Agenda sesiones, mejora tus notas y avanza con los mejores de tu facultad.'
     },
     {
       title: 'Encuentra el <br><span class="accent">tutor ideal</span> para <br>tus cursos',

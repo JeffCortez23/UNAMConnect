@@ -1,53 +1,66 @@
-# UNAMConnect - Backend 🖥️
+# UNAMConnect - Backend API 🚀
 
-Este directorio contiene el servidor de la aplicación, el cual utiliza una arquitectura **MVC (Modelo-Vista-Controlador)** para garantizar un código limpio, escalable y profesional.
+Este es el servidor API REST que proporciona la lógica de negocio, acceso a datos e integraciones de seguridad para el sistema UNAMConnect. Está desarrollado utilizando Node.js, Express y PostgreSQL bajo una arquitectura limpia **MVC**.
 
-## 📂 Estructura del Backend
+## 🛠️ Stack Tecnológico
+* **Core:** Node.js, Express
+* **Base de Datos:** PostgreSQL (Cliente relacional `pg`)
+* **Autenticación & Seguridad:** JSON Web Tokens (JWT), BcryptJS (contraseñas locales) y Firebase Admin SDK (para sincronización con Firebase Auth)
+* **Gestión de Archivos:** Multer (local) + Firebase Storage Admin (producción)
+* **Notificaciones por Correo:** Nodemailer (servicio de mensajería OTP)
 
-- [**/config**](./config): Conexión con PostgreSQL y configuraciones de arranque.
-- [**/models**](./models): **(Capa de Datos)** Contiene las consultas SQL. Aquí se implementan los métodos CRUD y la lógica de acceso a la base de datos.
-- [**/controllers**](./controllers): **(Capa de Lógica)** Gestiona las peticiones (req) y respuestas (res). Llama a los modelos para procesar datos.
-- [**/routes**](./routes): Definición de los endpoints del API.
-- [**/middlewares**](./middlewares): Validación de entradas (express-validator) y control de autenticación JWT.
-- [**/services**](./services): Servicios auxiliares de correo electrónico y abstracción de Firebase Admin SDK.
-- [**/scripts**](./scripts): Utilidades para la siembra de base de datos, inicialización de usuarios y aleatorización de métricas.
+## 📋 Requisitos Previos
+* Node.js v18 o superior
+* PostgreSQL v14 o superior
+* Cuenta de Firebase con un proyecto configurado (para Auth y Storage)
 
-## 🔐 Autenticación y Autorización
-Se ha implementado un sistema robusto e híbrido:
-- **JWT**: Tokens de sesión firmados con expiración de 8 horas.
-- **Firebase Authentication**: Integración nativa a través de scripts de registro y autenticación cliente.
-- **BcryptJS**: Hash seguro de contraseñas locales.
-- **Ruta de entrada**: `/api/auth/login` y `/api/auth/register`.
+## ⚙️ Configuración del Entorno (`.env`)
+Crea un archivo `.env` en la raíz de esta carpeta (`/backend`) con las siguientes variables:
 
-## 🛠️ Consultas Dinámicas (PUT)
-Los métodos `UPDATE` en los modelos son dinámicos. Esto significa que:
-1. Puedes enviar solo los campos que deseas actualizar en el JSON.
-2. Los campos virtuales (como `nombre_carrera`) son filtrados automáticamente para evitar errores de base de datos.
-3. Evita el error de campos nulos por omisión.
+```env
+PORT=3000
+JWT_SECRET=tu_jwt_secret_seguro
 
-## 🛡️ Validaciones
-Se utiliza `express-validator` para asegurar la integridad de los datos de entrada:
-- **Auth**: Valida formato de correo y longitud mínima de contraseña.
-- **Usuarios**: Protege contra campos vacíos y formatos inválidos.
-- **Carreras**: Asegura que los nombres y facultades no estén vacíos.
-Si un dato es inválido, el servidor responderá con un código `400 Bad Request` y los detalles del error.
+# Base de Datos PostgreSQL
+DB_USER=tu_usuario_postgres
+DB_PASSWORD=tu_contrasena_postgres
+DB_HOST=localhost
+DB_PORT=5432
+DB_DATABASE=unamconnect
 
-## 📦 Instalación y Configuración
-1. Entrar a la carpeta: `cd backend`
-2. Instalar dependencias: `npm install`
-3. Configurar `.env` (Basado en el archivo `.env` local):
-   ```env
-   PORT=3000
-   DATABASE_URL=postgresql://usuario:password@localhost:5432/UNAMConnect
-   JWT_SECRET=tu_clave_secreta_aqui
-   FIREBASE_API_KEY=tu_api_key_firebase
-   FIREBASE_DEFAULT_PASSWORD=tu_password_por_defecto
-   ```
-4. Inicializar Base de Datos:
+# Configuración de Firebase Admin (Pegar credenciales de serviceAccountKey.json o en formato env)
+FIREBASE_PROJECT_ID=unamconnect-xxxx
+FIREBASE_CLIENT_EMAIL=firebase-adminsdk-xxxx@unamconnect-xxxx.iam.gserviceaccount.com
+FIREBASE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n"
+FIREBASE_STORAGE_BUCKET=unamconnect-xxxx.appspot.com
+
+# Configuración de Email (Nodemailer OTP)
+EMAIL_USER=tu_correo_de_soporte@gmail.com
+EMAIL_PASS=tu_contraseña_de_aplicacion_gmail
+```
+
+## 🚀 Instalación y Ejecución
+
+1. **Instalar Dependencias**:
    ```bash
-   psql -d UNAMConnect -f init_db.sql
+   npm install
    ```
 
-## 🚀 Ejecución
-- **Modo Desarrollo:** `npm run dev`
-- **Modo Producción:** `npm start`
+2. **Ejecutar en Desarrollo (con recarga automática de Nodemon y Túnel localtunnel)**:
+   ```bash
+   npm run dev
+   ```
+
+3. **Ejecutar en Producción**:
+   ```bash
+   npm start
+   ```
+
+## 📂 Estructura de Carpetas MVC
+* `config/`: Conexión de base de datos PostgreSQL.
+* `controllers/`: Lógica de control y procesamiento de solicitudes.
+* `middlewares/`: Autenticación JWT, control de acceso por roles y límite de peticiones (Rate Limiter).
+* `models/`: Consultas SQL y definición de modelos de datos.
+* `routes/`: Enrutamiento y definición de endpoints públicos/privados de la API.
+* `services/`: Lógica de interacción con Firebase, envío de emails (Nodemailer).
+* `uploads/`: Almacenamiento local temporal de boletas de notas / historial académico.

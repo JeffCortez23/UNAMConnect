@@ -221,23 +221,25 @@ export class ModeratorDashboardComponent implements OnInit, OnDestroy {
     }
   }
 
+  private dataSubscription: Subscription | null = null;
+
   ngOnInit(): void {
-    this.cargarDatos();
+    this.cargarSaludSistema(); // Cargar la salud del sistema una sola vez al entrar
+    // Polling reactivo cada 12 segundos para sincronizar el panel automáticamente sin saturar la red
+    this.dataSubscription = timer(0, 12000).subscribe(() => {
+      this.cargarDatos();
+    });
     this.startNotificationPolling();
   }
 
   ngOnDestroy(): void {
+    if (this.dataSubscription) {
+      this.dataSubscription.unsubscribe();
+    }
     this.destroyNotificationPolling();
   }
 
-  cargarDatos(): void {
-    const user = this.authService.currentUser();
-    if (user) {
-      this.configNombres.set(user.nombres);
-      this.configApellidos.set(user.apellidos);
-    }
-
-    // Cargar Salud del Sistema
+  cargarSaludSistema(): void {
     this.http.get<any>(`${environment.apiUrl}/health`).subscribe({
       next: (health) => {
         this.saludServidor.set(health.server);
@@ -250,6 +252,14 @@ export class ModeratorDashboardComponent implements OnInit, OnDestroy {
         this.almacenamientoUsado.set('N/A');
       }
     });
+  }
+
+  cargarDatos(): void {
+    const user = this.authService.currentUser();
+    if (user) {
+      this.configNombres.set(user.nombres);
+      this.configApellidos.set(user.apellidos);
+    }
 
     // 1. Cargar solicitudes de tutoría
     this.http.get<Solicitud[]>(`${environment.apiUrl}/solicitudes-tutor`).subscribe({

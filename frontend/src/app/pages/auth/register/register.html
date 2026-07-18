@@ -104,7 +104,7 @@
                 [ngModelOptions]="{standalone: true}"
                 placeholder="Ej. María Lucía" 
                 required>
-              <span *ngIf="nombres() && !isNombresValid()" class="validation-err">Campo requerido</span>
+              <span *ngIf="(nombres() || formSubmitted()) && !isNombresValid()" class="validation-err">Mínimo 2 letras y sin caracteres especiales</span>
             </div>
 
             <div class="form-group">
@@ -116,7 +116,7 @@
                 [ngModelOptions]="{standalone: true}"
                 placeholder="Ej. García Torres" 
                 required>
-              <span *ngIf="apellidos() && !isApellidosValid()" class="validation-err">Campo requerido</span>
+              <span *ngIf="(apellidos() || formSubmitted()) && !isApellidosValid()" class="validation-err">Mínimo 2 letras y sin caracteres especiales</span>
             </div>
           </div>
 
@@ -130,8 +130,10 @@
                 [ngModelOptions]="{standalone: true}"
                 placeholder="2023123456" 
                 required>
-              <span *ngIf="codigo_univ() && !isCodigoValid()" class="validation-err">Debe ser de 10 dígitos numéricos</span>
-              <span *ngIf="isCodigoValid()" class="validation-ok">✓ Código válido</span>
+              <span *ngIf="(codigo_univ() || formSubmitted()) && !isCodigoValid()" class="validation-err">Debe ser de 10 dígitos numéricos</span>
+              <span *ngIf="codigo_univ() && isCodigoValid() && codigoEnUso()" class="validation-err">Este código ya está registrado en el sistema</span>
+              <span *ngIf="(codigo_univ() && ano_ingreso() && formSubmitted()) && !isCodigoCoherente()" class="validation-err">El código debe empezar con tu año de ingreso ({{ ano_ingreso() }})</span>
+              <span *ngIf="isCodigoValid() && !codigoEnUso() && isCodigoCoherente()" class="validation-ok">✓ Código válido</span>
             </div>
 
             <div class="form-group">
@@ -146,7 +148,7 @@
                   <option [value]="carrera.id_carrera">{{ carrera.nombre_carrera }}</option>
                 }
               </select>
-              <span *ngIf="id_carrera() !== null && !isCarreraValid()" class="validation-err">Seleccione una carrera</span>
+              <span *ngIf="(id_carrera() !== null || formSubmitted()) && !isCarreraValid()" class="validation-err">Seleccione una carrera</span>
             </div>
           </div>
 
@@ -162,7 +164,7 @@
                 [ngModelOptions]="{standalone: true}"
                 placeholder="Ej. 2023" 
                 required>
-              <span *ngIf="ano_ingreso() !== null && !isAnoIngresoValid()" class="validation-err">Año inválido (2018 - 2026)</span>
+              <span *ngIf="(ano_ingreso() !== null || formSubmitted()) && !isAnoIngresoValid()" class="validation-err">Año inválido (2018 - 2026)</span>
             </div>
 
             <div class="form-group">
@@ -184,7 +186,7 @@
                 <option [value]="9">IX Ciclo</option>
                 <option [value]="10">X Ciclo</option>
               </select>
-              <span *ngIf="ciclo_actual() !== null && !isCicloActualValid()" class="validation-err">Seleccione ciclo</span>
+              <span *ngIf="(ciclo_actual() !== null || formSubmitted()) && !isCicloActualValid()" class="validation-err">Seleccione ciclo</span>
             </div>
           </div>
 
@@ -217,6 +219,23 @@
             </div>
           </div>
 
+          <!-- Historial Académico (Boleta de Notas) - Obligatorio si ciclo_actual > 1 -->
+          <div *ngIf="isCarreraValid() && ciclo_actual() !== null && ciclo_actual()! > 1" class="form-group mt-3">
+            <label class="form-label text-muted small fw-semibold mb-1" style="color: #cbd5e1 !important; font-size: 10px;">
+              SUBIR BOLETA DE NOTAS / HISTORIAL ACADÉMICO <span class="text-danger">*</span>
+            </label>
+            <input 
+              type="file" 
+              class="form-control rounded-3" 
+              accept=".pdf,.png,.jpg,.jpeg" 
+              (change)="onFileSelected($event)"
+              style="padding: 8px 12px; background: rgba(255, 255, 255, 0.05); color: #fff; border: 1px solid rgba(255, 255, 255, 0.1);"
+              required>
+            <p class="text-muted" style="font-size: 10px; margin-top: 3px; color: #94a3b8 !important;">
+              Requerido para validar tus cursos aprobados y tu ciclo actual (PDF, PNG o JPG).
+            </p>
+          </div>
+
           <!-- Prerequisite conflict warning panel -->
           <div *ngIf="cursosBloqueadosPrerequisito().length > 0" class="form-group alert alert-warning bg-warning bg-opacity-10 border-warning border-opacity-20 rounded-3 p-3 mt-2">
             <div class="d-flex align-items-center gap-2 text-warning mb-2 fw-semibold" style="font-size: 12px;">
@@ -240,8 +259,9 @@
               [ngModelOptions]="{standalone: true}"
               placeholder="usuario@unam.edu.pe" 
               required>
-            <span *ngIf="correo() && !isCorreoValid()" class="validation-err">Solo se acepta correo @unam.edu.pe o correo de moderador autorizado</span>
-            <span *ngIf="isCorreoValid()" class="validation-ok">✓ Correo válido</span>
+             @if ((correo() || formSubmitted()) && !isCorreoValid()) { <span class="validation-err">Solo se acepta correo institucional @unam.edu.pe</span> }
+             @if (correo() && isCorreoValid() && correoEnUso()) { <span class="validation-err">Este correo ya está registrado en el sistema</span> }
+             @if (isCorreoValid() && !correoEnUso()) { <span class="validation-ok">✓ Correo válido</span> }
           </div>
 
           <div class="form-group password-group">
@@ -258,11 +278,11 @@
                 <i class="bi" [class.bi-eye]="!showPassword()" [class.bi-eye-fill]="showPassword()"></i>
               </button>
             </div>
-            <span *ngIf="password() && !isPasswordValid()" class="validation-err">Mínimo 8 caracteres requeridos</span>
+            <span *ngIf="(password() || formSubmitted()) && !isPasswordValid()" class="validation-err">Mínimo 8 caracteres (debe incluir 1 mayúscula, 1 minúscula y 1 número)</span>
             <span *ngIf="isPasswordValid()" class="validation-ok">✓ Contraseña segura</span>
           </div>
 
-          <button type="submit" class="btn-submit" [disabled]="isLoading() || !isFormValid()">
+          <button type="submit" class="btn-submit" [disabled]="isLoading()">
             @if (isLoading()) {
               <span>Enviando código...</span>
             } @else {

@@ -45,6 +45,7 @@ CREATE TABLE usuarios (
     ano_ingreso INT,
     ciclo_actual INT,
     cursos_aprobados JSONB DEFAULT '[]'::jsonb,
+    url_historial_academico VARCHAR(255),
     CONSTRAINT fk_usuarios_carrera
         FOREIGN KEY (id_carrera) REFERENCES carreras(id_carrera)
         ON UPDATE CASCADE ON DELETE RESTRICT

@@ -37,18 +37,39 @@ export class AuthService {
     const storedUser = localStorage.getItem('unamconnect_user');
 
     if (storedToken && storedUser) {
+      try {
+        const base64Url = storedToken.split('.')[1];
+        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+        const payload = JSON.parse(window.atob(base64));
+        const isExpired = payload.exp * 1000 < Date.now();
+        if (isExpired) {
+          localStorage.removeItem('unamconnect_token');
+          localStorage.removeItem('unamconnect_user');
+          return;
+        }
+      } catch (e) {
+        localStorage.removeItem('unamconnect_token');
+        localStorage.removeItem('unamconnect_user');
+        return;
+      }
+
       this.token.set(storedToken);
       this.currentUser.set(JSON.parse(storedUser));
       this.loadUserRoles();
     }
   }
 
+  /** Promise que se resuelve cuando los roles del usuario están cargados */
+  rolesReady: Promise<void> = Promise.resolve();
+
   loadUserRoles(): void {
     const user = this.currentUser();
     if (!user) return;
-    this.http.get<any[]>(`${this.apiUrl}/usuarios/${user.id}/roles`).subscribe({
-      next: (roles) => this.userRoles.set(roles),
-      error: (err) => console.error('Error al cargar roles de usuario:', err)
+    this.rolesReady = new Promise<void>((resolve) => {
+      this.http.get<any[]>(`${this.apiUrl}/usuarios/${user.id}/roles`).subscribe({
+        next: (roles) => { this.userRoles.set(roles); resolve(); },
+        error: (err) => { console.error('Error al cargar roles de usuario:', err); resolve(); }
+      });
     });
   }
 

@@ -2,11 +2,36 @@ const express = require('express');
 const cors = require('cors');
 require('dotenv').config();
 
+if (!process.env.JWT_SECRET) {
+  console.error("❌ CRITICAL ERROR: JWT_SECRET environment variable is not defined!");
+  process.exit(1);
+}
+
+const { generalLimiter } = require('./middlewares/rateLimit');
+
 const app = express();
 const PORT = process.env.PORT || 3000;
 
 // ── Middlewares ──────────────────────────────────────
-app.use(cors());
+const allowedOrigins = [
+  'http://localhost:4200',     // Angular dev server
+  'http://127.0.0.1:4200',
+  'http://localhost:3000',     // Backend sirve frontend compilado
+  'http://127.0.0.1:3000',
+  // En producción agregar: 'https://www.unamconnect.xyz'
+];
+app.use(cors({
+  origin: (origin, callback) => {
+    // Permitir requests sin origin (Postman, curl, mismo servidor) o desde túneles de localtunnel (*.loca.lt)
+    if (!origin || allowedOrigins.includes(origin) || origin.endsWith('.loca.lt')) {
+      callback(null, true);
+    } else {
+      callback(new Error(`Origen no permitido por CORS: ${origin}`));
+    }
+  },
+  credentials: true
+}));
+app.use(generalLimiter);
 app.use(express.json());
 app.use((req, res, next) => {
   console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
@@ -53,10 +78,16 @@ app.use('/api/upload', uploadRoutes);
 // ── Endpoint de Salud del Sistema (Métricas Reales) ──
 app.get('/api/health', async (req, res) => {
   const db = require('./config/db');
-  const { exec } = require('child_process');
+  const fs = require('fs');
   
-  exec("df -h / | tail -1 | awk '{print $5}'", async (err, stdout) => {
-    const usage = stdout ? stdout.trim() : '42%';
+  fs.statfs('/', async (err, stats) => {
+    let usage = '0%';
+    if (!err && stats) {
+      const total = stats.blocks * stats.bsize;
+      const free = stats.bavail * stats.bsize;
+      const used = total - free;
+      usage = Math.round((used / total) * 100) + '%';
+    }
     try {
       await db.query('SELECT 1');
       res.json({
@@ -119,16 +150,20 @@ app.use((err, req, res, next) => {
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 Servidor UNAMConnect corriendo en http://localhost:${PORT}`);
 
-  // Levantar túnel público automático con localtunnel
-  const { exec } = require('child_process');
-  const tunnel = exec('npx localtunnel --port 3000');
-  tunnel.stdout.on('data', (data) => {
-    console.log(`\n==================================================`);
-    console.log(`🌍 TÚNEL PÚBLICO ACTIVO PARA COMPAÑERAS:`);
-    console.log(`   ${data.toString().trim()}`);
-    console.log(`==================================================\n`);
-  });
-  tunnel.stderr.on('data', (data) => {
-    console.error(`⚠️ Error en localtunnel:`, data.toString());
-  });
+  // Levantar túnel público automático con localtunnel si estamos en desarrollo
+  if (process.env.NODE_ENV === 'development') {
+    const { exec } = require('child_process');
+    const tunnel = exec('npx localtunnel --port 3000');
+    tunnel.stdout.on('data', (data) => {
+      console.log(`\n==================================================`);
+      console.log(`🌍 TÚNEL PÚBLICO ACTIVO PARA COMPAÑERAS:`);
+      console.log(`   ${data.toString().trim()}`);
+      console.log(`==================================================\n`);
+    });
+    tunnel.stderr.on('data', (data) => {
+      console.error(`⚠️ Error en localtunnel:`, data.toString());
+    });
+  } else {
+    console.log('ℹ️ Entorno de producción detectado o NODE_ENV no es development. Túnel localtunnel desactivado.');
+  }
 });

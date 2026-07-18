@@ -8,11 +8,12 @@ const {
   eliminarCarrera,
 } = require('../controllers/carreras.controller');
 const { validateCarrera } = require('../middlewares/carreraValidator');
+const { requireAuth, requireRole } = require('../middlewares/auth.middleware');
 
 router.get('/', obtenerCarreras);
 router.get('/:id', obtenerCarreraPorId);
-router.post('/', validateCarrera, crearCarrera);
-router.put('/:id', validateCarrera, actualizarCarrera);
-router.delete('/:id', eliminarCarrera);
+router.post('/', requireAuth, requireRole(['moderador']), validateCarrera, crearCarrera);
+router.put('/:id', requireAuth, requireRole(['moderador']), validateCarrera, actualizarCarrera);
+router.delete('/:id', requireAuth, requireRole(['moderador']), eliminarCarrera);
 
 module.exports = router;

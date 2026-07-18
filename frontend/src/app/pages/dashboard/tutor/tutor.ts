@@ -129,6 +129,7 @@ export class TutorDashboardComponent implements OnInit, OnDestroy {
   
   // Gestión de cursos propios autorizados y dictados
   solicitudesAprobadas = signal<any[]>([]);
+  todasSolicitudesTutor = signal<any[]>([]);
   cursosHabilitados = signal<any[]>([]);
   cursosHabilitarSelect = signal<number>(0);
   
@@ -314,13 +315,21 @@ export class TutorDashboardComponent implements OnInit, OnDestroy {
     }
   }
 
+  private dataSubscription: Subscription | null = null;
+
   ngOnInit(): void {
-    this.cargarDatos();
+    // Polling reactivo cada 12 segundos para sincronizar el panel de tutores automáticamente
+    this.dataSubscription = timer(0, 12000).subscribe(() => {
+      this.cargarDatos();
+    });
     this.startChatPolling();
     this.startNotificationPolling();
   }
 
   ngOnDestroy(): void {
+    if (this.dataSubscription) {
+      this.dataSubscription.unsubscribe();
+    }
     this.destroyChatPolling();
     this.destroyNotificationPolling();
   }
@@ -391,9 +400,10 @@ export class TutorDashboardComponent implements OnInit, OnDestroy {
       error: (err) => console.error('Error al cargar cursos:', err)
     });
 
-    // Cargar solicitudes aprobadas del tutor (acreditación)
+    // Cargar solicitudes del tutor (acreditación)
     this.http.get<any[]>(`${environment.apiUrl}/solicitudes-tutor/usuario/${user.id}`).subscribe({
       next: (data) => {
+        this.todasSolicitudesTutor.set(data);
         const aprobadas = data.filter(s => s.estado_solicitud === 'aprobada');
         this.solicitudesAprobadas.set(aprobadas);
       },
@@ -726,10 +736,24 @@ export class TutorDashboardComponent implements OnInit, OnDestroy {
   filtroCursoPostulacion = signal<string>('');
   fileDragOver = signal<boolean>(false);
 
+  isCursoAprobado(idCurso: number): boolean {
+    const passedIds = this.authService.currentUser()?.cursos_aprobados || [];
+    return passedIds.includes(idCurso);
+  }
+
   cursosTutorFiltrados = computed(() => {
     const query = this.filtroCursoPostulacion().toLowerCase().trim();
-    if (!query) return this.cursosTutor();
-    return this.cursosTutor().filter(c => c.nombre_curso.toLowerCase().includes(query));
+    // IDs ya habilitados en tutores_cursos
+    const habilitadosIds = new Set(this.cursosHabilitados().map((c: any) => c.id_curso));
+    // IDs con solicitud ya enviada (cualquier estado)
+    const solicitadosIds = new Set(this.todasSolicitudesTutor().map((s: any) => s.id_curso));
+    const availableCourses = this.cursosTutor().filter(c =>
+      this.isCursoAprobado(c.id_curso) &&
+      !habilitadosIds.has(c.id_curso) &&
+      !solicitadosIds.has(c.id_curso)
+    );
+    if (!query) return availableCourses;
+    return availableCourses.filter(c => c.nombre_curso.toLowerCase().includes(query));
   });
 
   onDragOver(event: DragEvent): void {
@@ -818,16 +842,18 @@ export class TutorDashboardComponent implements OnInit, OnDestroy {
             };
             return this.http.post(`${environment.apiUrl}/solicitudes-tutor`, payload).pipe(
               catchError((err) => {
-                console.error('Error al enviar postulación:', err);
+                const msg = err?.error?.error || 'Error al enviar postulación';
+                console.error('Error al enviar postulación:', msg);
                 errors++;
-                return of(null);
+                return of({ _error: msg });
               })
             );
           });
 
           forkJoin(requests).subscribe({
-            next: () => {
-              this.onPostulacionFinished(errors);
+            next: (results: any[]) => {
+              const firstError = results.find(r => r && r._error)?._error;
+              this.onPostulacionFinished(errors, firstError);
             }
           });
         }).catch((err) => {
@@ -838,14 +864,15 @@ export class TutorDashboardComponent implements OnInit, OnDestroy {
     });
   }
 
-  private onPostulacionFinished(errorsCount: number): void {
+  private onPostulacionFinished(errorsCount: number, errorMsg?: string): void {
     this.mostrarModalPostulacion.set(false);
     this.selectedFilePostulacion = null;
     this.nombreArchivoPostulacion.set('');
     this.cursosSeleccionadosPostulacion.set([]);
     
     if (errorsCount > 0) {
-      this.notificationService.showToast('Se enviaron las postulaciones, pero algunas fallaron.', 'error');
+      const msg = errorMsg || 'Se enviaron las postulaciones, pero algunas fallaron.';
+      this.notificationService.showToast(msg, 'error');
     } else {
       this.notificationService.showToast('¡Todas las postulaciones han sido enviadas exitosamente!', 'success');
       this.cargarDatos(); // Recargar datos
