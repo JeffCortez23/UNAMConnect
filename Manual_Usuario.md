@@ -31,7 +31,10 @@ Para ejecutar el proyecto en un entorno local de desarrollo se requiere:
 
 ### 4.1. Configuración de la Base de Datos
 1. Crea una base de datos en PostgreSQL llamada `unamconnect_db`.
-2. Ejecuta el archivo de respaldo `backend/init_db.sql` proporcionado en el entregable para crear las tablas e insertar la estructura inicial.
+2. Ejecuta el archivo de respaldo `backend/init_db.sql` proporcionado en el entregable ejecutando el siguiente comando en tu terminal de PostgreSQL:
+   ```bash
+   psql -U postgres -d unamconnect_db -f backend/init_db.sql
+   ```
 
 ### 4.2. Configuración del Backend (Node.js + Express)
 1. Abre una terminal en el directorio `backend/`.
