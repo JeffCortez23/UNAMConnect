@@ -13,7 +13,7 @@
             <p class="text-success small mb-3 text-truncate w-100" style="font-size: 11px;">{{ tutor.correo }}</p>
             
             <div class="d-flex gap-2 w-100 mt-auto justify-content-center">
-              <button (click)="parent.seleccionarTutorChat(tutor.id_usuario); parent.activeTab.set('mensajes')" class="btn btn-outline-info btn-sm flex-grow-1 rounded-2" style="font-size: 11px;">
+              <button (click)="parent.abrirModalChat(tutor)" class="btn btn-outline-info btn-sm flex-grow-1 rounded-2" style="font-size: 11px;">
                 <i class="bi bi-chat-dots-fill"></i> Mensaje
               </button>
               <button (click)="parent.onTutorSelected(tutor.id_usuario); parent.mostrarModalSolicitar.set(true)" class="btn btn-success btn-sm flex-grow-1 rounded-2" style="font-size: 11px;">

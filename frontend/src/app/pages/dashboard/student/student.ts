@@ -632,6 +632,48 @@ export class StudentDashboardComponent implements OnInit, OnDestroy {
   idTutorChatSeleccionado = signal<number>(2);
   nuevoMensajeTexto = signal<string>('');
 
+  tutorChatActivoInfo = computed(() => {
+    const id = this.idTutorChatSeleccionado();
+    const conver = this.conversaciones().find(c => c.id_usuario === id);
+    return conver || null;
+  });
+
+  // Modal de chat rápido
+  mostrarModalChat = signal<boolean>(false);
+  tutorParaChat = signal<any>(null);
+  mensajeInicialChat = signal<string>('');
+
+  abrirModalChat(tutor: any): void {
+    this.tutorParaChat.set(tutor);
+    this.mensajeInicialChat.set('');
+    this.mostrarModalChat.set(true);
+  }
+
+  enviarMensajeDesdeModal(): void {
+    const user = this.authService.currentUser();
+    const tutor = this.tutorParaChat();
+    const texto = this.mensajeInicialChat().trim();
+    if (!user || !tutor || !texto) return;
+
+    const payload = {
+      id_emisor: user.id,
+      id_receptor: tutor.id_usuario,
+      contenido: texto
+    };
+
+    this.http.post(`${environment.apiUrl}/mensajes`, payload).subscribe({
+      next: () => {
+        this.mostrarModalChat.set(false);
+        this.notificationService.showToast('Mensaje enviado al tutor exitosamente.', 'success');
+        this.cargarMensajería();
+      },
+      error: (err) => {
+        console.error('Error al enviar mensaje inicial:', err);
+        this.notificationService.showToast('Error al enviar mensaje.', 'error');
+      }
+    });
+  }
+
   mensajesSinLeerTotal = computed(() => {
     return this.conversaciones().reduce((acc, conv) => acc + (conv.mensajes_sin_leer || 0), 0);
   });

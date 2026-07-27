@@ -4,20 +4,20 @@
     <div class="col-md-4 border-end">
       <h4 class="fs-6 fw-bold mb-3">Conversaciones</h4>
       <div class="d-flex flex-column gap-2 overflow-auto" style="max-height: 450px;">
-        @for (chat of parent.chatsList(); track chat.id_contacto) {
+        @for (chat of parent.conversaciones(); track chat.id_usuario) {
           <div class="p-2.5 rounded-3 d-flex align-items-center gap-2 cursor-pointer transition-all hover-bg-light-opacity" 
-               [class.bg-primary]="parent.idContactoActivo() === chat.id_contacto"
-               [class.bg-opacity-20]="parent.idContactoActivo() === chat.id_contacto"
-               (click)="parent.seleccionarChat(chat.id_contacto)">
+               [class.bg-primary]="parent.idTutorChatSeleccionado() === chat.id_usuario"
+               [class.bg-opacity-20]="parent.idTutorChatSeleccionado() === chat.id_usuario"
+               (click)="parent.seleccionarTutorChat(chat.id_usuario)">
             <div class="avatar bg-info text-white rounded-circle d-flex align-items-center justify-content-center fw-bold small" style="width: 32px; height: 32px;">
-              {{ chat.contacto_nombres.charAt(0) }}{{ chat.contacto_apellidos.charAt(0) }}
+              {{ chat.nombres.charAt(0) }}{{ chat.apellidos.charAt(0) }}
             </div>
             <div class="flex-grow-1 overflow-hidden" style="font-size: 12px;">
               <div class="d-flex justify-content-between">
-                <strong class="text-truncate">{{ chat.contacto_nombres }} {{ chat.contacto_apellidos }}</strong>
+                <strong class="text-truncate">{{ chat.nombres }} {{ chat.apellidos }}</strong>
                 <span class="badge bg-danger rounded-pill" *ngIf="chat.mensajes_sin_leer > 0">{{ chat.mensajes_sin_leer }}</span>
               </div>
-              <p class="m-0 text-muted text-truncate">{{ chat.ultimo_mensaje }}</p>
+              <p class="m-0 text-muted text-truncate">Chat activo</p>
             </div>
           </div>
         } @empty {
@@ -27,21 +27,21 @@
     </div>
 
     <!-- Chat Activo -->
-    <div class="col-md-8 d-flex flex-column" *ngIf="parent.idContactoActivo() > 0">
+    <div class="col-md-8 d-flex flex-column" *ngIf="parent.idTutorChatSeleccionado() > 0">
       <!-- Header del Chat -->
-      <div class="border-bottom pb-2 mb-3 d-flex align-items-center gap-2">
+      <div class="border-bottom pb-2 mb-3 d-flex align-items-center gap-2" *ngIf="parent.tutorChatActivoInfo()">
         <div class="avatar bg-info text-white rounded-circle d-flex align-items-center justify-content-center fw-bold small" style="width: 36px; height: 36px;">
-          {{ parent.getContactoActivoNombres().charAt(0) }}{{ parent.getContactoActivoApellidos().charAt(0) }}
+          {{ parent.tutorChatActivoInfo()?.nombres.charAt(0) }}{{ parent.tutorChatActivoInfo()?.apellidos.charAt(0) }}
         </div>
         <div>
-          <h4 class="m-0 fs-6 fw-bold text-white">{{ parent.getContactoActivoNombres() }} {{ parent.getContactoActivoApellidos() }}</h4>
+          <h4 class="m-0 fs-6 fw-bold text-white">{{ parent.tutorChatActivoInfo()?.nombres }} {{ parent.tutorChatActivoInfo()?.apellidos }}</h4>
           <span class="text-muted" style="font-size: 11px;">Tutor UNAM</span>
         </div>
       </div>
 
       <!-- Contenedor del Historial (Mensajes) -->
       <div class="flex-grow-1 overflow-auto mb-3 p-2 rounded bg-dark bg-opacity-20 d-flex flex-column gap-2" style="max-height: 320px; min-height: 250px; scrollbar-width: thin;">
-        @for (msg of parent.mensajesContactoActivo(); track msg.id_mensaje) {
+        @for (msg of parent.mensajesChat(); track msg.id_mensaje) {
           <div class="d-flex" [class.justify-content-end]="msg.id_remitente === parent.authService.currentUser()?.id" [class.justify-content-start]="msg.id_remitente !== parent.authService.currentUser()?.id">
             <div class="p-2.5 rounded-3 text-start shadow-sm"
                  [style.background]="msg.id_remitente === parent.authService.currentUser()?.id ? 'linear-gradient(135deg, #28a745, #1e7e34)' : 'rgba(255,255,255,0.08)'"
@@ -59,8 +59,8 @@
       <div class="input-group">
         <input type="text"
                class="form-control rounded-start-3"
-               [ngModel]="parent.nuevoMensajeTexto"
-               (ngModelChange)="parent.nuevoMensajeTexto = $event"
+               [ngModel]="parent.nuevoMensajeTexto()"
+               (ngModelChange)="parent.nuevoMensajeTexto.set($event)"
                (keyup.enter)="parent.enviarMensajeChat()"
                placeholder="Escribe tu mensaje...">
         <button class="btn btn-success rounded-end-3" (click)="parent.enviarMensajeChat()"><i class="bi bi-send-fill"></i> Enviar</button>
