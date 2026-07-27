@@ -51,25 +51,62 @@ Para ejecutar el proyecto localmente se necesita:
 3. Iniciar el servidor de desarrollo de Angular con `ng serve`.
 4. Acceder a la aplicación desde el navegador en `http://localhost:4200`.
 
-## 5. Funcionalidades Principales
+## 5. Guía de Uso e Instrucciones Paso a Paso para el Usuario
 
-### 5.1. Módulo de Autenticación
-*   **Registro**: Validación de correo institucional (solo dominios `@unam.edu.pe`). Validación de código universitario coherente con el año de ingreso. Validación de contraseñas seguras.
-*   **Inicio de Sesión**: Acceso seguro con credenciales encriptadas mediante JWT y validación asíncrona.
+### 5.1. Registro e Inicio de Sesión
+1. **Crear una cuenta**:
+   * Acceder a la pantalla de Registro (`/register`).
+   * Seleccionar el rol inicial (ejemplo: Alumno).
+   * Ingresar Nombres, Apellidos, Código Universitario (10 dígitos) y Correo Institucional (`@unam.edu.pe`).
+   * Ingresar una contraseña segura y hacer clic en **"Registrarse"**.
+2. **Iniciar Sesión**:
+   * Acceder a `/login`.
+   * Ingresar las credenciales registradas y presionar **"Ingresar"**. El sistema redirigirá automáticamente al Dashboard correspondiente al rol.
 
-### 5.2. Panel del Alumno
-*   **Explorar Cursos y Tutores**: Búsqueda de cursos y visualización de tutores disponibles.
-*   **Solicitar Tutoría**: Los alumnos pueden enviar solicitudes de tutoría a los tutores aprobados.
-*   **Chat en Tiempo Real**: Comunicación directa con el tutor asignado.
+---
 
-### 5.3. Panel del Tutor
-*   **Postulación**: Los alumnos pueden postularse como tutores subiendo su boleta de notas (almacenada en Firebase Storage).
-*   **Gestión de Horarios**: Definir disponibilidad para asesorías.
-*   **Gestión de Solicitudes**: Aceptar o rechazar solicitudes de alumnos.
+### 5.2. Instrucciones para el Alumno
+1. **Buscar Cursos y Tutores**:
+   * Navegar a la pestaña **"Mis Cursos"** o **"Catálogo de Tutores"**.
+   * Filtrar las asignaturas por ciclo o buscar un tutor específico por nombre o carrera.
+2. **Solicitar Asesoría Académica**:
+   * En la tarjeta del tutor deseado, hacer clic en el botón **"+ Asesoría"**.
+   * En la ventana emergente, seleccionar el curso y elegir una fecha/horario de disponibilidad del tutor.
+   * Hacer clic en **"Solicitar"** para enviar la petición al tutor.
+3. **Enviar Mensajes (Chat en Tiempo Real)**:
+   * En el catálogo de tutores, hacer clic en el botón **"Mensaje"** para abrir el popup de envío rápido.
+   * Escribir el mensaje y presionar **"Enviar"** o clic en **"Cancelar"** para salir.
+   * Para ver el historial completo de chats, acceder a la pestaña **"Mensajes"** en la barra lateral.
+4. **Postular para ser Tutor**:
+   * En la pestaña del perfil o lateral, hacer clic en **"Postular a Tutor"**.
+   * Seleccionar los cursos que dominas y adjuntar el archivo PDF/Imagen de la Boleta de Notas o Historial Académico.
+   * Hacer clic en **"Enviar Postulación"** para enviar la solicitud a los moderadores.
 
-### 5.4. Panel del Moderador
-*   **Dashboard Estadístico**: Visualización de métricas en tiempo real (usuarios activos, tutores pendientes, satisfacción promedio).
-*   **Aprobación de Tutores**: Revisión de documentos (boletas) y aprobación o rechazo de nuevas postulaciones para tutores.
+---
+
+### 5.3. Instrucciones para el Tutor
+1. **Configurar Disponibilidad Horaria (Formato 24h)**:
+   * Ir a la sección **"Registrar Nuevo Bloque"** dentro del panel de Tutor.
+   * Seleccionar el Día de la Semana (Lunes a Sábado).
+   * Utilizar los botones de **Bloques Frecuentes** (`08:00 - 10:00`, `14:00 - 16:00`, etc.) para una selección rápida en 1 clic, o seleccionar manualmente la **Hora Inicio** y **Hora Fin** en las listas desplegables.
+   * Hacer clic en **"Añadir Horario"**. El bloque se actualizará inmediatamente en la tabla de **Disponibilidad Semanal**.
+2. **Gestionar Solicitudes de Asesoría**:
+   * En la lista de solicitudes entrantes, revisar las peticiones de los alumnos.
+   * Hacer clic en **"Aceptar"** (se generará automáticamente el enlace de videollamada de Google Meet) o **"Rechazar"**.
+3. **Habilitar o Deshabilitar Cursos**:
+   * En la pestaña **"Cursos Activos"**, activar o desactivar las asignaturas que deseas ofrecer activamente en el catálogo.
+
+---
+
+### 5.4. Instrucciones para el Moderador
+1. **Aprobación de Tutores**:
+   * Acceder al panel de Moderador.
+   * En la pestaña **"Postulaciones Pendientes"**, hacer clic en **"Ver Boleta de Notas"** para revisar el documento adjunto.
+   * Presionar **"Aprobar"** para otorgarle el rol de Tutor al estudiante o **"Rechazar"**.
+2. **Supervisión de Métricas**:
+   * Visualizar las estadísticas generales del sistema: total de tutorías dictadas, alumnos beneficiados y calificación promedio.
+
+---
 
 ## 6. Integración (Frontend, Backend, BD)
 El frontend (Angular) se comunica con el backend (Node.js/Express) mediante peticiones HTTP a la API REST. El backend maneja la lógica de negocio y realiza consultas a PostgreSQL para obtener y persistir los datos. Las imágenes y documentos (boletas) se gestionan directamente con Firebase Storage para optimizar la carga del servidor.
