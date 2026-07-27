@@ -6,7 +6,7 @@
 ---
 
 ## 1. ¡Bienvenido a UNAMConnect! 🚀
-UNAMConnect es la plataforma web oficial desarrollada para conectar a la comunidad universitaria de la **Universidad Nacional de Moquegua**. Su objetivo principal es facilitar el encuentro entre estudiantes y tutores académicos, permitiendo agendar asesorías, comunicarse mediante chat en tiempo real y gestionar horarios de manera ágil, intuitiva y segura.
+UNAMConnect es una plataforma independiente, **hecha por estudiantes para estudiantes sin fines de lucro**, diseñada para conectar a la comunidad universitaria de la Universidad Nacional de Moquegua. Su objetivo principal es facilitar el encuentro entre alumnos y tutores académicos, agendar asesorías, comunicarse mediante chat en tiempo real y gestionar horarios de manera ágil, intuitiva y segura *(Nota: Este proyecto es de carácter académico e independiente, sin fines de lucro y no está asociado legalmente a la universidad)*.
 
 ---
 
