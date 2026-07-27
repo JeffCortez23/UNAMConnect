@@ -200,16 +200,21 @@
       <div class="modal-content glass-panel p-4 text-start">
         <div class="modal-header border-0 p-0 mb-3 d-flex justify-content-between align-items-center">
           <h5 class="modal-title fw-bold m-0"><i class="bi bi-chat-dots-fill text-info me-2"></i>Enviar Mensaje</h5>
-          <button (click)="mostrarModalChat.set(false)" class="btn-close" aria-label="Close"></button>
+          <button (click)="mostrarModalChat.set(false)" class="btn-close btn-close-white" aria-label="Close"></button>
         </div>
         <div class="modal-body p-0 d-flex flex-column gap-3">
           <p class="small text-muted m-0">Inicia una conversación con <strong>{{ tutorParaChat()?.nombres }} {{ tutorParaChat()?.apellidos }}</strong>.</p>
           <div>
             <textarea class="form-control rounded-3" rows="3" [ngModel]="mensajeInicialChat()" (ngModelChange)="mensajeInicialChat.set($event)" placeholder="Escribe tu mensaje..."></textarea>
           </div>
-          <button (click)="enviarMensajeDesdeModal()" class="btn btn-info fw-bold w-100 rounded-3 mt-1 text-white" [disabled]="!mensajeInicialChat().trim()">
-            <i class="bi bi-send-fill me-2"></i> Enviar
-          </button>
+          <div class="d-flex gap-2 mt-1">
+            <button (click)="mostrarModalChat.set(false)" class="btn btn-secondary fw-bold w-50 rounded-3 text-white">
+              Cancelar
+            </button>
+            <button (click)="enviarMensajeDesdeModal()" class="btn btn-info fw-bold w-50 rounded-3 text-white" [disabled]="!mensajeInicialChat().trim()">
+              <i class="bi bi-send-fill me-2"></i> Enviar
+            </button>
+          </div>
         </div>
       </div>
     </div>
