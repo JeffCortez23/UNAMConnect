@@ -28,6 +28,7 @@ interface Tutor {
   nombres: string;
   apellidos: string;
   correo: string;
+  foto_url?: string;
 }
 
 @Component({

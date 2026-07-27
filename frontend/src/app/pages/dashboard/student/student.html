@@ -446,9 +446,13 @@
             @for (tutor of tutoresParaCursoDetalle(); track tutor.id_usuario) {
               <div class="list-group-item bg-dark bg-opacity-30 border-white border-opacity-10 text-white d-flex align-items-center justify-content-between p-2.5">
                 <div class="d-flex align-items-center gap-2">
-                  <div class="rounded-circle bg-info bg-opacity-20 text-info d-flex align-items-center justify-content-center fw-bold" style="width: 32px; height: 32px; font-size: 12px;">
-                    {{ tutor.nombres.charAt(0) }}{{ tutor.apellidos.charAt(0) }}
-                  </div>
+                  @if (tutor.foto_url) {
+                    <img [src]="tutor.foto_url" [alt]="tutor.nombres" class="rounded-circle object-fit-cover" style="width: 32px; height: 32px;">
+                  } @else {
+                    <div class="rounded-circle text-white d-flex align-items-center justify-content-center fw-bold" style="width: 32px; height: 32px; font-size: 12px; background: linear-gradient(135deg, #00c6ff, #0072ff);">
+                      {{ tutor.nombres.charAt(0) }}{{ tutor.apellidos.charAt(0) }}
+                    </div>
+                  }
                   <div>
                     <div class="small fw-semibold">{{ tutor.nombres }} {{ tutor.apellidos }}</div>
                     <div class="text-muted" style="font-size: 10px;">{{ tutor.correo }}</div>
