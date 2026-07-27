@@ -363,85 +363,90 @@
             <div class="d-flex flex-column gap-3">
               <div>
                 <label class="form-label text-muted small fw-semibold mb-1">Día de la Semana</label>
-                <select [(ngModel)]="nuevoDia" class="form-select rounded-3">
+                <select [ngModel]="nuevoDia()" (ngModelChange)="nuevoDia.set($event)" class="form-select rounded-3">
                   <option value="lunes">Lunes</option>
                   <option value="martes">Martes</option>
                   <option value="miercoles">Miércoles</option>
                   <option value="jueves">Jueves</option>
                   <option value="viernes">Viernes</option>
+                  <option value="sabado">Sábado</option>
                 </select>
               </div>
 
+              <!-- Bloques Rápidos Frecuentes -->
               <div>
-                <label class="form-label text-muted small fw-semibold mb-1">Hora de Inicio</label>
-                <select [(ngModel)]="nuevaHoraInicio" class="form-select rounded-3">
-                  <option value="07:00">07:00 AM</option>
-                  <option value="07:30">07:30 AM</option>
-                  <option value="08:00">08:00 AM</option>
-                  <option value="08:30">08:30 AM</option>
-                  <option value="09:00">09:00 AM</option>
-                  <option value="09:30">09:30 AM</option>
-                  <option value="10:00">10:00 AM</option>
-                  <option value="10:30">10:30 AM</option>
-                  <option value="11:00">11:00 AM</option>
-                  <option value="11:30">11:30 AM</option>
-                  <option value="12:00">12:00 PM</option>
-                  <option value="12:30">12:30 PM</option>
-                  <option value="13:00">01:00 PM</option>
-                  <option value="13:30">01:30 PM</option>
-                  <option value="14:00">02:00 PM</option>
-                  <option value="14:30">02:30 PM</option>
-                  <option value="15:00">03:00 PM</option>
-                  <option value="15:30">03:30 PM</option>
-                  <option value="16:00">04:00 PM</option>
-                  <option value="16:30">04:30 PM</option>
-                  <option value="17:00">05:00 PM</option>
-                  <option value="17:30">05:30 PM</option>
-                  <option value="18:00">06:00 PM</option>
-                  <option value="18:30">06:30 PM</option>
-                  <option value="19:00">07:00 PM</option>
-                  <option value="19:30">07:30 PM</option>
-                  <option value="20:00">08:00 PM</option>
-                  <option value="20:30">08:30 PM</option>
-                  <option value="21:00">09:00 PM</option>
-                </select>
+                <label class="form-label text-muted small fw-semibold mb-1.5 d-block">Bloques Frecuentes</label>
+                <div class="d-flex flex-wrap gap-2">
+                  <button type="button" (click)="nuevaHoraInicio.set('08:00'); nuevaHoraFin.set('10:00')" 
+                          class="btn btn-sm btn-outline-info rounded-pill px-2.5 py-1" style="font-size: 11px;"
+                          [class.active]="nuevaHoraInicio() === '08:00' && nuevaHoraFin() === '10:00'">
+                    08:00 - 10:00 AM
+                  </button>
+                  <button type="button" (click)="nuevaHoraInicio.set('10:00'); nuevaHoraFin.set('12:00')" 
+                          class="btn btn-sm btn-outline-info rounded-pill px-2.5 py-1" style="font-size: 11px;"
+                          [class.active]="nuevaHoraInicio() === '10:00' && nuevaHoraFin() === '12:00'">
+                    10:00 - 12:00 PM
+                  </button>
+                  <button type="button" (click)="nuevaHoraInicio.set('14:00'); nuevaHoraFin.set('16:00')" 
+                          class="btn btn-sm btn-outline-info rounded-pill px-2.5 py-1" style="font-size: 11px;"
+                          [class.active]="nuevaHoraInicio() === '14:00' && nuevaHoraFin() === '16:00'">
+                    02:00 - 04:00 PM
+                  </button>
+                  <button type="button" (click)="nuevaHoraInicio.set('16:00'); nuevaHoraFin.set('18:00')" 
+                          class="btn btn-sm btn-outline-info rounded-pill px-2.5 py-1" style="font-size: 11px;"
+                          [class.active]="nuevaHoraInicio() === '16:00' && nuevaHoraFin() === '18:00'">
+                    04:00 - 06:00 PM
+                  </button>
+                </div>
               </div>
 
-              <div>
-                <label class="form-label text-muted small fw-semibold mb-1">Hora de Fin</label>
-                <select [(ngModel)]="nuevaHoraFin" class="form-select rounded-3">
-                  <option value="08:00">08:00 AM</option>
-                  <option value="08:30">08:30 AM</option>
-                  <option value="09:00">09:00 AM</option>
-                  <option value="09:30">09:30 AM</option>
-                  <option value="10:00">10:00 AM</option>
-                  <option value="10:30">10:30 AM</option>
-                  <option value="11:00">11:00 AM</option>
-                  <option value="11:30">11:30 AM</option>
-                  <option value="12:00">12:00 PM</option>
-                  <option value="12:30">12:30 PM</option>
-                  <option value="13:00">01:00 PM</option>
-                  <option value="13:30">01:30 PM</option>
-                  <option value="14:00">02:00 PM</option>
-                  <option value="14:30">02:30 PM</option>
-                  <option value="15:00">03:00 PM</option>
-                  <option value="15:30">03:30 PM</option>
-                  <option value="16:00">04:00 PM</option>
-                  <option value="16:30">04:30 PM</option>
-                  <option value="17:00">05:00 PM</option>
-                  <option value="17:30">05:30 PM</option>
-                  <option value="18:00">06:00 PM</option>
-                  <option value="18:30">06:30 PM</option>
-                  <option value="19:00">07:00 PM</option>
-                  <option value="19:30">07:30 PM</option>
-                  <option value="20:00">08:00 PM</option>
-                  <option value="20:30">08:30 PM</option>
-                  <option value="21:00">09:00 PM</option>
-                  <option value="22:00">10:00 PM</option>
-                </select>
+              <!-- Hora de Inicio y Hora de Fin lado a lado -->
+              <div class="row g-2">
+                <div class="col-6">
+                  <label class="form-label text-muted small fw-semibold mb-1">Hora Inicio</label>
+                  <select [ngModel]="nuevaHoraInicio()" (ngModelChange)="nuevaHoraInicio.set($event)" class="form-select rounded-3">
+                    <option value="07:00">07:00 AM</option>
+                    <option value="08:00">08:00 AM</option>
+                    <option value="09:00">09:00 AM</option>
+                    <option value="10:00">10:00 AM</option>
+                    <option value="11:00">11:00 AM</option>
+                    <option value="12:00">12:00 PM</option>
+                    <option value="13:00">01:00 PM</option>
+                    <option value="14:00">02:00 PM</option>
+                    <option value="15:00">03:00 PM</option>
+                    <option value="16:00">04:00 PM</option>
+                    <option value="17:00">05:00 PM</option>
+                    <option value="18:00">06:00 PM</option>
+                    <option value="19:00">07:00 PM</option>
+                    <option value="20:00">08:00 PM</option>
+                  </select>
+                </div>
+
+                <div class="col-6">
+                  <label class="form-label text-muted small fw-semibold mb-1">Hora Fin</label>
+                  <select [ngModel]="nuevaHoraFin()" (ngModelChange)="nuevaHoraFin.set($event)" class="form-select rounded-3">
+                    <option value="08:00">08:00 AM</option>
+                    <option value="09:00">09:00 AM</option>
+                    <option value="10:00">10:00 AM</option>
+                    <option value="11:00">11:00 AM</option>
+                    <option value="12:00">12:00 PM</option>
+                    <option value="13:00">01:00 PM</option>
+                    <option value="14:00">02:00 PM</option>
+                    <option value="15:00">03:00 PM</option>
+                    <option value="16:00">04:00 PM</option>
+                    <option value="17:00">05:00 PM</option>
+                    <option value="18:00">06:00 PM</option>
+                    <option value="19:00">07:00 PM</option>
+                    <option value="20:00">08:00 PM</option>
+                    <option value="21:00">09:00 PM</option>
+                    <option value="22:00">10:00 PM</option>
+                  </select>
+                </div>
               </div>
 
-              <button (click)="registrarHorario()" class="btn btn-success w-100 mt-2 py-2 rounded-3 fw-bold">Añadir Horario</button>
+              <button (click)="registrarHorario()" class="btn btn-success w-100 mt-2 py-2 rounded-3 fw-bold">
+                <i class="bi bi-calendar-plus me-1"></i> Añadir Horario
+              </button>
             </div>
           </div>
         </div>
