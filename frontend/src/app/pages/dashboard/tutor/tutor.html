@@ -204,11 +204,11 @@
           <div class="glass-panel p-4 text-start mb-4">
             <h3 class="fs-6 fw-bold mb-3"><i class="bi bi-calendar-event me-2"></i>Disponibilidad Semanal</h3>
             <!-- Tabla de Calendario Dinámica -->
-            <div class="row row-cols-5 g-2 text-center">
-              @for (day of ['Lunes', 'Martes', 'Miercoles', 'Jueves', 'Viernes']; track day) {
+            <div class="row row-cols-3 row-cols-md-6 g-2 text-center">
+              @for (day of ['Lunes', 'Martes', 'Miercoles', 'Jueves', 'Viernes', 'Sabado']; track day) {
                 <div class="col">
                   <div class="p-2 rounded border border-secondary border-opacity-10 bg-secondary bg-opacity-10 h-100 d-flex flex-column align-items-center">
-                    <span class="fw-bold text-muted" style="font-size: 10px;">{{ day.substring(0,3) | uppercase }}</span>
+                    <span class="fw-bold text-muted" style="font-size: 10px;">{{ (day === 'Sabado' ? 'SAB' : day.substring(0,3)) | uppercase }}</span>
                     @for (slot of getSlotsForDay(day); track slot.id_horario) {
                       <span class="badge mt-1 w-100" style="font-size: 9px; font-weight: 700; background-color: rgba(97, 198, 192, 0.2) !important; color: #61c6c0 !important; border: 1px solid rgba(97, 198, 192, 0.4) !important; padding: 4px 2px;">
                         {{ slot.hora_inicio.substring(0,5) }} - {{ slot.hora_fin.substring(0,5) }}
