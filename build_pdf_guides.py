@@ -159,3 +159,4 @@ def build_pdf(md_file, pdf_file, title):
 if __name__ == '__main__':
     build_pdf('Guia_Exposicion_Frontend.md', 'Guia_Exposicion_Frontend.pdf', 'Guía de Exposición - Frontend')
     build_pdf('Guia_Exposicion_Backend.md', 'Guia_Exposicion_Backend.pdf', 'Guía de Exposición - Backend')
+    build_pdf('Guia_Exposicion_Firebase_Render.md', 'Guia_Exposicion_Firebase_Render.pdf', 'Guía de Exposición - Firebase & Render')
