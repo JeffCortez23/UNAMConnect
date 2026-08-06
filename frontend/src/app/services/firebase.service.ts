@@ -26,6 +26,12 @@ export class FirebaseService {
    * @param file El objeto File HTML5 a subir
    */
   async uploadFile(path: string, file: File): Promise<string> {
+    // En producción, el disco local de Render es efímero (los archivos se borran al reiniciar):
+    // subir siempre directamente a Firebase Storage para que los archivos sean permanentes.
+    if (environment.production) {
+      return this.uploadToFirebase(path, file);
+    }
+
     try {
       const formData = new FormData();
       formData.append('file', file);
@@ -35,10 +41,14 @@ export class FirebaseService {
       return res.url;
     } catch (err) {
       console.warn('Fallo la subida al servidor local, intentando con Firebase Storage...', err);
-      const fileRef = ref(storage, path);
-      const snapshot = await uploadBytes(fileRef, file);
-      const downloadUrl = await getDownloadURL(snapshot.ref);
-      return downloadUrl;
+      return this.uploadToFirebase(path, file);
     }
+  }
+
+  /** Sube el archivo directamente a Firebase Storage y devuelve su URL de descarga */
+  private async uploadToFirebase(path: string, file: File): Promise<string> {
+    const fileRef = ref(storage, path);
+    const snapshot = await uploadBytes(fileRef, file);
+    return getDownloadURL(snapshot.ref);
   }
 }

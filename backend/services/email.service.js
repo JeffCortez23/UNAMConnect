@@ -2,12 +2,20 @@ const nodemailer = require('nodemailer');
 
 // Configuración del transportador utilizando variables de entorno
 // Se preconfigura con soporte SMTP genérico y fallback a un correo de prueba de Gmail
+// Gmail SMTP: puerto 587 con STARTTLS (más compatible desde nubes como Render que el 465 SSL)
+// Timeouts cortos: si el SMTP no responde, la petición falla en ~15s en lugar de colgarse ~2 minutos.
 const transporter = nodemailer.createTransport({
-  service: process.env.EMAIL_SERVICE || 'gmail',
+  host: process.env.EMAIL_HOST || 'smtp.gmail.com',
+  port: Number(process.env.EMAIL_PORT) || 587,
+  secure: false, // STARTTLS
+  requireTLS: true,
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS
-  }
+  },
+  connectionTimeout: 15000,
+  greetingTimeout: 15000,
+  socketTimeout: 30000
 });
 
 const enviarCorreoCodigo = async (destinatario, asunto, codigo, type = 'verification') => {

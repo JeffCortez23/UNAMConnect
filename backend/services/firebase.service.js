@@ -1,6 +1,6 @@
 const jwt = require('jsonwebtoken');
 const admin = require('firebase-admin');
-const { credential } = require('firebase-admin');
+const { cert } = require('firebase-admin');
 const { getAuth } = require('firebase-admin/auth');
 const path = require('path');
 
@@ -8,11 +8,13 @@ const path = require('path');
 try {
   if (process.env.FIREBASE_PROJECT_ID && process.env.FIREBASE_CLIENT_EMAIL && process.env.FIREBASE_PRIVATE_KEY) {
     // Producción (Render): usar variables de entorno
+    // Nota: firebase-admin v14+ eliminó el namespace 'credential'; se usa la exportación directa 'cert'
     admin.initializeApp({
-      credential: credential.cert({
+      credential: cert({
         projectId: process.env.FIREBASE_PROJECT_ID,
         clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-        privateKey: process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n')
+        // Limpieza defensiva: quita comillas/espacios alrededor (por si se pega con comillas en Render)
+        privateKey: process.env.FIREBASE_PRIVATE_KEY.replace(/^["'\s]+|["'\s]+$/g, '').replace(/\\n/g, '\n')
       })
     });
     console.log('[Firebase Admin] Inicializado exitosamente en producción (variables de entorno).');
@@ -20,7 +22,7 @@ try {
     // Desarrollo local: usar archivo JSON
     const serviceAccountPath = path.join(__dirname, '../config/firebase-service-account.json');
     admin.initializeApp({
-      credential: credential.cert(require(serviceAccountPath))
+      credential: cert(require(serviceAccountPath))
     });
     console.log('[Firebase Admin] Inicializado exitosamente en desarrollo local.');
   }

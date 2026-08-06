@@ -342,6 +342,13 @@ export class RegisterComponent implements OnInit, OnDestroy {
           },
           error: (err) => {
             this.isLoading.set(false);
+            // Evitar cuentas huérfanas: si no se pudo enviar el correo, eliminar el usuario recién creado en Firebase Auth
+            const currentUser = auth.currentUser;
+            if (currentUser) {
+              currentUser.delete()
+                .then(() => console.log('[Registro] Cuenta de Firebase eliminada por fallo al enviar el código.'))
+                .catch((delErr) => console.error('[Registro] No se pudo eliminar la cuenta huérfana:', delErr));
+            }
             const errorMsg = err.error?.error || 'Error al enviar el código de verificación.';
             this.errorMessage.set(errorMsg);
             this.toast.showToast(errorMsg, 'error');
