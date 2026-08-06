@@ -10,6 +10,9 @@ if (!process.env.JWT_SECRET) {
 const { generalLimiter } = require('./middlewares/rateLimit');
 
 const app = express();
+// Confiar en el proxy de Render para que el rate limiter identifique las IPs reales
+// (elimina el warning ERR_ERL_UNEXPECTED_X_FORWARDED_FOR y evita límites compartidos entre usuarios)
+app.set('trust proxy', 1);
 const PORT = process.env.PORT || 3000;
 
 // ── Middlewares ──────────────────────────────────────

@@ -148,10 +148,10 @@ const forgotPassword = async (req, res) => {
     const code = generateCode();
     resetCodes.set(correo, { code, expiresAt: Date.now() + CODE_TTL_MS });
 
-    console.log(`[UNAM Connect] Código de recuperación enviado a ${correo}`);
-
-    // Enviar correo electrónico real usando Nodemailer
+    // Enviar correo electrónico real (Brevo en producción / SMTP en local)
     await enviarCorreoCodigo(correo, 'Recuperación de Contraseña - UNAMConnect', code, 'recovery');
+
+    console.log(`[UNAM Connect] Código de recuperación enviado a ${correo}`);
 
     res.json({ mensaje: 'Se ha enviado un código de verificación a tu correo electrónico.' });
   } catch (error) {
@@ -245,10 +245,10 @@ const sendVerification = async (req, res) => {
     const code = generateCode();
     verificationCodes.set(correo, { code, expiresAt: Date.now() + CODE_TTL_MS });
 
-    console.log(`[UNAM Connect] Código de verificación enviado a ${correo}`);
-
-    // Enviar correo electrónico real usando Nodemailer
+    // Enviar correo electrónico real (Brevo en producción / SMTP en local)
     await enviarCorreoCodigo(correo, 'Verificación de Correo - UNAMConnect', code, 'verification');
+
+    console.log(`[UNAM Connect] Código de verificación enviado a ${correo}`);
 
     res.json({ mensaje: 'Código de verificación enviado.' });
   } catch (error) {
