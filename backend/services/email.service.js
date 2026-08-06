@@ -1,9 +1,9 @@
 const nodemailer = require('nodemailer');
 
-// Configuración del transportador utilizando variables de entorno
-// Se preconfigura con soporte SMTP genérico y fallback a un correo de prueba de Gmail
-// Gmail SMTP: puerto 587 con STARTTLS (más compatible desde nubes como Render que el 465 SSL)
-// Timeouts cortos: si el SMTP no responde, la petición falla en ~15s en lugar de colgarse ~2 minutos.
+// ── Respaldo local (SMTP Gmail) ───────────────────────────────
+// Nota: Render BLOQUEA los puertos SMTP (25, 465, 587) en su plan gratuito,
+// por lo que en producción se usa la API HTTP de Brevo (puerto 443, permitido).
+// El transporte SMTP queda únicamente como respaldo para desarrollo local.
 const transporter = nodemailer.createTransport({
   host: process.env.EMAIL_HOST || 'smtp.gmail.com',
   port: Number(process.env.EMAIL_PORT) || 587,
@@ -17,6 +17,29 @@ const transporter = nodemailer.createTransport({
   greetingTimeout: 15000,
   socketTimeout: 30000
 });
+
+// ── Envío vía Brevo (API HTTP, funciona en Render) ────────────
+const enviarViaBrevo = async ({ destinatario, asunto, htmlContent }) => {
+  const response = await fetch('https://api.brevo.com/v3/smtp/email', {
+    method: 'POST',
+    headers: {
+      'api-key': process.env.BREVO_API_KEY,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      sender: { email: process.env.EMAIL_USER, name: 'UNAMConnect Portal' },
+      to: [{ email: destinatario }],
+      subject: asunto,
+      htmlContent
+    })
+  });
+
+  if (!response.ok) {
+    const detalle = await response.text().catch(() => '');
+    throw new Error(`Error al enviar correo con Brevo (HTTP ${response.status}): ${detalle.slice(0, 300)}`);
+  }
+  return response;
+};
 
 const enviarCorreoCodigo = async (destinatario, asunto, codigo, type = 'verification') => {
   const isVerification = type === 'verification';
@@ -66,6 +89,11 @@ const enviarCorreoCodigo = async (destinatario, asunto, codigo, type = 'verifica
       </div>
     </div>
   `;
+
+  // En producción (Render) usar la API HTTP de Brevo; en desarrollo local, SMTP Gmail
+  if (process.env.BREVO_API_KEY) {
+    return enviarViaBrevo({ destinatario, asunto, htmlContent });
+  }
 
   const mailOptions = {
     from: `"UNAMConnect Portal" <${process.env.EMAIL_USER}>`,
